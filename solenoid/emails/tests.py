@@ -18,6 +18,12 @@ class EmailCreatorTestCase(TestCase):
         assert False
 
 
+    def test_invalid_records_do_not_get_emailed(self):
+        """If the input set contains invalid records, they do not make it
+        into the email."""
+        assert False
+
+
     def test_publisher_special_message_included(self):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
