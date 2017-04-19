@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse, resolve
 from django.test import TestCase
 
 from .models import Record
-from .views import UnsentList
+from .views import UnsentList, InvalidList
 
 # ------ MODELS ------
 # Do we want a unique_together enforcement? If so, which?
@@ -28,17 +28,32 @@ from .views import UnsentList
 # There's a view that lists -invalid- records
 
 
-class RecordsViewsTest(TestCase):
+class UnsentRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']
 
     def setUp(self):
-        self.url_unsent = reverse('records:unsent_list')
+        self.url = reverse('records:unsent_list')
 
     def test_unsent_records_url_exists(self):
-        resolve(self.url_unsent)
+        resolve(self.url)
 
     def test_unsent_records_page_lists_all_unsent(self):
         # assertQuerysetEqual never works, so we're just comparing the pks.
         self.assertEqual(
             set(UnsentList().get_queryset().values_list('pk')),
             set(Record.objects.filter(status=Record.UNSENT).values_list('pk')))
+
+
+class InvalidRecordsViewsTest(TestCase):
+    fixtures = ['records.yaml']
+
+    def setUp(self):
+        self.url = reverse('records:invalid_list')
+
+    def test_invalid_records_url_exists(self):
+        resolve(self.url)
+
+    def test_invalid_records_page_lists_all_invalid(self):
+        self.assertEqual(
+            set(InvalidList().get_queryset().values_list('pk')),
+            set(Record.objects.filter(status=Record.INVALID).values_list('pk'))) # noqa
