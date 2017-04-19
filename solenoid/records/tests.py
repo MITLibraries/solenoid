@@ -1,6 +1,5 @@
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, resolve
 from django.test import TestCase
-from django.test import RequestFactory
 
 from .models import Record
 from .views import UnsentList
@@ -28,29 +27,18 @@ from .views import UnsentList
 # Posting a set of records causes the email constructor to be invoked with that set
 # There's a view that lists -invalid- records
 
+
 class RecordsViewsTest(TestCase):
-
-    def setup_view(view, request, *args, **kwargs):
-        """Mimic as_view() returned callable, but returns view instance.
-
-        args and kwargs are the same you would pass to ``reverse()``"""
-        view.request = request
-        view.args = args
-        view.kwargs = kwargs
-        return view
-
+    fixtures = ['records.yaml']
 
     def setUp(self):
-        self.factory = RequestFactory()
         self.url_unsent = reverse('records:unsent_list')
 
-
     def test_unsent_records_url_exists(self):
-        found = resolve(self.url_unsent)
-
+        resolve(self.url_unsent)
 
     def test_unsent_records_page_lists_all_unsent(self):
-        request = self.factory.get(self.url_unsent)
-        view = self.setup_view(UnsentList, request)
-        self.assertQuerysetEqual(view.get_queryset(),
-            Record.objects.filter(status=Record.UNSENT)
+        # assertQuerysetEqual never works, so we're just comparing the pks.
+        self.assertEqual(
+            set(UnsentList().get_queryset().values_list('pk')),
+            set(Record.objects.filter(status=Record.UNSENT).values_list('pk')))

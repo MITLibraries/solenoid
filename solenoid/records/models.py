@@ -4,8 +4,10 @@ import logging
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 logger = logging.getLogger(__name__)
+
 
 class Record(models.Model):
     """The Record contains:
@@ -19,8 +21,8 @@ class Record(models.Model):
         ordering = ['dlc', 'last_name']
 
     ACQ_METHODS = (
-        (0, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
-        #(1, FPV)
+        (0, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'),
+        # (1, FPV)
     )
 
     UNSENT = 'Unsent'
@@ -39,20 +41,21 @@ class Record(models.Model):
     publisher_name = models.CharField(max_length=50)
     acq_method = models.IntegerField(choices=ACQ_METHODS)
     citation = models.TextField()
-    status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    status = models.CharField(default=UNSENT,
+        choices=STATUS_CHOICES, max_length=7)
     status_timestamp = models.DateField(default=date.today)
-    paper_id = models.CharField(max_length=10, help_text="This is the " \
-        "Publication ID field from Elements; it is supposed to be unique but " \
+    paper_id = models.CharField(max_length=10, help_text="This is the "
+        "Publication ID field from Elements; it is supposed to be unique but "
         "we will not be relying on it as a primary key here.")
 
-    ## I don't need ANY of these if I can get full citation.
-    #title = models.TextField()
-    #journal = models.TextField()
-    ## In theory the following fields should be integers, but in practice, let's
-    ## not trust unfamiliar metadata
-    #volume = models.CharField(max_length=6, blank=True, null=True)
-    #issue = models.CharField(max_length=3, blank=True, null=True)
-    #year_published = models.DateField()
+    # # I don't need ANY of these if I can get full citation.
+    # title = models.TextField()
+    # journal = models.TextField()
+    # # In theory the following fields should be integers, but in practice,
+    # # let's not trust unfamiliar metadata
+    # volume = models.CharField(max_length=6, blank=True, null=True)
+    # issue = models.CharField(max_length=3, blank=True, null=True)
+    # year_published = models.DateField()
 
 
 @receiver(pre_save, sender=Record)
@@ -70,7 +73,7 @@ def verify_status(sender, instance, **kwargs):
     else:
         if not original.status == instance.status:
             if (original.status, instance.status) in invalid_changes:
-                logger.warning("Attempt make an invalid status change from " \
+                logger.warning("Attempt make an invalid status change from "
                     "{x} to {y}".format(x=original.status, y=instance.status))
                 raise ValidationError("That status change is not allowed.")
             else:

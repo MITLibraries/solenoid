@@ -1,3 +1,12 @@
-from django.shortcuts import render
+import logging
 
-# Create your views here.
+from django.views.generic.list import ListView
+
+from .models import Record
+
+logger = logging.getLogger(__name__)
+
+
+class UnsentList(ListView):
+    def get_queryset(self):
+        return Record.objects.filter(status=Record.UNSENT)

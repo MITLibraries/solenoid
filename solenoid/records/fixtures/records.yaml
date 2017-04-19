@@ -1,0 +1,25 @@
+- model: records.Record
+  pk: 1
+  fields:
+    dlc: Physics Department
+    email: fermi@example.com
+    first_name: Enrico
+    last_name: Fermi
+    publisher_name: Wiley
+    acq_method: 0
+    citation: Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)
+    status: 'Unsent'
+    paper_id: 4678156
+
+- model: records.Record
+  pk: 2
+  fields:
+    dlc: Brain and Cognitive Sciences Department
+    email: susumu@example.com
+    first_name: Susumu
+    last_name: Tonegawa
+    publisher_name: Nature
+    acq_method: 0
+    citation: Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)
+    status: 'Sent'
+    paper_id: 4914241
