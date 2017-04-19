@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse, resolve
-from django.test import TestCase
+from django.test import TestCase, Client
 
 from .models import Record
 from .views import UnsentList, InvalidList
@@ -37,6 +37,11 @@ class UnsentRecordsViewsTest(TestCase):
     def test_unsent_records_url_exists(self):
         resolve(self.url)
 
+    def test_unsent_records_view_renders(self):
+        c = Client()
+        with self.assertTemplateUsed('records/record_list.html'):
+            c.get(self.url)
+
     def test_unsent_records_page_lists_all_unsent(self):
         # assertQuerysetEqual never works, so we're just comparing the pks.
         self.assertEqual(
@@ -52,6 +57,11 @@ class InvalidRecordsViewsTest(TestCase):
 
     def test_invalid_records_url_exists(self):
         resolve(self.url)
+
+    def test_invalid_records_view_renders(self):
+        c = Client()
+        with self.assertTemplateUsed('records/record_list.html'):
+            c.get(self.url)
 
     def test_invalid_records_page_lists_all_invalid(self):
         self.assertEqual(
