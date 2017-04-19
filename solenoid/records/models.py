@@ -65,6 +65,10 @@ class Record(models.Model):
             self.status = self.INVALID
         return super(Record, self).save(*args, **kwargs)
 
+    def __str__(self):
+        return "{self.last_name}, {self.first_name} ({self.paper_id})".format(
+            self=self)
+
 
 @receiver(pre_save, sender=Record)
 def verify_status(sender, instance, **kwargs):
