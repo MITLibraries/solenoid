@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 
+{% block page_title %}{{ page_title }}{% endblock %}
+
 {% block content %}
-  {% for record in objects %}
-      {{ record }}
-  {% endfor %}
+  {% if object_list %}
+      {% include extension_template %}
+  {% else %}
+    <p>
+      No records to show.
+    </p>
+  {% endif %}
 {% endblock %}

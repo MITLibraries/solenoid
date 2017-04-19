@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -9,7 +11,22 @@
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
+    <style media="screen">
+      .btn-round-lg {
+        border-radius: 22.5px;
+      }
+      .btn-round {
+        border-radius: 17px;
+      }
+      .btn-round-sm {
+        border-radius: 15px;
+      }
+      .btn-round-xs {
+        border-radius: 11px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    </style>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -18,7 +35,11 @@
     <![endif]-->
   </head>
   <body>
-    <h1>Solenoid</h1>
+    <h1>{% block page_title %}Solenoid{% endblock %}</h1>
+
+    {% block content %}
+
+    {% endblock %}
 
     {% comment %}
       We'll add js back if we turn out to use it.
@@ -27,5 +48,14 @@
       <!-- Include all compiled plugins (below), or include individual files as needed -->
       <script src="js/bootstrap.min.js"></script>
     {% endcomment %}
+
+    {% comment %}
+      If you'd like to add extra js to the bottom of the page, include an
+      `extra_scripts` variable in your context which is a list of script file
+      names suitable as arguments for the static tag.
+    {% endcomment %}
+    {% for script in extra_scripts %}
+      <script src="{% static script %}"></script>
+    {% endfor %}
   </body>
 </html>

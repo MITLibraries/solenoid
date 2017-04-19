@@ -1,0 +1,21 @@
+{% if dlcs|length > 1 %}
+  {% for dlc in dlcs %}
+      <button type="button" class="btn btn-default btn-round" id="dlc-{{ dlc|slugify}}">
+        {{ dlc }}
+      </button>
+  {% endfor %}
+{% endif %}
+
+<form>
+  {% for record in object_list  %}
+    <div class="checkbox dlc-{{ record.dlc|slugify }}">
+      <label>
+        <input type="checkbox"> <strong>{{ record.dlc }}/ {{ record.last_name}}</strong>
+        <br>
+        {{ record.citation }}
+        <hr>
+      </label>
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">Build emails</button>
+</form>
