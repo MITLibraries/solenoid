@@ -28,6 +28,79 @@ from .views import UnsentList, InvalidList
 # There's a view that lists -invalid- records
 
 
+class RecordModelTest(TestCase):
+    fixtures = ['records.yaml']
+
+    def test_status_options_are_enforced(self):
+        """The system should not allow records to be saved with an invalid
+        status. (Status is a parameter purely internal to solenoid.)"""
+        # We're going to enumerate the choices here so we can control their
+        # ordering, because some status transitions are invalid, and we don't
+        # want to fail the test due to hitting them. But let's make sure our
+        # enumeration remains valid as circumstances change.
+        choices = [Record.UNSENT, Record.INVALID, Record.SENT]
+        self.assertEqual(set(choices), set(Record.STATUS_CHOICES_LIST))
+
+        record = Record.objects.filter(status=Record.UNSENT).first()
+
+        # These should all work. If they don't, save() will throw an error and
+        # the test will fail.
+        for choice in choices:
+            record.status = choice
+            record.save()
+
+        bad_choice = "noooope"
+        assert bad_choice not in choices
+
+        record.status = bad_choice
+        with self.assertRaises(ValueError):
+            record.save()
+
+    def test_validate_acquisition_options(self):
+        """The system should assign INVALID status to any record with an
+        unrecognized acquisition method."""
+        choices = Record.ACQ_METHODS_LIST
+        # Ensure that the record's status is not INVALID, so that the status
+        # we observe later will signify a meaningful change.
+        record = Record.objects.filter(status=Record.UNSENT).first()
+
+        # These should all work. If they don't, save() will throw an error and
+        # the test will fail.
+        for choice in choices:
+            record.acq_method = choice
+            record.save()
+
+        bad_choice = "noooope"
+        assert bad_choice not in choices
+
+        record.acq_method = bad_choice
+        record.save()
+        self.assertEqual(record.status, Record.INVALID)
+
+        # Trying again should not change the status.
+        record.acq_method = bad_choice
+        record.save()
+        self.assertEqual(record.status, Record.INVALID)
+
+    def test_cannot_set_sent_to_unsent(self):
+        record = Record.objects.first()
+        record.status = Record.SENT
+        record.save()
+
+        record.status = Record.UNSENT
+        with self.assertRaises(ValueError):
+            record.save()
+
+    def test_cannot_set_sent_to_invalid(self):
+        record = Record.objects.first()
+        record.status = Record.SENT
+        record.save()
+
+        record.status = Record.INVALID
+        with self.assertRaises(ValueError):
+            record.save()
+
+
 class UnsentRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']
 

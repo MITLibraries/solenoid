@@ -1,7 +1,6 @@
 from datetime import date
 import logging
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -20,26 +19,30 @@ class Record(models.Model):
     class Meta:
         ordering = ['dlc', 'last_name']
 
+    ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
+    ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV_ACCEPTED"
     ACQ_METHODS = (
-        (0, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'),
-        # (1, FPV)
+        (ACQ_MANUSCRIPT, ACQ_MANUSCRIPT),
+        (ACQ_FPV, ACQ_FPV),
     )
+    ACQ_METHODS_LIST = [tuple[0] for tuple in ACQ_METHODS]
 
     UNSENT = 'Unsent'
     SENT = 'Sent'
     INVALID = 'Invalid'
     STATUS_CHOICES = (
-        (0, UNSENT),
-        (1, SENT),
-        (2, INVALID),
+        (UNSENT, UNSENT),
+        (SENT, SENT),
+        (INVALID, INVALID),
     )
+    STATUS_CHOICES_LIST = [tuple[0] for tuple in STATUS_CHOICES]
 
     dlc = models.CharField(max_length=100)
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=40)
     publisher_name = models.CharField(max_length=50)
-    acq_method = models.IntegerField(choices=ACQ_METHODS)
+    acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
     citation = models.TextField()
     status = models.CharField(default=UNSENT,
         choices=STATUS_CHOICES, max_length=7)
@@ -57,14 +60,25 @@ class Record(models.Model):
     # issue = models.CharField(max_length=3, blank=True, null=True)
     # year_published = models.DateField()
 
+    def save(self, *args, **kwargs):
+        if self.acq_method not in self.ACQ_METHODS_LIST:
+            self.status = self.INVALID
+        return super(Record, self).save(*args, **kwargs)
+
 
 @receiver(pre_save, sender=Record)
 def verify_status(sender, instance, **kwargs):
     """Make sure that any status changes are valid. If so, update the
     status_timestamp."""
+    if instance.status not in instance.STATUS_CHOICES_LIST:
+        logger.warning("Attempt to set an unrecognized record status "
+            "{value}".format(value=instance.status))
+        raise ValueError("{value} is not a permissible status".format(
+            value=instance.status))
     # There are (from, to) tuples representing invalid status transitions
     # (e.g. you may not go from SENT to UNSENT).
-    invalid_changes = ((1, 0), (1, 2))
+    invalid_changes = [(Record.SENT, Record.UNSENT),
+                       (Record.SENT, Record.INVALID)]
 
     try:
         original = Record.objects.get(pk=instance.pk)
@@ -75,6 +89,6 @@ def verify_status(sender, instance, **kwargs):
             if (original.status, instance.status) in invalid_changes:
                 logger.warning("Attempt make an invalid status change from "
                     "{x} to {y}".format(x=original.status, y=instance.status))
-                raise ValidationError("That status change is not allowed.")
+                raise ValueError("That status change is not allowed.")
             else:
                 instance.status_timestamp = date.today()
