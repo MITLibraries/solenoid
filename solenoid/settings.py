@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'solenoid.records',
+    'solenoid.emails',
 )
 
 MIDDLEWARE_CLASSES = (

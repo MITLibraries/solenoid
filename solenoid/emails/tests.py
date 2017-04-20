@@ -18,7 +18,9 @@ class EmailCreatorTestCase(TestCase):
 
 
     def test_posting_to_create_view_returns_email_eval(self):
-        assert False
+        c = Client()
+        response = c.post(reverse('emails:create'), {'records': ['1']})
+        self.assertRedirects(response, reverse('emails:evaluate'))
 
 
     def test_email_created_for_each_professor(self):
