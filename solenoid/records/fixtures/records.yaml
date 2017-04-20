@@ -1,8 +1,36 @@
 # The test suite uses this data! Use caution in altering it.
+# Note also that order is important; objects with foreign-key relations need
+# to be created after their related objects.
+
+- model: people.Liaison
+  pk: 1
+  fields:
+    first_name: Judith
+    last_name: Krug
+    email_address: krug@example.com
+
+- model: people.DLC
+  pk: 1
+  fields:
+    name: Physics Department
+    liaison: 1
+
+- model: people.DLC
+  pk: 2
+  fields:
+    name: Brain and Cognitive Sciences Department
+    liaison: 1
+
+- model: people.DLC
+  pk: 3
+  fields:
+    name: Electrical Engineering and Computer Science Department
+    liaison: 1
+
 - model: people.Author
   pk: 1
   fields:
-    dlc: Physics Department
+    dlc: 1
     email: fermi@example.com
     first_name: Enrico
     last_name: Fermi
@@ -11,7 +39,7 @@
 - model: people.Author
   pk: 2
   fields:
-    dlc: Brain and Cognitive Sciences Department
+    dlc: 2
     email: susumu@example.com
     first_name: Susumu
     last_name: Tonegawa
@@ -20,7 +48,7 @@
 - model: people.Author
   pk: 3
   fields:
-    dlc: Electrical Engineering and Computer Science Department
+    dlc: 3
     email: is_a@example.com
     first_name: Barbara
     last_name: Liskov

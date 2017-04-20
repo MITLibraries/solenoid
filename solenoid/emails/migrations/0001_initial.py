@@ -7,18 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('people', '0002_copy_people_from_records'),
+        ('people', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='EmailMessage',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
                 ('original_text', models.TextField()),
-                ('latest_text', models.TextField(null=True, blank=True)),
-                ('date_sent', models.DateField(null=True, blank=True)),
+                ('latest_text', models.TextField(blank=True, null=True)),
+                ('date_sent', models.DateField(blank=True, null=True)),
                 ('author', models.ForeignKey(to='people.Author')),
+                ('liaison', models.ForeignKey(to='people.Liaison')),
             ],
             options={
                 'verbose_name_plural': 'Emails',

@@ -1,6 +1,6 @@
 from django.db import models
 
-from solenoid.people.models import Author
+from solenoid.people.models import Author, Liaison
 
 class EmailMessage(models.Model):
 
@@ -18,3 +18,4 @@ class EmailMessage(models.Model):
     latest_text = models.TextField(blank=True, null=True)
     date_sent = models.DateField(blank=True, null=True)
     author = models.ForeignKey(Author)
+    liaison = models.ForeignKey(Liaison)
