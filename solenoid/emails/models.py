@@ -42,6 +42,8 @@ class EmailMessage(models.Model):
                     # If the publisher doesn't have a corresponding special message,
                     # that's fine; just keep going.
                     pass
+                if record.fpv_message:
+                    citations += record.fpv_message
                 citations += '</p>'
         return citations
 

@@ -134,21 +134,26 @@ class EmailCreatorTestCase(TestCase):
 
 
     def test_fpv_accepted_message_included(self):
-        """The Recruit from Author – FPV Accepted message is included if that is
+        """The Recruit from Author - FPV Accepted message is included if that is
         the recruitment strategy."""
-        assert False
+        # Record 4 should have an fpv message; 3 does not
+        records = Record.objects.filter(pk__in=[3, 4])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        self.assertIn(Record.objects.get(pk=4).fpv_message, email.original_text)
 
 
     def test_fpv_accepted_message_excluded(self):
-        """The Recruit from Author – FPV Accepted message is NOT included if
+        """The Recruit from Author - FPV Accepted message is NOT included if
         that ISN'T the recruitment strategy."""
-        assert False
+        record = Record.objects.get(pk=3)
+        _email_create_one(record.author, [record])
+        email = EmailMessage.objects.latest('pk')
+        msg = 'allows authors to download and deposit the final published ' \
+              'article, but does not allow the Libraries to perform the ' \
+              'downloading'
+        self.assertNotIn(msg, email.original_text)
 
-
-    def test_fpv_accepted_message_has_correct_count(self):
-        """If the email has records subject to both policies, the message is
-        included the correct number of times."""
-        assert False
 
 # Do we actually need to display the email to scholcomm, or just send to subject liaisons??
 

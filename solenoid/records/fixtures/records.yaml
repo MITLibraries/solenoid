@@ -93,7 +93,7 @@
   fields:
     author: 3
     publisher_name: ACM
-    acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
+    acq_method: RECRUIT_FROM_AUTHOR_MANUSCRIPT
     citation: Liskov, Barbara. The Design of the Venus Operating System. Comm. of the ACM 15, 3 (March 1972).
     status: 'Unsent'
     doi: 10.1248.65/3167862

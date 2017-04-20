@@ -1,5 +1,6 @@
 from datetime import date
 import logging
+from string import Template
 
 from django.db import models
 from django.db.models.signals import pre_save
@@ -56,6 +57,20 @@ class Record(models.Model):
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format(
             self=self)
+
+    @property
+    def fpv_message(self):
+        msg = Template('<b>[Note: $publisher_name allows authors to download '
+                       'and deposit the final published article, but does not '
+                       'allow the Libraries to perform the downloading. If you '
+                       'follow this link, download the article, and attach it '
+                       'to an email reply, we can deposit it on your behalf: '
+                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>') # noqa
+        if self.acq_method == self.ACQ_FPV:
+            return msg.substitute(publisher_name=self.publisher_name,
+                                  doi=self.doi)
+        else:
+            return None
 
 
 @receiver(pre_save, sender=Record)
