@@ -1,6 +1,25 @@
-from django.test import TestCase
+from unittest.mock import patch
+
+from django.core.urlresolvers import reverse
+from django.test import TestCase, Client
 
 class EmailCreatorTestCase(TestCase):
+    fixtures = ['records.yaml']
+
+    @patch('solenoid.emails.views.email_bulk_create')
+    def test_posting_to_create_view_calls_creator(self, mock_bulk_create):
+        c = Client()
+        c.post(reverse('emails:create'), {'records': ['1']})
+        mock_bulk_create.assert_called_once_with(['1'])
+
+        mock_bulk_create.reset_mock()
+        c.post(reverse('emails:create'), {'records': ['1', '2']})
+        mock_bulk_create.assert_called_once_with(['1', '2'])
+
+
+    def test_posting_to_create_view_returns_email_eval(self):
+        assert False
+
 
     def test_email_created_for_each_professor(self):
         """Given a set of records, must produce an email for each professor
