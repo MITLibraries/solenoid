@@ -98,16 +98,39 @@ class EmailCreatorTestCase(TestCase):
         assert Record.objects.get(pk=2).citation not in email.original_text
 
 
+    @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
+                {'ACM-Special Message': 'A very special message'})
     def test_publisher_special_message_included(self):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
-        assert False
+        records = Record.objects.filter(pk__in=[3, 4, 5])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        self.assertEqual(email.original_text.count('A very special message'), 1)
 
 
+    @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
+                {'Scholastic': 'A very special message',
+                 'Wiley': 'An equally special message'})
     def test_irrelevant_publisher_special_message_excluded(self):
         """The email text does not include special messages for publishers not
         in its record set."""
-        assert False
+        records = Record.objects.filter(pk__in=[3, 4, 5])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        self.assertNotIn('A very special message', email.original_text)
+        self.assertNotIn('An equally special message', email.original_text)
+
+
+    def test_html_rendered_as_html(self):
+        """Make sure that we see <p>, not &lt;p&gt;, and so forth, in our
+        constructed email text. (If we put {{ citations }} into the email
+        template without the |safe filter, we'll end up with escaped HTML,
+        which is no good for our purposes.)"""
+        records = Record.objects.filter(pk__in=[3, 4, 5])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        self.assertNotIn('&lt;p&gt;', email.original_text)
 
 
     def test_fpv_accepted_message_included(self):

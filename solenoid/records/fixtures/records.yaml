@@ -102,7 +102,7 @@
   pk: 4
   fields:
     author: 3
-    publisher_name: ACM
+    publisher_name: ACM-Special Message
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Liskov, Barbara. Data Abstraction and Hierarchy. Addendum to the Proceedings of OOPSLA ’87, SIGPLAN Notices 23, 5 (May 1988), 17-34
     status: 'Unsent'
