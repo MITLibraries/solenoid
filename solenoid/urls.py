@@ -17,5 +17,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^records/', include('solenoid.records.urls', namespace='records'))
+    url(r'^records/', include('solenoid.records.urls', namespace='records')),
+    url(r'^emails/', include('solenoid.emails.urls', namespace='emails')),
 ]

@@ -6,11 +6,12 @@
   {% endfor %}
 {% endif %}
 
-<form>
+<form method="POST" action="{% url 'emails:create' %}">
+  {% csrf_token %}
   {% for record in object_list  %}
     <div class="checkbox dlc-{{ record.dlc|slugify }}">
       <label>
-        <input type="checkbox"> <strong>{{ record.dlc }}/ {{ record.last_name}}</strong>
+        <input type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.dlc }}/ {{ record.last_name}}</strong>
         <br>
         {{ record.citation }}
         <hr>
