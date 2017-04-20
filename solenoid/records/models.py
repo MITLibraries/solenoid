@@ -46,18 +46,7 @@ class Record(models.Model):
     status = models.CharField(default=UNSENT,
         choices=STATUS_CHOICES, max_length=7)
     status_timestamp = models.DateField(default=date.today)
-    paper_id = models.CharField(max_length=10, help_text="This is the "
-        "Publication ID field from Elements; it is supposed to be unique but "
-        "we will not be relying on it as a primary key here.")
-
-    # # I don't need ANY of these if I can get full citation.
-    # title = models.TextField()
-    # journal = models.TextField()
-    # # In theory the following fields should be integers, but in practice,
-    # # let's not trust unfamiliar metadata
-    # volume = models.CharField(max_length=6, blank=True, null=True)
-    # issue = models.CharField(max_length=3, blank=True, null=True)
-    # year_published = models.DateField()
+    doi = models.CharField(max_length=30)
 
     def save(self, *args, **kwargs):
         if self.acq_method not in self.ACQ_METHODS_LIST:
