@@ -7,7 +7,10 @@ class Email(models.Model):
         verbose_name_plural = "Emails"
 
     def __str__(self):
-        pass
+        if self.date_sent:
+            return "To {self.to_email} (sent {self.date_sent})".format(self=self)
+        else:
+            return "To {self.to_email} (unsent)".format(self=self)
 
     original_text = models.TextField()
     latest_text = models.TextField(blank=True, null=True)

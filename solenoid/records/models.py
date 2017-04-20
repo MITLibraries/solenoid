@@ -5,6 +5,8 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+from solenoid.people.models import Author
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +19,7 @@ class Record(models.Model):
           already solicited the author for this citation)."""
 
     class Meta:
-        ordering = ['dlc', 'last_name']
+        ordering = ['author__dlc', 'author__last_name']
 
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
     ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV_ACCEPTED"
@@ -37,10 +39,7 @@ class Record(models.Model):
     )
     STATUS_CHOICES_LIST = [tuple[0] for tuple in STATUS_CHOICES]
 
-    dlc = models.CharField(max_length=100)
-    email = models.EmailField(help_text="Author email address")
-    first_name = models.CharField(max_length=20)
-    last_name = models.CharField(max_length=40)
+    author = models.ForeignKey(Author)
     publisher_name = models.CharField(max_length=50)
     acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
     citation = models.TextField()
