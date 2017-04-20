@@ -42,6 +42,20 @@ class EmailCreatorTestCase(TestCase):
         assert 3 in author_pks
         self.assertEqual(len(author_pks), 2)
 
+    @patch('solenoid.emails.views._email_create_one')
+    def test_create_many_passes_correct_record_set(self, mock_create_one):
+        """Given a set of records, the email bulk creator function must pass
+        the expected records for each author to the single email creation
+        function."""
+        _email_create_many(['1', '3', '4'])
+
+        # This gives us a dict with {pk of author: [list of pks of records]}
+        # for ease of testing.
+        arg_sets = {call[0][0].pk: [record.pk for record in call[0][1]]
+                    for call in mock_create_one.call_args_list}
+        self.assertEqual(arg_sets[1], [1])
+        self.assertEqual(arg_sets[3], [3, 4])
+
 
     def test_email_to_field(self):
         """Generated emails must be to: the relevant liaison."""
