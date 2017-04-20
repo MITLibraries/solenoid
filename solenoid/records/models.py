@@ -94,7 +94,7 @@ def verify_status(sender, instance, **kwargs):
     else:
         if not original.status == instance.status:
             if (original.status, instance.status) in invalid_changes:
-                logger.warning("Attempt make an invalid status change from "
+                logger.warning("Tried to make an invalid status change from "
                     "{x} to {y}".format(x=original.status, y=instance.status))
                 raise ValueError("That status change is not allowed.")
             else:
