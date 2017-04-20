@@ -1,6 +1,8 @@
 from django.db import models
 
-class Email(models.Model):
+from solenoid.people.models import Author
+
+class EmailMessage(models.Model):
 
     class Meta:
         verbose_name = "Email"
@@ -15,4 +17,4 @@ class Email(models.Model):
     original_text = models.TextField()
     latest_text = models.TextField(blank=True, null=True)
     date_sent = models.DateField(blank=True, null=True)
-    to_email = models.EmailField()
+    author = models.ForeignKey(Author)
