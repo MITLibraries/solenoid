@@ -2,6 +2,7 @@ from django.db import models
 from django.template.loader import render_to_string
 
 from solenoid.people.models import Author, Liaison
+from solenoid.records.models import Record
 
 from .helpers import SPECIAL_MESSAGES
 
@@ -30,17 +31,18 @@ class EmailMessage(models.Model):
     def _create_citations(cls, record_list):
         citations = ''
         for record in record_list:
-            citations += '<p>'
-            citations += record.citation
-            try:
-                msg_template = SPECIAL_MESSAGES[record.publisher_name]
-                msg = msg_template.format(doi=record.doi)
-                citations += '<b>[{msg}]</b>'.format(msg=msg)
-            except KeyError:
-                # If the publisher doesn't have a corresponding special message,
-                # that's fine; just keep going.
-                pass
-            citations += '</p>'
+            if record.status == Record.UNSENT:
+                citations += '<p>'
+                citations += record.citation
+                try:
+                    msg_template = SPECIAL_MESSAGES[record.publisher_name]
+                    msg = msg_template.format(doi=record.doi)
+                    citations += '<b>[{msg}]</b>'.format(msg=msg)
+                except KeyError:
+                    # If the publisher doesn't have a corresponding special message,
+                    # that's fine; just keep going.
+                    pass
+                citations += '</p>'
         return citations
 
     @classmethod

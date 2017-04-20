@@ -84,9 +84,18 @@ class EmailCreatorTestCase(TestCase):
         """If the input set contains invalid records, they do not make it
         into the EmailMessage."""
         records = Record.objects.filter(pk__in=[3, 4, 5])
-        _email_create_one(records[0].author, [records])
+        _email_create_one(records[0].author, records)
         email = EmailMessage.objects.latest('pk')
         assert Record.objects.get(pk=5).citation not in email.original_text
+
+
+    def test_already_sent_records_do_not_get_emailed(self):
+        """If the input set contains invalid records, they do not make it
+        into the EmailMessage."""
+        records = Record.objects.filter(pk__in=[2, 3, 4, 5])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        assert Record.objects.get(pk=2).citation not in email.original_text
 
 
     def test_publisher_special_message_included(self):
