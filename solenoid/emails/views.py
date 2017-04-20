@@ -3,10 +3,29 @@ from django.http import HttpResponseRedirect
 from django.views.generic.base import View
 from django.views.generic.list import ListView
 
-from .models import Email
+from solenoid.records.models import Record
 
-def email_bulk_create(pk_list):
+from .models import EmailMessage
+
+
+def _email_create_one(author, record_list):
     pass
+
+def _email_create_many(pk_list):
+    """Takes a list of pks of Records and produces Emails which cover all those
+    records."""
+    # This will be a dict whose keys are authors, and whose values are all
+    # records in the pk_list associated with that author.
+    email_contexts = {}
+    for pk in pk_list:
+        record = Record.objects.get(pk=pk)
+        if record.author in email_contexts:
+            email_contexts[record.author].append(record)
+        else:
+            email_contexts[record.author] = [record]
+
+    for author, record_list in email_contexts.items():
+        _email_create_one(author, record_list)
 
 
 class EmailCreate(View):
@@ -14,8 +33,8 @@ class EmailCreate(View):
 
     def post(self, request, *args, **kwargs):
         pk_list = request.POST.getlist('records')
-        email_bulk_create(pk_list)
+        _email_create_many(pk_list)
         return HttpResponseRedirect(reverse('emails:evaluate'))
 
 class EmailEvaluate(ListView):
-    queryset = Email.objects.filter(date_sent__isnull=True)
+    queryset = EmailMessage.objects.filter(date_sent__isnull=True)

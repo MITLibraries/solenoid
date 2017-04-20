@@ -3,18 +3,20 @@ from unittest.mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
+from .views import _email_create_many
+
 class EmailCreatorTestCase(TestCase):
     fixtures = ['records.yaml']
 
-    @patch('solenoid.emails.views.email_bulk_create')
-    def test_posting_to_create_view_calls_creator(self, mock_bulk_create):
+    @patch('solenoid.emails.views._email_create_many')
+    def test_posting_to_create_view_calls_creator(self, mock_create_many):
         c = Client()
         c.post(reverse('emails:create'), {'records': ['1']})
-        mock_bulk_create.assert_called_once_with(['1'])
+        mock_create_many.assert_called_once_with(['1'])
 
-        mock_bulk_create.reset_mock()
+        mock_create_many.reset_mock()
         c.post(reverse('emails:create'), {'records': ['1', '2']})
-        mock_bulk_create.assert_called_once_with(['1', '2'])
+        mock_create_many.assert_called_once_with(['1', '2'])
 
 
     def test_posting_to_create_view_returns_email_eval(self):
@@ -23,10 +25,22 @@ class EmailCreatorTestCase(TestCase):
         self.assertRedirects(response, reverse('emails:evaluate'))
 
 
-    def test_email_created_for_each_professor(self):
-        """Given a set of records, must produce an email for each professor
+    @patch('solenoid.emails.views._email_create_one')
+    def test_email_created_for_each_professor(self, mock_create_one):
+        """Given a set of records, the email bulk creator function must call the
+        single email creation function exactly once for each professor
         associated with any record."""
-        assert False
+        # These 3 records are associated with two authors: Fermi (pk=1) an
+        # Liskov (pk=3; authored two of these records). Therefore we expect 
+        # _email_create_one to be called once, and only once, for each of these
+        # authors, and for no one else.
+        _email_create_many(['1', '3', '4'])
+        # See https://docs.python.org/3/library/unittest.mock.html#calls-as-tuples
+        # for why this introspection syntax works.
+        author_pks = [call[0][0].pk for call in mock_create_one.call_args_list]
+        assert 1 in author_pks
+        assert 3 in author_pks
+        self.assertEqual(len(author_pks), 2)
 
 
     def test_email_to_field(self):
@@ -41,7 +55,7 @@ class EmailCreatorTestCase(TestCase):
 
     def test_invalid_records_do_not_get_emailed(self):
         """If the input set contains invalid records, they do not make it
-        into the email."""
+        into the EmailMessage."""
         assert False
 
 

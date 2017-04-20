@@ -10,9 +10,9 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return "To {self.to_email} (sent {self.date_sent})".format(self=self)
+            return "To {self.author} (sent {self.date_sent})".format(self=self)
         else:
-            return "To {self.to_email} (unsent)".format(self=self)
+            return "To {self.author} (unsent)".format(self=self)
 
     original_text = models.TextField()
     latest_text = models.TextField(blank=True, null=True)

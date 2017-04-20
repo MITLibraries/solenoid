@@ -1,3 +1,4 @@
+# The test suite uses this data! Use caution in altering it.
 - model: people.Author
   pk: 1
   fields:
