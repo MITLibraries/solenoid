@@ -73,13 +73,20 @@ class EmailCreatorTestCase(TestCase):
 
     def test_email_has_all_expected_records(self):
         """The email text includes all expected records."""
-        assert False
+        records = Record.objects.filter(pk__in=[3, 4, 5])
+        _email_create_one(records[0].author, records)
+        email = EmailMessage.objects.latest('pk')
+        assert Record.objects.get(pk=3).citation in email.original_text
+        assert Record.objects.get(pk=4).citation in email.original_text
 
 
     def test_invalid_records_do_not_get_emailed(self):
         """If the input set contains invalid records, they do not make it
         into the EmailMessage."""
-        assert False
+        records = Record.objects.filter(pk__in=[3, 4, 5])
+        _email_create_one(records[0].author, [records])
+        email = EmailMessage.objects.latest('pk')
+        assert Record.objects.get(pk=5).citation not in email.original_text
 
 
     def test_publisher_special_message_included(self):
@@ -112,3 +119,12 @@ class EmailCreatorTestCase(TestCase):
         assert False
 
 # Do we actually need to display the email to scholcomm, or just send to subject liaisons??
+
+# This will have to integrate with email sending at some point so we may want to
+# start testing outboxes. We don't want to use something like django-templated-email,
+# though, because scholcomm librarians might edit before sending....
+# ...unless they don't? If only liaisons edit, life is easier. Let's not build
+# an interface until we have that question answered.
+# https://pypi.python.org/pypi/html2text - might be of use if we need to
+# generate multipart.
+# https://github.com/django-ckeditor/django-ckeditor - uses HTML as encoding.

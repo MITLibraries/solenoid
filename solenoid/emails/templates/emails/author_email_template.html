@@ -1,0 +1,50 @@
+To: {{ author.email }}<br>
+Subject: Paper Request for MIT Open Access Policy<br>
+
+<p>
+    Dear Prof. {{ author.last_name }},
+</p>
+
+<p>
+    The MIT Faculty Open Access Policy (<a href="https://libraries.mit.edu/oapolicy">https://libraries.mit.edu/oapolicy</a>) was established in March 2009 by the faculty to allow open dissemination of their research articles.  The Libraries have been asked by the Faculty Committee on the Library System to assist in implementing this policy using DSpace@MIT.
+</p>
+
+<p>
+    We would very much appreciate it if you would send us your final submitted manuscript &mdash; not the published PDF, which we are normally not allowed to post &mdash; of the paper(s) listed below.    
+</p>
+
+<p>
+   You can submit a paper as an attachment by email reply, or use the web form (<a href="https://libraries.mit.edu/oasubmit">https://libraries.mit.edu/oasubmit</a>) to upload papers.  We will put the papers in DSpace@MIT, in the Open Access Articles collection (<a href="https://dspace.mit.edu/handle/1721.1/49433">https://dspace.mit.edu/handle/1721.1/49433</a>) with a full citation and link to the published version. 
+</p>
+
+{{ citations }}
+
+<p>
+    We are only requesting papers from authors when we cannot obtain them any other way, so you will not necessarily see all of your publications in this list.  Whenever the publisher permits and/or the appropriate version is available, we take papers from publishers' websites, from the MIT web, and from other repositories, such as PubMed Central or arXiv, to make the process more convenient for authors.  We also track publisher responses to the Policy and adjust our practices accordingly.
+</p>
+
+<p>
+    To see papers that you have contributed under the Policy, go here: <a href="https://dspace.mit.edu/handle/1721.1/49433/browse?value={{ author.last_name|urlencode }}%2C+{{ author.first_name|urlencode }}&type=author">https://dspace.mit.edu/handle/1721.1/49433/browse?value={{ author.last_name|urlencode }}%2C+{{ author.first_name|urlencode }}&amp;type=author</a>
+</p>
+
+<p>
+    To view download statistics for your papers, log in here: <a href="https://oastats.mit.edu/">https://oastats.mit.edu/</a>
+</p>
+
+<p>
+    If you have any questions at all about this request, or about the MIT Faculty Open Access Policy, please don't hesitate to contact me.
+</p>
+
+{{ liaison.first_name }}
+
+<p>
+    For more information:
+</p>
+<ul>
+    <li>FAQ on the Policy:
+        <a href="https://libraries.mit.edu/oa-faq">https://libraries.mit.edu/oa-faq</a>
+    </li>
+    <li>Publisher Policies:
+        <a href="https://libraries.mit.edu/publisherpolicies">https://libraries.mit.edu/publisherpolicies</a>
+    </li>
+</ul>

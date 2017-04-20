@@ -9,8 +9,9 @@ from .models import EmailMessage
 
 
 def _email_create_one(author, record_list):
+    text = EmailMessage.create_original_text(author, record_list)
     EmailMessage.objects.create(
-        original_text='beep',
+        original_text=text,
         author=author,
         liaison=author.dlc.liaison
     )

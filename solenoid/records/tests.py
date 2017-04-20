@@ -90,6 +90,10 @@ class RecordModelTest(TestCase):
         with self.assertRaises(ValueError):
             record.save()
 
+    def test_doi_set_correctly(self):
+        # This should end up in csv-ingest tests ultimately; dropping it here
+        # so as not to forget I need to get DOI from CSV.
+        assert False
 
 class UnsentRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']

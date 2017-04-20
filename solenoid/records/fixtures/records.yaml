@@ -107,3 +107,13 @@
     citation: Liskov, Barbara. Data Abstraction and Hierarchy. Addendum to the Proceedings of OOPSLA ’87, SIGPLAN Notices 23, 5 (May 1988), 17-34
     status: 'Unsent'
     paper_id: 3167846
+
+- model: records.Record
+  pk: 5
+  fields:
+    author: 3
+    publisher_name: Scholastic
+    acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
+    citation: For some reason this is garbage data and we shouldn't email about it.
+    status: 'Invalid'
+    paper_id: 417852
