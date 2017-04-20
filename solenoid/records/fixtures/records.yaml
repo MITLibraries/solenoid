@@ -9,6 +9,20 @@
     last_name: Krug
     email_address: krug@example.com
 
+- model: people.Liaison
+  pk: 2
+  fields:
+    first_name: Charles Ammi
+    last_name: Cutter
+    email_address: cutter@example.com
+
+- model: people.Liaison
+  pk: 3
+  fields:
+    first_name: Suzanne
+    last_name: Briet
+    email_address: antelope@example.com
+
 - model: people.DLC
   pk: 1
   fields:
@@ -19,13 +33,13 @@
   pk: 2
   fields:
     name: Brain and Cognitive Sciences Department
-    liaison: 1
+    liaison: 2
 
 - model: people.DLC
   pk: 3
   fields:
     name: Electrical Engineering and Computer Science Department
-    liaison: 1
+    liaison: 3
 
 - model: people.Author
   pk: 1

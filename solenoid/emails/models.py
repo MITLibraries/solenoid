@@ -18,4 +18,7 @@ class EmailMessage(models.Model):
     latest_text = models.TextField(blank=True, null=True)
     date_sent = models.DateField(blank=True, null=True)
     author = models.ForeignKey(Author)
+    # Although we can derive Liaison from Author via DLC, we're going to
+    # record it here because liaisons can change over time; we want to record
+    # the actual liaison to whom the email was sent.
     liaison = models.ForeignKey(Liaison)

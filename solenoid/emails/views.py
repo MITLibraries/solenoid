@@ -9,7 +9,12 @@ from .models import EmailMessage
 
 
 def _email_create_one(author, record_list):
-    pass
+    EmailMessage.objects.create(
+        original_text='beep',
+        author=author,
+        liaison=author.dlc.liaison
+    )
+
 
 def _email_create_many(pk_list):
     """Takes a list of pks of Records and produces Emails which cover all those

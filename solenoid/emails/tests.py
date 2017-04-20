@@ -3,7 +3,10 @@ from unittest.mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from .views import _email_create_many
+from solenoid.records.models import Record
+
+from .models import EmailMessage
+from .views import _email_create_many, _email_create_one
 
 class EmailCreatorTestCase(TestCase):
     fixtures = ['records.yaml']
@@ -57,9 +60,15 @@ class EmailCreatorTestCase(TestCase):
         self.assertEqual(arg_sets[3], [3, 4])
 
 
-    def test_email_to_field(self):
-        """Generated emails must be to: the relevant liaison."""
-        assert False
+    def test_email_recipient(self):
+        """The email created by _email_create_one must be to: the relevant
+        liaison."""
+        # Expected to be a paper by Fermi, who belongs to Physics, whose liaison
+        # is Krug.
+        record = Record.objects.get(pk=1)
+        _email_create_one(record.author, [record])
+        email = EmailMessage.objects.latest('pk')
+        self.assertEqual(email.liaison.pk, 1)
 
 
     def test_email_has_all_expected_records(self):
