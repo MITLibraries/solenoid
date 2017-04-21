@@ -1,5 +1,6 @@
 import logging
 
+from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 
 from solenoid.people.models import Author
@@ -30,3 +31,8 @@ class InvalidList(ListView):
 
     def get_queryset(self):
         return Record.objects.filter(status=Record.INVALID)
+
+
+class Import(TemplateView):
+    template_name = 'records/import.html'
+    http_method_names = ['get', 'post']

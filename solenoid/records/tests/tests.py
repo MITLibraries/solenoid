@@ -200,3 +200,8 @@ class ImportViewTest(TestCase):
 
     def test_fpv_records_without_doi_marked_invalid(self):
         assert False
+
+    def test_encodings_handled_properly(self):
+        """We should be able to roll with either cp1250 (Windows probable
+        default) or utf-8."""
+        assert False

@@ -55,14 +55,14 @@ class Record(models.Model):
         return super(Record, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format(
+        return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
             self=self)
 
     @property
     def fpv_message(self):
         msg = Template('<b>[Note: $publisher_name allows authors to download '
                        'and deposit the final published article, but does not '
-                       'allow the Libraries to perform the downloading. If you '
+                       'allow the Libraries to perform the downloading. If you ' # noqa
                        'follow this link, download the article, and attach it '
                        'to an email reply, we can deposit it on your behalf: '
                        '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>') # noqa
