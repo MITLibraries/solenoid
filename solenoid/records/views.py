@@ -1,9 +1,12 @@
 import logging
 
-from django.views.generic import TemplateView
+from django.core.urlresolvers import reverse_lazy
+from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from solenoid.people.models import Author
+
+from .forms import ImportForm
 from .models import Record
 
 logger = logging.getLogger(__name__)
@@ -33,6 +36,7 @@ class InvalidList(ListView):
         return Record.objects.filter(status=Record.INVALID)
 
 
-class Import(TemplateView):
+class Import(FormView):
     template_name = 'records/import.html'
-    http_method_names = ['get', 'post']
+    form_class = ImportForm
+    success_url = reverse_lazy('records:unsent_list')

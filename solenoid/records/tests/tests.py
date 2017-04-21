@@ -1,6 +1,10 @@
+import os
+
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, resolve
 from django.test import TestCase, Client
 
+from ..forms import _validate_csv
 from ..models import Record
 from ..views import UnsentList, InvalidList
 
@@ -144,17 +148,34 @@ class ImportViewTest(TestCase):
 
     def setUp(self):
         self.url = reverse('records:import')
+        self.client = Client()
 
     def test_import_records_url_exists(self):
         resolve(self.url)
 
     def test_import_records_view_renders(self):
-        c = Client()
         with self.assertTemplateUsed('records/import.html'):
-            c.get(self.url)
+            self.client.get(self.url)
+
+    def _post_invalid(self, testfile):
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        with self.assertRaises(ValidationError):
+            filename = os.path.join(basedir, 'csv', testfile)
+            with open(filename, 'rb') as bad_csv:
+                _validate_csv(bad_csv)
 
     def test_invalid_csv_rejected(self):
-        assert False
+        # Inadmissible encoding
+        self._post_invalid('bad_encoding.csv')
+
+        # Headers don't match data
+        self._post_invalid('invalid.csv')
+
+        # A required header is missing
+        self._post_invalid('missing_headers.csv')
+
+        # Seriously what even is this
+        self._post_invalid('this_is_a_cc0_kitten_pic_not_a_csv.jpeg')
 
     def test_author_set_when_present(self):
         assert False
