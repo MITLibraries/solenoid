@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/MITLibraries/solenoid.svg?branch=master)](https://travis-ci.org/MITLibraries/solenoid)
+[![Coverage Status](https://coveralls.io/repos/github/MITLibraries/solenoid/badge.svg?branch=master)](https://coveralls.io/github/MITLibraries/solenoid?branch=master)
+[![Code Climate](https://codeclimate.com/github/MITLibraries/solenoid/badges/gpa.svg)](https://codeclimate.com/github/MITLibraries/solenoid)
+
 # README
 
 The `system_architecture.xml` file is designed to be read by draw.io.
