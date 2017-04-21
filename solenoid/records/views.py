@@ -13,7 +13,8 @@ class UnsentList(ListView):
         context = super(UnsentList, self).get_context_data(**kwargs)
         context['page_title'] = 'Unsent Records'
         context['extension_template'] = 'records/_unsent_list.html'
-        context['dlcs'] = Author.objects.filter(record__in=self.get_queryset()).values_list('dlc', flat=True)
+        context['dlcs'] = Author.objects.filter(
+            record__in=self.get_queryset()).values_list('dlc', flat=True)
         return context
 
     def get_queryset(self):

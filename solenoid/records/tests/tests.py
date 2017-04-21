@@ -1,8 +1,8 @@
 from django.core.urlresolvers import reverse, resolve
 from django.test import TestCase, Client
 
-from .models import Record
-from .views import UnsentList, InvalidList
+from ..models import Record
+from ..views import UnsentList, InvalidList
 
 # ------ MODELS ------
 # Do I want to enforce choices on Record.dlc?
@@ -90,10 +90,6 @@ class RecordModelTest(TestCase):
         with self.assertRaises(ValueError):
             record.save()
 
-    def test_doi_set_correctly(self):
-        # This should end up in csv-ingest tests ultimately; dropping it here
-        # so as not to forget I need to get DOI from CSV.
-        assert False
 
 class UnsentRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']
@@ -140,3 +136,67 @@ class InvalidRecordsViewsTest(TestCase):
         self.assertEqual(
             set(InvalidList().get_queryset().values_list('pk')),
             set(Record.objects.filter(status=Record.INVALID).values_list('pk'))) # noqa
+
+
+class ImportViewTest(TestCase):
+    """Tests that make sure that the import view correctly verifies the
+    imported CSV file and sets record properties accordingly."""
+
+    def setUp(self):
+        self.url = reverse('records:import')
+
+    def test_import_records_url_exists(self):
+        resolve(self.url)
+
+    def test_import_records_view_renders(self):
+        c = Client()
+        with self.assertTemplateUsed('records/import.html'):
+            c.get(self.url)
+
+    def test_invalid_csv_rejected(self):
+        assert False
+
+    def test_author_set_when_present(self):
+        assert False
+
+    def test_records_without_authors_marked_invalid(self):
+        assert False
+
+    def test_publisher_name_set_when_present(self):
+        assert False
+
+    def test_records_without_publishers_marked_invalid(self):
+        assert False
+
+    def test_acq_method_set_when_present(self):
+        assert False
+
+    def test_records_without_acq_method_marked_invalid(self):
+        assert False
+
+    def test_records_with_unknown_acq_method_marked_invalid(self):
+        assert False
+
+    def test_citation_set_when_present(self):
+        assert False
+
+    def test_records_without_citation_marked_invalid(self):
+        assert False
+
+    def test_status_set_when_present(self):
+        assert False
+
+    def test_records_without_status_marked_invalid(self):
+        assert False
+
+    def test_records_unknown_status_marked_invalid(self):
+        assert False
+
+    def test_status_timestamp_set(self):
+        assert False
+
+    def test_doi_set_when_present(self):
+        assert False
+
+    def test_fpv_records_without_doi_marked_invalid(self):
+        assert False
