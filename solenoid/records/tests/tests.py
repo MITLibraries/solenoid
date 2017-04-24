@@ -187,8 +187,8 @@ class ImportViewTest(TestCase):
         self._post_csv('single_good_record.csv')
 
         record = Record.objects.latest('pk')
-        self.assertEqual(record.author.first_name, 'Dianne')
-        self.assertEqual(record.author.last_name, 'Newman')
+        self.assertEqual(record.author.first_name, 'Fake')
+        self.assertEqual(record.author.last_name, 'Author')
 
     def test_records_without_authors_rejected(self):
         assert False
