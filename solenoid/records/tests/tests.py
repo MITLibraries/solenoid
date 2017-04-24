@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, resolve
 from django.test import TestCase, Client
 
+from solenoid.people.models import DLC, Author
+
 from ..forms import _validate_csv
 from ..models import Record
 from ..views import UnsentList, InvalidList
@@ -196,6 +198,21 @@ class ImportViewTest(TestCase):
         self._post_csv('missing_mit_id.csv')
 
         self.assertEqual(orig_count, Record.objects.count())
+
+    def test_author_data_filled_in_where_possible(self):
+        dlc = DLC.objects.create(name='Some Department Or Other')
+        Author.objects.create(
+            first_name='Fake',
+            last_name='Author',
+            mit_id='123456789',
+            dlc=dlc,
+            email='fake@example.com'
+        )
+        self._post_csv('missing_author_first_name.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.author.first_name, 'Fake')
+        self.assertEqual(record.author.last_name, 'Author')
 
     def test_publisher_name_set_when_present(self):
         assert False
