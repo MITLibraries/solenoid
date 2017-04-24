@@ -229,13 +229,25 @@ class ImportViewTest(TestCase):
         self.assertEqual(orig_count, Record.objects.count())
 
     def test_acq_method_set_when_present(self):
-        assert False
+        self._post_csv('single_good_record.csv')
 
-    def test_records_without_acq_method_marked_invalid(self):
-        assert False
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
+
+    def test_records_without_acq_method_rejected(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_acq_method.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
 
     def test_records_with_unknown_acq_method_marked_invalid(self):
-        assert False
+        orig_count = Record.objects.count()
+
+        self._post_csv('bad_acq_method.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+        self.assertEqual(Record.objects.latest('pk').status, Record.INVALID)
 
     def test_citation_set_when_present(self):
         assert False
