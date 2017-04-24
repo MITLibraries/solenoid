@@ -191,7 +191,11 @@ class ImportViewTest(TestCase):
         self.assertEqual(record.author.last_name, 'Author')
 
     def test_records_without_authors_rejected(self):
-        assert False
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_mit_id.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
 
     def test_publisher_name_set_when_present(self):
         assert False
