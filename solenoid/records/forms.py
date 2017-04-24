@@ -15,7 +15,7 @@ def _validate_encoding(csv_file):
     encoding_info = chardet.detect(csv_file.read())
     encoding = encoding_info['encoding']
     if (not encoding or
-        encoding.lower() not in ['utf-8', 'utf-16', 'windows-1252']):
+            encoding.lower() not in ['utf-8', 'utf-16', 'windows-1252', 'ascii']): # noqa
         raise ValidationError("File encoding not recognized. Please "
             "make sure you have exported from Excel to CSV with UTF-8 "
             "encoding.")
@@ -41,7 +41,7 @@ def _validate_headers_existence(csv_file, encoding):
 
 def _validate_headers_content(csv_file, encoding):
     csv_file.seek(0)
-    headers = csv_file.readline().decode(encoding).split(',')
+    headers = csv_file.readline().decode(encoding).strip().split(',')
     if not all([x in headers for x in Headers.EXPECTED_HEADERS]):
         logger.warning("CSV file is missing one or more required columns")
         raise ValidationError("The CSV file must contain all of the following "

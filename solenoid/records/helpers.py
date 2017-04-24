@@ -7,6 +7,7 @@ class Headers(object):
     CITATION = 'Citation'
     PUBLISHER_NAME = 'Publisher-name'
     ACQ_METHOD = 'Method-of-Acquisition-calculated'
+    DLC = 'DLC'
 
     EXPECTED_HEADERS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
-                        PUBLISHER_NAME, ACQ_METHOD]
+                        PUBLISHER_NAME, ACQ_METHOD, DLC]

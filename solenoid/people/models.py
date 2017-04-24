@@ -25,7 +25,9 @@ class DLC(models.Model):
         return self.name
 
     name = models.CharField(max_length=100)
-    liaison = models.ForeignKey(Liaison)
+    # DLCs are created as needed during the CSV import process, and we don't
+    # have liaison information available at that time.
+    liaison = models.ForeignKey(Liaison, blank=True, null=True)
 
 
 class Author(models.Model):
@@ -35,10 +37,13 @@ class Author(models.Model):
         verbose_name_plural = "Authors"
 
     def __str__(self):
-        return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)
+        return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)  # noqa
 
+    # Authors may have blank DLCs in the CSV, but if that happens we're going
+    # to push it back to the Sympletic layer and request that the user fix it
+    # there.
     dlc = models.ForeignKey(DLC)
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=40)
-    mit_id = models.CharField(max_length=10) 
+    mit_id = models.CharField(max_length=10)

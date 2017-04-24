@@ -157,7 +157,7 @@ class ImportViewTest(TestCase):
         with self.assertTemplateUsed('records/import.html'):
             self.client.get(self.url)
 
-    def _post_invalid(self, testfile):
+    def _check_validation(self, testfile):
         basedir = os.path.dirname(os.path.abspath(__file__))
         with self.assertRaises(ValidationError):
             filename = os.path.join(basedir, 'csv', testfile)
@@ -166,19 +166,29 @@ class ImportViewTest(TestCase):
 
     def test_invalid_csv_rejected(self):
         # Inadmissible encoding
-        self._post_invalid('bad_encoding.csv')
+        self._check_validation('bad_encoding.csv')
 
         # Headers don't match data
-        self._post_invalid('invalid.csv')
+        self._check_validation('invalid.csv')
 
         # A required header is missing
-        self._post_invalid('missing_headers.csv')
+        self._check_validation('missing_headers.csv')
 
         # Seriously what even is this
-        self._post_invalid('this_is_a_cc0_kitten_pic_not_a_csv.jpeg')
+        self._check_validation('this_is_a_cc0_kitten_pic_not_a_csv.jpeg')
+
+    def _post_csv(self, testfile):
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(basedir, 'csv', testfile)
+        with open(filename, 'rb') as csv_file:
+            self.client.post(self.url, {'csv_file': csv_file})
 
     def test_author_set_when_present(self):
-        assert False
+        self._post_csv('single_good_record.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.author.first_name, 'Dianne')
+        self.assertEqual(record.author.last_name, 'Newman')
 
     def test_records_without_authors_marked_invalid(self):
         assert False
@@ -223,6 +233,26 @@ class ImportViewTest(TestCase):
         assert False
 
     def test_encodings_handled_properly(self):
-        """We should be able to roll with either cp1250 (Windows probable
-        default) or utf-8."""
+        """We should be able to roll with either cp1252 (Windows probable
+        default), ascii, or utf-8."""
+        assert False
+
+    def test_blank_DLC_handled_correctly(self):
+        assert False
+
+    def test_can_create_DLC_without_liaison(self):
+        """e.g. when creating from form upload. BUT correspondingly test that
+        if people try to email an author without a liaison, something logical
+        happens."""
+        assert False
+
+    def test_DLC_with_comma_handled_correctly(self):
+        """Earth, Atmospheric, and Planetary Sciences should not break our
+        CSV parsing."""
+        assert False
+
+    def test_emoji_handled_correctly(self):
+        """I definitely promise someone will use emoji in their paper titles
+        if they haven't already. Might be another decade before one shows up in
+        a DLC name, but preparedness is key."""
         assert False
