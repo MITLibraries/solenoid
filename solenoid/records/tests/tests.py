@@ -191,6 +191,7 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.author.first_name, 'Fake')
         self.assertEqual(record.author.last_name, 'Author')
+        record.delete()
 
     def test_records_without_authors_rejected(self):
         orig_count = Record.objects.count()
@@ -215,10 +216,17 @@ class ImportViewTest(TestCase):
         self.assertEqual(record.author.last_name, 'Author')
 
     def test_publisher_name_set_when_present(self):
-        assert False
+        self._post_csv('single_good_record.csv')
 
-    def test_records_without_publishers_marked_invalid(self):
-        assert False
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.publisher_name, 'Elsevier')
+
+    def test_records_without_publishers_rejected(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_publisher_name.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
 
     def test_acq_method_set_when_present(self):
         assert False
