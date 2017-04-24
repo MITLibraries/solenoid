@@ -190,7 +190,7 @@ class ImportViewTest(TestCase):
         self.assertEqual(record.author.first_name, 'Dianne')
         self.assertEqual(record.author.last_name, 'Newman')
 
-    def test_records_without_authors_marked_invalid(self):
+    def test_records_without_authors_rejected(self):
         assert False
 
     def test_publisher_name_set_when_present(self):

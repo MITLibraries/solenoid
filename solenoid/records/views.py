@@ -58,31 +58,49 @@ class Import(FormView):
         csv_file.seek(0)
         return csv.DictReader(io.StringIO(csv_file.read().decode('utf-8')))
 
-    def form_valid(self, form):
-        reader = self._get_csv_reader(form.cleaned_data['csv_file'])
-        authors_no_dlc = []
-
-        for row in reader:
-            # Reject any records with missing DLCs, and notify the user.
-            if not row[Headers.DLC]:
-                if not row[Headers.LAST_NAME] in authors_no_dlc:
-                    messages.warning(self.request, 'Author {first} {last} is '
-                        'missing a DLC; not importing records for this '
-                        'author. Please add a DLC in Symplectic and generate '
-                        'a new CSV file.'.format(first=row[Headers.FIRST_NAME],
-                            last=row[Headers.LAST_NAME]))
-                continue
-
-            dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])
-            try:
-                Author.objects.get(mit_id=row[Headers.MIT_ID])
-            except Author.DoesNotExist:
+    def _get_author(self, row):
+        try:
+            author = Author.objects.get(mit_id=row[Headers.MIT_ID])
+        except Author.DoesNotExist:
+            if self._is_author_creatable(row):
+                dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])
                 author = Author.objects.create(
                     first_name=row[Headers.FIRST_NAME],
                     last_name=row[Headers.LAST_NAME],
                     dlc=dlc,
                     email=row[Headers.EMAIL],
                 )
+            else:
+                author = None
+        return author
+
+    def _is_author_creatable(self, row):
+        return all([bool(row[x] for x in Headers.AUTHOR_DATA)])
+
+    def _is_row_valid(self, row):
+        return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
+
+    def form_valid(self, form):
+        reader = self._get_csv_reader(form.cleaned_data['csv_file'])
+        successes = 0
+        failures = 0
+
+        for row in reader:
+            if not self._is_row_valid(row):
+                messages.warning(self.request, 'Publication #{id} is missing '
+                    'required data, so this citation will not be '
+                    'imported.'.format(id=row[Headers.PAPER_ID]))
+                failures += 1
+                continue
+
+            author = self._get_author(row)
+
+            if not author:
+                messages.warning(self.request, 'The author for publication '
+                    '#{id} is missing required information.'.format(
+                        id=row[Headers.PAPER_ID]))
+                failures += 1
+                continue
 
             Record.objects.create(
                 author=author,
@@ -91,4 +109,15 @@ class Import(FormView):
                 citation=row[Headers.CITATION],
                 doi=row[Headers.DOI],
             )
+            successes += 1
+
+            if successes:
+                messages.success(self.request, '{x} publications have been '
+                    'successfully imported. You can now generate emails to '
+                    'authors about them.'.format(x=successes))
+
+            if failures:
+                messages.info(self.request, '{x} publications could not be '
+                    'imported. Please fix them in Sympletic and generate a '
+                    'new CSV file.'.format(x=failures))
         return super(Import, self).form_valid(form)
