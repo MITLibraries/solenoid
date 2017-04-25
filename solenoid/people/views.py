@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from django.views.generic.edit import CreateView
 
-# Create your views here.
+from .models import Liaison
+
+
+class LiaisonCreate(CreateView):
+    model = Liaison
+    fields = ('first_name', 'last_name')

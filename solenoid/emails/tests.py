@@ -8,6 +8,7 @@ from solenoid.records.models import Record
 from .models import EmailMessage
 from .views import _email_create_many, _email_create_one
 
+
 class EmailCreatorTestCase(TestCase):
     fixtures = ['records.yaml']
 
@@ -21,12 +22,10 @@ class EmailCreatorTestCase(TestCase):
         c.post(reverse('emails:create'), {'records': ['1', '2']})
         mock_create_many.assert_called_once_with(['1', '2'])
 
-
     def test_posting_to_create_view_returns_email_eval(self):
         c = Client()
         response = c.post(reverse('emails:create'), {'records': ['1']})
         self.assertRedirects(response, reverse('emails:evaluate'))
-
 
     @patch('solenoid.emails.views._email_create_one')
     def test_email_created_for_each_professor(self, mock_create_one):
@@ -34,11 +33,11 @@ class EmailCreatorTestCase(TestCase):
         single email creation function exactly once for each professor
         associated with any record."""
         # These 3 records are associated with two authors: Fermi (pk=1) an
-        # Liskov (pk=3; authored two of these records). Therefore we expect 
+        # Liskov (pk=3; authored two of these records). Therefore we expect
         # _email_create_one to be called once, and only once, for each of these
         # authors, and for no one else.
         _email_create_many(['1', '3', '4'])
-        # See https://docs.python.org/3/library/unittest.mock.html#calls-as-tuples
+        # See https://docs.python.org/3/library/unittest.mock.html#calls-as-tuples # noqa
         # for why this introspection syntax works.
         author_pks = [call[0][0].pk for call in mock_create_one.call_args_list]
         assert 1 in author_pks
@@ -59,17 +58,15 @@ class EmailCreatorTestCase(TestCase):
         self.assertEqual(arg_sets[1], [1])
         self.assertEqual(arg_sets[3], [3, 4])
 
-
     def test_email_recipient(self):
         """The email created by _email_create_one must be to: the relevant
         liaison."""
-        # Expected to be a paper by Fermi, who belongs to Physics, whose liaison
-        # is Krug.
+        # Expected to be a paper by Fermi, who belongs to Physics, whose
+        # liaison is Krug.
         record = Record.objects.get(pk=1)
         _email_create_one(record.author, [record])
         email = EmailMessage.objects.latest('pk')
         self.assertEqual(email.liaison.pk, 1)
-
 
     def test_email_has_all_expected_records(self):
         """The email text includes all expected records."""
@@ -79,7 +76,6 @@ class EmailCreatorTestCase(TestCase):
         assert Record.objects.get(pk=3).citation in email.original_text
         assert Record.objects.get(pk=4).citation in email.original_text
 
-
     def test_invalid_records_do_not_get_emailed(self):
         """If the input set contains invalid records, they do not make it
         into the EmailMessage."""
@@ -87,7 +83,6 @@ class EmailCreatorTestCase(TestCase):
         _email_create_one(records[0].author, records)
         email = EmailMessage.objects.latest('pk')
         assert Record.objects.get(pk=5).citation not in email.original_text
-
 
     def test_already_sent_records_do_not_get_emailed(self):
         """If the input set contains invalid records, they do not make it
@@ -97,7 +92,6 @@ class EmailCreatorTestCase(TestCase):
         email = EmailMessage.objects.latest('pk')
         assert Record.objects.get(pk=2).citation not in email.original_text
 
-
     @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
                 {'ACM-Special Message': 'A very special message'})
     def test_publisher_special_message_included(self):
@@ -106,8 +100,8 @@ class EmailCreatorTestCase(TestCase):
         records = Record.objects.filter(pk__in=[3, 4, 5])
         _email_create_one(records[0].author, records)
         email = EmailMessage.objects.latest('pk')
-        self.assertEqual(email.original_text.count('A very special message'), 1)
-
+        self.assertEqual(email.original_text.count('A very special message'),
+                         1)
 
     @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
                 {'Scholastic': 'A very special message',
@@ -121,7 +115,6 @@ class EmailCreatorTestCase(TestCase):
         self.assertNotIn('A very special message', email.original_text)
         self.assertNotIn('An equally special message', email.original_text)
 
-
     def test_html_rendered_as_html(self):
         """Make sure that we see <p>, not &lt;p&gt;, and so forth, in our
         constructed email text. (If we put {{ citations }} into the email
@@ -132,7 +125,6 @@ class EmailCreatorTestCase(TestCase):
         email = EmailMessage.objects.latest('pk')
         self.assertNotIn('&lt;p&gt;', email.original_text)
 
-
     def test_fpv_accepted_message_included(self):
         """The Recruit from Author - FPV Accepted message is included if that is
         the recruitment strategy."""
@@ -140,8 +132,8 @@ class EmailCreatorTestCase(TestCase):
         records = Record.objects.filter(pk__in=[3, 4])
         _email_create_one(records[0].author, records)
         email = EmailMessage.objects.latest('pk')
-        self.assertIn(Record.objects.get(pk=4).fpv_message, email.original_text)
-
+        self.assertIn(Record.objects.get(pk=4).fpv_message,
+                      email.original_text)
 
     def test_fpv_accepted_message_excluded(self):
         """The Recruit from Author - FPV Accepted message is NOT included if
