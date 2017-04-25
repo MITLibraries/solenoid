@@ -35,6 +35,9 @@
     <![endif]-->
   </head>
   <body>
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
     <h1>{% block page_title %}Solenoid{% endblock %}</h1>
 
     {% block content %}
