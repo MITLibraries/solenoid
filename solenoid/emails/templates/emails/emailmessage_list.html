@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Pending emails{% endblock %}
+{% block page_title %}Pending emails{% endblock %}
+
+{% block content %}
+  {% for email in object_list %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ email }}</h3>
+      </div>
+      <div class="panel-body">
+        {{ email.original_text }}
+      </div>
+    </div>
+  {% empty %}
+    <p>
+      No emails ready to send.
+    </p>
+  {% endfor %}
+{% endblock %}

@@ -42,5 +42,6 @@ class EmailCreate(View):
         _email_create_many(pk_list)
         return HttpResponseRedirect(reverse('emails:evaluate'))
 
+
 class EmailEvaluate(ListView):
     queryset = EmailMessage.objects.filter(date_sent__isnull=True)

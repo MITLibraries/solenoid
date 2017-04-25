@@ -6,6 +6,7 @@ from solenoid.records.models import Record
 
 from .helpers import SPECIAL_MESSAGES
 
+
 class EmailMessage(models.Model):
 
     class Meta:
@@ -39,8 +40,8 @@ class EmailMessage(models.Model):
                     msg = msg_template.format(doi=record.doi)
                     citations += '<b>[{msg}]</b>'.format(msg=msg)
                 except KeyError:
-                    # If the publisher doesn't have a corresponding special message,
-                    # that's fine; just keep going.
+                    # If the publisher doesn't have a corresponding special
+                    # message, that's fine; just keep going.
                     pass
                 if record.fpv_message:
                     citations += record.fpv_message
