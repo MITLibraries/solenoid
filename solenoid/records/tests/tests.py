@@ -250,10 +250,17 @@ class ImportViewTest(TestCase):
         self.assertEqual(Record.objects.latest('pk').status, Record.INVALID)
 
     def test_citation_set_when_present(self):
-        assert False
+        self._post_csv('single_good_record.csv')
 
-    def test_records_without_citation_marked_invalid(self):
-        assert False
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.')  # noqa
+
+    def test_records_without_citation_rejected(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_citation.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
 
     def test_status_set_when_present(self):
         assert False
