@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}All liaisons{% endblock %}
+
+{% block content %}
+  {% for liaison in object_list %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ liaison }}</h3>
+      </div>
+      <div class="panel-body">
+        <form class="" action="{% url 'people:liaison_update' liaison.pk %}" method="post">
+          {% csrf_token %}
+          {{ liaison.dlc_form }}
+          <input type="submit" class="btn btn-default" />
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <p>
+      No liaisons yet.
+    </p>
+  {% endfor %}
+  <a href="{% url 'people:liaison_create' %}" class="btn btn-default">Add liaison</a>
+{% endblock %}

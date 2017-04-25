@@ -12,3 +12,7 @@ class LiaisonCreateForm(forms.ModelForm):
         super(LiaisonCreateForm, self).__init__(*args, **kwargs)
         self.fields['dlc'] = forms.ModelMultipleChoiceField(
             queryset=DLC.objects.all())
+
+
+class LiaisonDLCForm(forms.Form):
+    dlc = forms.ModelMultipleChoiceField(queryset=DLC.objects.all())

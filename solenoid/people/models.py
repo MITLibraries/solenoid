@@ -14,6 +14,11 @@ class Liaison(models.Model):
     last_name = models.CharField(max_length=30)
     email_address = models.EmailField()
 
+    @property
+    def dlc_form(self):
+        from .forms import LiaisonDLCForm  # Avoid circular imports
+        return LiaisonDLCForm(initial={'dlc': self.dlc_set.all()})
+
 
 class DLC(models.Model):
 

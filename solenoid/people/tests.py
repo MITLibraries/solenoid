@@ -35,3 +35,6 @@ class LiaisonViewTests(TestCase):
         self.assertEqual(liaison.dlc_set.count(), 2)
         self.assertIn(DLC.objects.get(pk=1), liaison.dlc_set.all())
         self.assertIn(DLC.objects.get(pk=2), liaison.dlc_set.all())
+
+    def test_can_edit_dlcs_on_list_page(self):
+        assert False
