@@ -7,4 +7,6 @@ urlpatterns = [
     url(r'^$', views.LiaisonList.as_view(), name='liaison_list'),
     url(r'^update/(?P<pk>\d+)$', views.LiaisonUpdate.as_view(),
         name='liaison_update'),
+    url(r'^dlcs$', views.DLCUpdateView.as_view(),
+        name='dlc_update'),
 ]

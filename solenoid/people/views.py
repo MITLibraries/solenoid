@@ -4,10 +4,10 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 from django.views.generic.list import ListView
 
-from .forms import LiaisonCreateForm
+from .forms import LiaisonCreateForm, DLCUpdateFormSet
 from .models import Liaison, DLC
 
 logger = logging.getLogger(__name__)
@@ -52,4 +52,15 @@ class LiaisonUpdate(View):
         messages.success(request, 'DLCs updated for {l.first_name} '
             '{l.last_name}.'.format(l=liaison))
 
+        return HttpResponseRedirect(reverse_lazy('people:liaison_list'))
+
+
+class DLCUpdateView(FormView):
+    form_class = DLCUpdateFormSet
+    template_name = 'people/dlc_form.html'
+    success_url = reverse_lazy('people:liaison_list')
+
+    def form_valid(self, form):
+        DLCUpdateFormSet(self.request.POST).save()
+        messages.success(self.request, 'DLCs updated.')
         return HttpResponseRedirect(reverse_lazy('people:liaison_list'))

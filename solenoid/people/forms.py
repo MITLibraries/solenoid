@@ -16,3 +16,12 @@ class LiaisonCreateForm(forms.ModelForm):
 
 class LiaisonDLCForm(forms.Form):
     dlc = forms.ModelMultipleChoiceField(queryset=DLC.objects.all())
+
+
+class DLCUpdateForm(forms.ModelForm):
+    class Meta:
+        model = DLC
+        fields = ('name',)
+
+
+DLCUpdateFormSet = forms.modelformset_factory(DLC, fields=('name',), extra=3)

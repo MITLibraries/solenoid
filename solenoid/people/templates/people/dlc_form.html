@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Update DLCs{% endblock %}
+
+{% block page_title %}Update DLCs{% endblock %}
+
+{% block content %}
+  <form class="" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" name="Update DLCs" value="Update DLCs" class="btn btn-default">
+  </form>
+{% endblock %}
