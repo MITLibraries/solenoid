@@ -29,7 +29,7 @@ class DLC(models.Model):
     def __str__(self):
         return self.name
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     # DLCs are created as needed during the CSV import process, and we don't
     # have liaison information available at that time.
     liaison = models.ForeignKey(Liaison, blank=True, null=True)
