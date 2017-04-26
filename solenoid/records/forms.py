@@ -34,7 +34,13 @@ def _validate_filetype(csv_file, encoding):
 
 def _validate_headers_existence(csv_file, encoding):
     csv_file.seek(0)
-    if not csv.Sniffer().has_header(csv_file.read().decode(encoding)):
+    try:
+        has_headers = csv.Sniffer().has_header(
+            csv_file.read().decode(encoding))
+    except TypeError:
+        logger.exception('CSV file header detection failed')
+        raise ValidationError("Can't read CSV header row")
+    if not has_headers:
         logger.warning('Uploaded CSV has no header row')
         raise ValidationError("This file doesn't seem to have a header row.")
 
