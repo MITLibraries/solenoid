@@ -1,3 +1,2 @@
-Django==1.8.18
-pytz==2017.2
-PyYAML==3.12
+# This file is only needed by Heroku.
+-r requirements/heroku.txt

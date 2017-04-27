@@ -1,5 +1,6 @@
 todo.md
 solenoid/records/tests/csv/original.csv
+staticfiles/
 
 # Created by https://www.gitignore.io/api/osx,linux,django,python
 
