@@ -53,13 +53,19 @@ class Record(models.Model):
     paper_id = models.CharField(max_length=10)
 
     def save(self, *args, **kwargs):
-        if self.acq_method not in self.ACQ_METHODS_LIST:
-            self.status = self.INVALID
+        if not self.is_valid:
+            self.status = Record.INVALID
         return super(Record, self).save(*args, **kwargs)
 
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
             self=self)
+
+    def is_valid(self):
+        return all([self.acq_method in self.ACQ_METHODS_LIST,
+                    # If acq_method is FPV, we must have the DOI. If not, it
+                    # doesn't matter. That's what this truth table says.
+                    self.acq_method != Record.ACQ_FPV or bool(self.doi)])
 
     @property
     def fpv_message(self):
@@ -75,8 +81,8 @@ class Record(models.Model):
         else:
             return None
 
-    @classmethod
-    def is_record_creatable(cls, row):
+    @staticmethod
+    def is_record_creatable(row):
         """This expects a row of data from a CSV import and determines whether
         a valid record can be created from that data. It is not responsible for
         confirming that the foreign-keyed Author exists or can be created.
@@ -91,6 +97,35 @@ class Record(models.Model):
             return True
         except AssertionError:
             return False
+
+    @staticmethod
+    def get_or_create_from_csv(author, row):
+        """This expects an author instance and a row of data from a CSV import,
+        and returns (record, created), in the manner of objects.get_or_create.
+        It does not validate data; you should do that before invoking this.
+        """
+        try:
+            record = Record.objects.get(paper_id=row[Headers.PAPER_ID])
+            if record.status == Record.INVALID:
+                record.author = author
+                record.publisher_name = row[Headers.PUBLISHER_NAME]
+                record.acq_method = row[Headers.ACQ_METHOD]
+                record.citation = row[Headers.CITATION]
+                record.doi = row[Headers.DOI]
+
+                # save() will validate the record and set this back to INVALID
+                # if needed.
+                record.status = Record.UNSENT
+                record.save()
+            return record, False
+        except Record.DoesNotExist:
+            return Record.objects.create(
+                author=author,
+                publisher_name=row[Headers.PUBLISHER_NAME],
+                acq_method=row[Headers.ACQ_METHOD],
+                citation=row[Headers.CITATION],
+                doi=row[Headers.DOI],
+                paper_id=row[Headers.PAPER_ID]), True
 
 
 @receiver(pre_save, sender=Record)

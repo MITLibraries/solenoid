@@ -77,16 +77,9 @@ class Import(FormView):
 
     def _get_record(self, row, author):
         if Record.is_record_creatable(row):
-            return Record.objects.create(
-                author=author,
-                publisher_name=row[Headers.PUBLISHER_NAME],
-                acq_method=row[Headers.ACQ_METHOD],
-                citation=row[Headers.CITATION],
-                doi=row[Headers.DOI],
-                paper_id=row[Headers.PAPER_ID]
-            )
+            return Record.get_or_create_from_csv(author, row)
         else:
-            return None
+            return None, None
 
     def _is_row_valid(self, row):
         return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
@@ -95,6 +88,7 @@ class Import(FormView):
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
         successes = 0
         failures = 0
+        updates = 0
 
         for row in reader:
             if not self._is_row_valid(row):
@@ -113,7 +107,7 @@ class Import(FormView):
                 failures += 1
                 continue
 
-            record = self._get_record(row, author)
+            record, created = self._get_record(row, author)
 
             if not record:
                 messages.warning(self.request, 'The record for publication '
@@ -122,7 +116,10 @@ class Import(FormView):
                 failures += 1
                 continue
 
-            successes += 1
+            if created:
+                successes += 1
+            else:
+                updates += 1
 
             if successes:
                 messages.success(self.request, '{x} publications have been '
@@ -133,4 +130,9 @@ class Import(FormView):
                 messages.info(self.request, '{x} publications could not be '
                     'imported. Please fix them in Sympletic and generate a '
                     'new CSV file.'.format(x=failures))
+
+            if updates:
+                messages.info(self.request, '{x} existing publication records '
+                    'have been successfully updated.'.format(x=successes))
+
         return super(Import, self).form_valid(form)

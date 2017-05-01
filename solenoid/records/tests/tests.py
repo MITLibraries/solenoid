@@ -4,6 +4,7 @@ import os
 
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, resolve
+from django.forms.models import model_to_dict
 from django.test import TestCase, Client
 
 from solenoid.people.models import DLC, Author
@@ -188,7 +189,8 @@ class ImportViewTest(TestCase):
         basedir = os.path.dirname(os.path.abspath(__file__))
         filename = os.path.join(basedir, 'csv', testfile)
         with open(filename, 'rb') as csv_file:
-            self.client.post(self.url, {'csv_file': csv_file})
+            return self.client.post(
+                self.url, {'csv_file': csv_file}, follow=True)
 
     def test_author_set_when_present(self):
         self._post_csv('single_good_record.csv')
@@ -265,9 +267,6 @@ class ImportViewTest(TestCase):
         self._post_csv('missing_citation.csv')
 
         self.assertEqual(orig_count, Record.objects.count())
-
-    def test_status_set_when_present(self):
-        assert False
 
     def test_records_without_status_marked_invalid(self):
         assert False
@@ -357,5 +356,103 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertIn('💖', record.citation)
 
-    def test_paper_id_used_for_idempotency(self):
-        assert False
+    def test_paper_id_respected_case_1(self):
+        """
+        If we re-import an UNSENT record with a known ID, we should edit the
+        existing record, not create a new one."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')  # check assumptions
+        self.assertEqual(record.status, Record.UNSENT)
+        orig_record = model_to_dict(record)
+
+        self._post_csv('single_good_record.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        self.assertEqual(orig_record,
+                         model_to_dict(Record.objects.get(paper_id='182960')))
+
+    def test_paper_id_respected_case_2(self):
+        """
+        If we re-import an SENT record with a known ID, we should raise a
+        warning and leave the existing record alone, not create a new one."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')
+        record.status = Record.SENT
+        record.save()
+
+        orig_record = model_to_dict(record)
+
+        response = self._post_csv('single_good_record.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        self.assertEqual(orig_record,
+                         model_to_dict(Record.objects.get(paper_id='182960')))
+
+        self.assertIn('info',
+                      [m.level_tag for m in response.context['messages']])
+
+    def test_paper_id_respected_case_3(self):
+        """
+        If we have an INVALID record and re-import valid data with the same
+        paper ID, we should overwrite the existing record with the new
+        (hopefully better) data, not create a new record. This includes
+        updating the status to UNSENT and notifying the user."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')
+        record.status = Record.INVALID
+        record.publisher_name = 'Super dodgy publisher name'
+        record.save()
+
+        expected_record = model_to_dict(record)
+        expected_record['publisher_name'] = 'Elsevier'
+        expected_record['status'] = Record.UNSENT
+
+        response = self._post_csv('single_good_record.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        self.assertEqual(expected_record,
+                         model_to_dict(Record.objects.get(paper_id='182960')))
+
+        self.assertIn('info',
+                      [m.level_tag for m in response.context['messages']])
+
+    def test_paper_id_respected_case_4(self):
+        """
+        If we have an INVALID record and re-import invalid data with the same
+        paper ID, we should leave the record alone and warn the user."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')
+        record.status = Record.INVALID
+        record.publisher_name = 'Super dodgy publisher name'
+        record.save()
+
+        orig_record = model_to_dict(record)
+
+        response = self._post_csv('missing_publisher_name.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        self.assertEqual(orig_record,
+                         model_to_dict(Record.objects.get(paper_id='182960')))
+
+        self.assertIn('warning',
+                      [m.level_tag for m in response.context['messages']])
