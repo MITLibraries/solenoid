@@ -60,7 +60,7 @@ class Import(FormView):
 
     def _get_author(self, row):
         try:
-            author = Author.objects.get(mit_id=row[Headers.MIT_ID])
+            author = Author.get_by_mit_id(row[Headers.MIT_ID])
         except Author.DoesNotExist:
             if Author.is_author_creatable(row):
                 dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])

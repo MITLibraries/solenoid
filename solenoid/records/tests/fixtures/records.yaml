@@ -48,7 +48,7 @@
     email: fermi@example.com
     first_name: Enrico
     last_name: Fermi
-    mit_id: 1
+    _mit_id_hash: 1
 
 - model: people.Author
   pk: 2
@@ -57,7 +57,7 @@
     email: susumu@example.com
     first_name: Susumu
     last_name: Tonegawa
-    mit_id: 2
+    _mit_id_hash: 2
 
 - model: people.Author
   pk: 3
@@ -66,7 +66,7 @@
     email: is_a@example.com
     first_name: Barbara
     last_name: Liskov
-    mit_id: 3
+    _mit_id_hash: 3
 
 - model: records.Record
   pk: 1

@@ -72,6 +72,12 @@ class Author(models.Model):
         # reasonable non-collision guarantee.
         return hashlib.md5(mit_id.encode('utf-8')).hexdigest()
 
+    @classmethod
+    def get_by_mit_id(cls, mit_id):
+        # If this get raises an error, get_by_mit_id will raise the same error;
+        # handle it in the same way that you would handle get().
+        return Author.objects.get(_mit_id_hash=Author.get_hash(mit_id))
+
     # These properties allow us to get and set the mit ID using the normal
     # API; in particular, we can directly set the ID from the MTI ID value in
     # the CSV files. However, under the hood, we're throwing out the sensitive

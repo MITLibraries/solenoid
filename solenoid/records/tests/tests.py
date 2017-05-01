@@ -319,7 +319,7 @@ class ImportViewTest(TestCase):
         Record.objects.all().delete()
 
         # Verify our assumption that we know about this author.
-        author = Author.objects.get(mit_id='123456789')
+        author = Author.get_by_mit_id('123456789')
         self.assertEqual(author.dlc.name, 'Biology Department')
 
         self._post_csv('missing_dlc_known_author.csv')
@@ -333,7 +333,7 @@ class ImportViewTest(TestCase):
 
         # Verify our assumption that we don't know about this author.
         with self.assertRaises(Author.DoesNotExist):
-            Author.objects.get(mit_id='000000000')
+            Author.get_by_mit_id('000000000')
 
         self._post_csv('missing_dlc_unknown_author.csv')
 
