@@ -20,5 +20,6 @@ class Headers(object):
     AUTHOR_DATA = [EMAIL, FIRST_NAME, LAST_NAME, DLC]
 
     # And this is the information from EXPECTED_HEADERS that we can't find if
-    # it isn't in the CSV.
-    REQUIRED_DATA = list(set(EXPECTED_HEADERS) - set(AUTHOR_DATA))
+    # it isn't in the CSV. DOI is optional because we only need it for FPV
+    # manuscripts - the model is responsible for checking.
+    REQUIRED_DATA = list(set(EXPECTED_HEADERS) - set(AUTHOR_DATA) - {DOI})

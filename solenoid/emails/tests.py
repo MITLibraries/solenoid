@@ -146,6 +146,11 @@ class EmailCreatorTestCase(TestCase):
               'downloading'
         self.assertNotIn(msg, email.original_text)
 
+    def test_emails_get_cced_to_scholcomm(self):
+        assert False
+
+    def test_scholcomm_can_edit_emails(self):
+        assert False
 
 # Do we actually need to display the email to scholcomm, or just send to subject liaisons??
 

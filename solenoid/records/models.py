@@ -8,6 +8,8 @@ from django.dispatch import receiver
 
 from solenoid.people.models import Author
 
+from .helpers import Headers
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +49,7 @@ class Record(models.Model):
     status = models.CharField(default=UNSENT,
         choices=STATUS_CHOICES, max_length=7)
     status_timestamp = models.DateField(default=date.today)
-    doi = models.CharField(max_length=30)
+    doi = models.CharField(max_length=30, blank=True)
 
     def save(self, *args, **kwargs):
         if self.acq_method not in self.ACQ_METHODS_LIST:
@@ -71,6 +73,23 @@ class Record(models.Model):
                                   doi=self.doi)
         else:
             return None
+
+    @classmethod
+    def is_record_creatable(cls, row):
+        """This expects a row of data from a CSV import and determines whether
+        a valid record can be created from that data. It is not responsible for
+        confirming that the foreign-keyed Author exists or can be created.
+        """
+        try:
+            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD,
+                          Headers.CITATION]
+            assert all([bool(row[x]) for x in desiderata])
+
+            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED':
+                assert bool(row[Headers.DOI])
+            return True
+        except AssertionError:
+            return False
 
 
 @receiver(pre_save, sender=Record)

@@ -1,3 +1,4 @@
+from datetime import date
 import os
 
 from django.core.exceptions import ValidationError
@@ -152,6 +153,9 @@ class ImportViewTest(TestCase):
         self.url = reverse('records:import')
         self.client = Client()
 
+    def tearDown(self):
+        Record.objects.all().delete()
+
     def test_import_records_url_exists(self):
         resolve(self.url)
 
@@ -191,7 +195,6 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.author.first_name, 'Fake')
         self.assertEqual(record.author.last_name, 'Author')
-        record.delete()
 
     def test_records_without_authors_rejected(self):
         orig_count = Record.objects.count()
@@ -271,14 +274,38 @@ class ImportViewTest(TestCase):
     def test_records_unknown_status_marked_invalid(self):
         assert False
 
-    def test_status_timestamp_set(self):
+    def test_status_timestamp_set_on_ingest(self):
+        self._post_csv('single_good_record.csv')
+
+        record = Record.objects.latest('pk')
+        # This test may fail if run very close to midnight UTC.
+        self.assertEqual(record.status_timestamp, date.today())
+
+    def test_status_timestamp_set_when_emailed(self):
         assert False
 
     def test_doi_set_when_present(self):
-        assert False
+        self._post_csv('single_good_record.csv')
 
-    def test_fpv_records_without_doi_marked_invalid(self):
-        assert False
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
+
+    def test_fpv_records_without_doi_rejected(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_doi_fpv.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
+
+    def test_manuscript_records_without_doi_accepted(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_doi_manuscript.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '')
+        self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
     def test_encodings_handled_properly(self):
         """We should be able to roll with either cp1252 (Windows probable
@@ -303,4 +330,12 @@ class ImportViewTest(TestCase):
         """I definitely promise someone will use emoji in their paper titles
         if they haven't already. Might be another decade before one shows up in
         a DLC name, but preparedness is key."""
+        assert False
+
+    def test_mit_id_is_hashed(self):
+        """Storing the MIT ID directly on Heroku would violate the sensitive
+        data policy, but we don't need to maintain it; its only value is as a
+        unique key, so hashing it and storing the hash is fine;
+        http://infoprotect.mit.edu/what-needs-protecting . Note that MIT IDs in
+        test data files are already fake and thus not sensitive."""
         assert False

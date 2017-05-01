@@ -102,6 +102,13 @@ class Import(FormView):
                 failures += 1
                 continue
 
+            if not Record.is_record_creatable(row):
+                messages.warning(self.request, 'The record for publication '
+                    '#{id} is missing required information and will not be '
+                    'created.'.format(id=row[Headers.PAPER_ID]))
+                failures += 1
+                continue
+
             Record.objects.create(
                 author=author,
                 publisher_name=row[Headers.PUBLISHER_NAME],
