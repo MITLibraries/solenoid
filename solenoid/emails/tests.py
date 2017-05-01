@@ -152,6 +152,10 @@ class EmailCreatorTestCase(TestCase):
     def test_scholcomm_can_edit_emails(self):
         assert False
 
+    def test_email_author_without_liaison(self):
+        """Something logical should happen."""
+        assert False
+
 # Do we actually need to display the email to scholcomm, or just send to subject liaisons??
 
 # This will have to integrate with email sending at some point so we may want to

@@ -338,12 +338,6 @@ class ImportViewTest(TestCase):
 
         self.assertEqual(orig_count, Record.objects.count())
 
-    def test_can_create_DLC_without_liaison(self):
-        """e.g. when creating from form upload. BUT correspondingly test that
-        if people try to email an author without a liaison, something logical
-        happens."""
-        assert False
-
     def test_DLC_with_comma_handled_correctly(self):
         """Earth, Atmospheric, and Planetary Sciences should not break our
         CSV parsing."""

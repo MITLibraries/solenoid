@@ -89,3 +89,6 @@ class DLCTests(TestCase):
 
         dlc_names = DLC.objects.all().values_list('name', flat=True)
         self.assertIn('Shiny new DLC', dlc_names)
+
+    def test_can_create_DLC_without_liaison(self):
+        DLC.objects.create(name='Test DLC')
