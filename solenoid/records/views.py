@@ -62,7 +62,7 @@ class Import(FormView):
         try:
             author = Author.objects.get(mit_id=row[Headers.MIT_ID])
         except Author.DoesNotExist:
-            if self._is_author_creatable(row):
+            if Author.is_author_creatable(row):
                 dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])
                 author = Author.objects.create(
                     first_name=row[Headers.FIRST_NAME],
@@ -74,8 +74,17 @@ class Import(FormView):
                 author = None
         return author
 
-    def _is_author_creatable(self, row):
-        return all([bool(row[x] for x in Headers.AUTHOR_DATA)])
+    def _get_record(self, row, author):
+        if Record.is_record_creatable(row):
+            return Record.objects.create(
+                author=author,
+                publisher_name=row[Headers.PUBLISHER_NAME],
+                acq_method=row[Headers.ACQ_METHOD],
+                citation=row[Headers.CITATION],
+                doi=row[Headers.DOI],
+            )
+        else:
+            return None
 
     def _is_row_valid(self, row):
         return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
@@ -97,25 +106,20 @@ class Import(FormView):
 
             if not author:
                 messages.warning(self.request, 'The author for publication '
-                    '#{id} is missing required information.'.format(
-                        id=row[Headers.PAPER_ID]))
+                    '#{id} is missing required information. This record will '
+                    'not be created'.format(id=row[Headers.PAPER_ID]))
                 failures += 1
                 continue
 
-            if not Record.is_record_creatable(row):
+            record = self._get_record(row, author)
+
+            if not record:
                 messages.warning(self.request, 'The record for publication '
                     '#{id} is missing required information and will not be '
                     'created.'.format(id=row[Headers.PAPER_ID]))
                 failures += 1
                 continue
 
-            Record.objects.create(
-                author=author,
-                publisher_name=row[Headers.PUBLISHER_NAME],
-                acq_method=row[Headers.ACQ_METHOD],
-                citation=row[Headers.CITATION],
-                doi=row[Headers.DOI],
-            )
             successes += 1
 
             if successes:

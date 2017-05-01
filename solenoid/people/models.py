@@ -1,5 +1,7 @@
 from django.db import models
 
+from solenoid.records.helpers import Headers
+
 
 class Liaison(models.Model):
 
@@ -52,3 +54,9 @@ class Author(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=40)
     mit_id = models.CharField(max_length=10)
+
+    @classmethod
+    def is_author_creatable(self, row):
+        """Expects a row of CSV data from Elements and determines whether an
+        author instance can be created from it."""
+        return all([bool(row[x] for x in Headers.AUTHOR_DATA)])
