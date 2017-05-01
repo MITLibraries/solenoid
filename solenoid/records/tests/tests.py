@@ -357,13 +357,5 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertIn('💖', record.citation)
 
-    def test_mit_id_is_hashed(self):
-        """Storing the MIT ID directly on Heroku would violate the sensitive
-        data policy, but we don't need to maintain it; its only value is as a
-        unique key, so hashing it and storing the hash is fine;
-        http://infoprotect.mit.edu/what-needs-protecting . Note that MIT IDs in
-        test data files are already fake and thus not sensitive."""
-        assert False
-
     def test_paper_id_used_for_idempotency(self):
         assert False

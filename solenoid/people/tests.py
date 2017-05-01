@@ -1,7 +1,9 @@
+import hashlib
+
 from django.core.urlresolvers import resolve, reverse
 from django.test import TestCase, Client
 
-from .models import Liaison, DLC
+from .models import Liaison, DLC, Author
 
 
 class LiaisonViewTests(TestCase):
@@ -92,3 +94,64 @@ class DLCTests(TestCase):
 
     def test_can_create_DLC_without_liaison(self):
         DLC.objects.create(name='Test DLC')
+
+
+class AuthorTests(TestCase):
+    def tearDown(self):
+        Author.objects.all().delete()
+        DLC.objects.all().delete()
+
+    def test_mit_id_is_hashed(self):
+        """Storing the MIT ID directly on Heroku would violate the sensitive
+        data policy, but we don't need to maintain it; its only value is as a
+        unique key, so hashing it and storing the hash is fine;
+        http://infoprotect.mit.edu/what-needs-protecting . Note that MIT IDs in
+        test data files are already fake and thus not sensitive."""
+        dlc = DLC.objects.create(name='Test DLC')
+        mit_id = '000000000'
+        author = Author.objects.create(dlc=dlc,
+            email='foo@example.com',
+            first_name='Test',
+            last_name='Author',
+            mit_id=mit_id)
+
+        self.assertEqual(author.mit_id,
+                         hashlib.md5(mit_id.encode('utf-8')).hexdigest())
+
+    def test_mit_id_is_not_stored(self):
+        """No matter what properties we end up putting on Author, none of them
+        are the MIT ID."""
+        dlc = DLC.objects.create(name='Test DLC')
+        mit_id = '000000000'
+        author = Author.objects.create(dlc=dlc,
+            email='foo@example.com',
+            first_name='Test',
+            last_name='Author',
+            mit_id=mit_id)
+
+        author_fields = Author._meta.get_fields()
+
+        for field in author_fields:
+            if field.is_relation is False:
+                self.assertNotEqual(getattr(author, field.name), mit_id)
+
+    def test_author_set_hash(self):
+        dlc = DLC.objects.create(name='Test DLC')
+        author = Author.objects.create(dlc=dlc,
+            email='foo@example.com',
+            first_name='Test',
+            last_name='Author',
+            mit_id='000000000')
+
+        new_mit_id = '214915295'
+
+        author.mit_id = new_mit_id
+        author.save()
+        self.assertEqual(author.mit_id,
+                         hashlib.md5(new_mit_id.encode('utf-8')).hexdigest())
+
+    def test_author_get_hash(self):
+        mit_id = '214915295'
+
+        self.assertEqual(Author.get_hash(mit_id),
+                         hashlib.md5(mit_id.encode('utf-8')).hexdigest())

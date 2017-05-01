@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 
 from solenoid.records.helpers import Headers
@@ -53,10 +55,31 @@ class Author(models.Model):
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=40)
-    mit_id = models.CharField(max_length=10)
+    _mit_id_hash = models.CharField(max_length=32, help_text="This stores the "
+        "*hash* of the MIT ID, not the MIT ID itself. We want to have a "
+        "unique identifier for the author but we don't want to be storing "
+        "sensitive data offsite. Hashing the ID achieves our goals.")
 
     @classmethod
     def is_author_creatable(self, row):
         """Expects a row of CSV data from Elements and determines whether an
         author instance can be created from it."""
         return all([bool(row[x]) for x in Headers.AUTHOR_DATA])
+
+    @classmethod
+    def get_hash(cls, mit_id):
+        # This doesn't have to be cryptographically secure - we just need a
+        # reasonable non-collision guarantee.
+        return hashlib.md5(mit_id.encode('utf-8')).hexdigest()
+
+    # These properties allow us to get and set the mit ID using the normal
+    # API; in particular, we can directly set the ID from the MTI ID value in
+    # the CSV files. However, under the hood, we're throwing out the sensitive
+    # data and storing hashes. Hooray!
+    @property
+    def mit_id(self):
+        return self._mit_id_hash
+
+    @mit_id.setter
+    def mit_id(self, value):
+        self._mit_id_hash = Author.get_hash(value)
