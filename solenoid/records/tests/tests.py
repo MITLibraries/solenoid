@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import date
 import os
 
@@ -347,7 +348,14 @@ class ImportViewTest(TestCase):
         """I definitely promise someone will use emoji in their paper titles
         if they haven't already. Might be another decade before one shows up in
         a DLC name, but preparedness is key."""
-        assert False
+        orig_count = Record.objects.count()
+
+        self._post_csv('emoji.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+
+        record = Record.objects.latest('pk')
+        self.assertIn('💖', record.citation)
 
     def test_mit_id_is_hashed(self):
         """Storing the MIT ID directly on Heroku would violate the sensitive
@@ -355,4 +363,7 @@ class ImportViewTest(TestCase):
         unique key, so hashing it and storing the hash is fine;
         http://infoprotect.mit.edu/what-needs-protecting . Note that MIT IDs in
         test data files are already fake and thus not sensitive."""
+        assert False
+
+    def test_paper_id_used_for_idempotency(self):
         assert False

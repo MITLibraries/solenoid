@@ -83,6 +83,7 @@ class Import(FormView):
                 acq_method=row[Headers.ACQ_METHOD],
                 citation=row[Headers.CITATION],
                 doi=row[Headers.DOI],
+                paper_id=row[Headers.PAPER_ID]
             )
         else:
             return None

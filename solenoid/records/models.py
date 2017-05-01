@@ -50,6 +50,7 @@ class Record(models.Model):
         choices=STATUS_CHOICES, max_length=7)
     status_timestamp = models.DateField(default=date.today)
     doi = models.CharField(max_length=30, blank=True)
+    paper_id = models.CharField(max_length=10)
 
     def save(self, *args, **kwargs):
         if self.acq_method not in self.ACQ_METHODS_LIST:
