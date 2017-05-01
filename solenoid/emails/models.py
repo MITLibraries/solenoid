@@ -55,3 +55,9 @@ class EmailMessage(models.Model):
             context={'author': author,
                      'liaison': author.dlc.liaison,
                      'citations': citations})
+
+    @property
+    def display_text(self):
+        """Give the latest text if available and the original if not; this is
+        the version users should see and send."""
+        return self.latest_text if self.latest_text else self.original_text

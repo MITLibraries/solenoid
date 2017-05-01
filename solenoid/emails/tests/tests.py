@@ -5,8 +5,8 @@ from django.test import TestCase, Client
 
 from solenoid.records.models import Record
 
-from .models import EmailMessage
-from .views import _email_create_many, _email_create_one
+from ..models import EmailMessage
+from ..views import _email_create_many, _email_create_one
 
 
 class EmailCreatorTestCase(TestCase):
@@ -156,13 +156,32 @@ class EmailCreatorTestCase(TestCase):
         """Something logical should happen."""
         assert False
 
-# Do we actually need to display the email to scholcomm, or just send to subject liaisons??
 
-# This will have to integrate with email sending at some point so we may want to
-# start testing outboxes. We don't want to use something like django-templated-email,
-# though, because scholcomm librarians might edit before sending....
-# ...unless they don't? If only liaisons edit, life is easier. Let's not build
-# an interface until we have that question answered.
+class EmailEvaluateTestCase(TestCase):
+    fixtures = ['emails.yaml']
+
+    def setUp(self):
+        self.url = reverse('emails:evaluate')
+        self.client = Client()
+
+    def test_find_out_what_formats_can_be_used(self):
+        """Do I need something like CKeditor? Can they edit HTML or .md?"""
+        assert False
+
+    def test_latest_version_displays_on_unsent_page_if_not_blank(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Most recent text of email 1")
+
+    def test_original_version_displays_on_unsent_page_if_latest_blank(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Original text of email 2")
+
+    def test_liaison_email_displays(self):
+        assert False
+
+    def test_users_can_save_changes_to_emails(self):
+        assert False
+
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.
 # https://github.com/django-ckeditor/django-ckeditor - uses HTML as encoding.
