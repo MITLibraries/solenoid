@@ -176,10 +176,17 @@ class EmailEvaluateTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "Original text of email 2")
 
-    def test_liaison_email_displays(self):
-        assert False
+    def test_liaison_email_address_displays(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, 'krug@example.com')
+        self.assertEqual(response.content.count(b'krug@example.com'), 2)
 
     def test_users_can_save_changes_to_emails(self):
+        assert False
+
+    def test_ask_if_we_need_to_reset_email_to_original_text(self):
+        """We can build a reset-to-original function, but let's only do that if
+        users want us to."""
         assert False
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to

@@ -8,6 +8,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">{{ email }}</h3>
+        <b>To:</b> {{ email.liaison.first_name }} {{ email.liaison.last_name }} ({{ email.liaison.email_address }})
       </div>
       <div class="panel-body">
         {{ email.display_text }}

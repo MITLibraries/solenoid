@@ -15,9 +15,9 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return "To {self.author} (sent {self.date_sent})".format(self=self)
+            return "In re {self.author} (sent {self.date_sent})".format(self=self)
         else:
-            return "To {self.author} (unsent)".format(self=self)
+            return "In re {self.author} (unsent)".format(self=self)
 
     original_text = models.TextField(editable=False)
     latest_text = models.TextField(blank=True, null=True)
