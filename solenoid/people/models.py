@@ -59,4 +59,4 @@ class Author(models.Model):
     def is_author_creatable(self, row):
         """Expects a row of CSV data from Elements and determines whether an
         author instance can be created from it."""
-        return all([bool(row[x] for x in Headers.AUTHOR_DATA)])
+        return all([bool(row[x]) for x in Headers.AUTHOR_DATA])

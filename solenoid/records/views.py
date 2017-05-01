@@ -69,6 +69,7 @@ class Import(FormView):
                     last_name=row[Headers.LAST_NAME],
                     dlc=dlc,
                     email=row[Headers.EMAIL],
+                    mit_id=row[Headers.MIT_ID]
                 )
             else:
                 author = None

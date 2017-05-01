@@ -312,8 +312,31 @@ class ImportViewTest(TestCase):
         default), ascii, or utf-8."""
         assert False
 
-    def test_blank_DLC_handled_correctly(self):
-        assert False
+    def test_blank_DLC_handled_correctly_known_author(self):
+        # This should cause the author and DLC to exist.
+        self._post_csv('single_good_record.csv')
+        Record.objects.all().delete()
+
+        # Verify our assumption that we know about this author.
+        author = Author.objects.get(mit_id='123456789')
+        self.assertEqual(author.dlc.name, 'Biology Department')
+
+        self._post_csv('missing_dlc_known_author.csv')
+
+        self.assertEqual(1, Record.objects.count())
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.author.dlc.name, 'Biology Department')
+
+    def test_blank_DLC_handled_correctly_unknown_author(self):
+        orig_count = Record.objects.count()
+
+        # Verify our assumption that we don't know about this author.
+        with self.assertRaises(Author.DoesNotExist):
+            Author.objects.get(mit_id='000000000')
+
+        self._post_csv('missing_dlc_unknown_author.csv')
+
+        self.assertEqual(orig_count, Record.objects.count())
 
     def test_can_create_DLC_without_liaison(self):
         """e.g. when creating from form upload. BUT correspondingly test that
