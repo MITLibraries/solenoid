@@ -61,6 +61,7 @@ class Record(models.Model):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
             self=self)
 
+    @property
     def is_valid(self):
         return all([self.acq_method in self.ACQ_METHODS_LIST,
                     # If acq_method is FPV, we must have the DOI. If not, it
