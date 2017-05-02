@@ -8,6 +8,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from solenoid.people.models import Author, DLC
+from solenoid.userauth.mixins import LoginRequiredMixin
 
 from .forms import ImportForm
 from .helpers import Headers
@@ -16,7 +17,7 @@ from .models import Record
 logger = logging.getLogger(__name__)
 
 
-class UnsentList(ListView):
+class UnsentList(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(UnsentList, self).get_context_data(**kwargs)
         context['page_title'] = 'Unsent Records'
@@ -29,7 +30,7 @@ class UnsentList(ListView):
         return Record.objects.filter(status=Record.UNSENT)
 
 
-class InvalidList(ListView):
+class InvalidList(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(InvalidList, self).get_context_data(**kwargs)
         context['page_title'] = 'Invalid Records'
@@ -40,7 +41,7 @@ class InvalidList(ListView):
         return Record.objects.filter(status=Record.INVALID)
 
 
-class Import(FormView):
+class Import(LoginRequiredMixin, FormView):
     template_name = 'records/import.html'
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')

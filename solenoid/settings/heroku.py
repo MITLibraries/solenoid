@@ -59,3 +59,12 @@ LOGGING = {
         }
     }
 }
+
+
+# OAUTH CONFIGURATION
+# -----------------------------------------------------------------------------
+
+# Default to requiring login on Heroku servers, but allow this to be turned off
+# via environment variable in case it's useful to have a test server be more
+# freely accessible.
+LOGIN_REQUIRED = bool(os.environ.get('DJANGO_LOGIN_REQUIRED', True))

@@ -4,6 +4,7 @@ from django.views.generic.base import View
 from django.views.generic.list import ListView
 
 from solenoid.records.models import Record
+from solenoid.userauth.mixins import LoginRequiredMixin
 
 from .models import EmailMessage
 
@@ -34,7 +35,7 @@ def _email_create_many(pk_list):
         _email_create_one(author, record_list)
 
 
-class EmailCreate(View):
+class EmailCreate(LoginRequiredMixin, View):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
@@ -43,5 +44,5 @@ class EmailCreate(View):
         return HttpResponseRedirect(reverse('emails:evaluate'))
 
 
-class EmailEvaluate(ListView):
+class EmailEvaluate(LoginRequiredMixin, ListView):
     queryset = EmailMessage.objects.filter(date_sent__isnull=True)

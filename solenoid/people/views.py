@@ -7,13 +7,15 @@ from django.views.generic.base import View
 from django.views.generic.edit import CreateView, FormView
 from django.views.generic.list import ListView
 
+from solenoid.userauth.mixins import LoginRequiredMixin
+
 from .forms import LiaisonCreateForm, DLCUpdateFormSet
 from .models import Liaison, DLC
 
 logger = logging.getLogger(__name__)
 
 
-class LiaisonCreate(CreateView):
+class LiaisonCreate(LoginRequiredMixin, CreateView):
     model = Liaison
     form_class = LiaisonCreateForm
     success_url = reverse_lazy('people:liaison_list')
@@ -24,7 +26,7 @@ class LiaisonCreate(CreateView):
         return HttpResponseRedirect(self.success_url)
 
 
-class LiaisonList(ListView):
+class LiaisonList(LoginRequiredMixin, ListView):
     model = Liaison
 
     def get_context_data(self, **kwargs):
@@ -33,7 +35,7 @@ class LiaisonList(ListView):
         return context
 
 
-class LiaisonUpdate(View):
+class LiaisonUpdate(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         try:
             dlcs = DLC.objects.filter(pk__in=request.POST.getlist('dlc'))
@@ -55,7 +57,7 @@ class LiaisonUpdate(View):
         return HttpResponseRedirect(reverse_lazy('people:liaison_list'))
 
 
-class DLCUpdateView(FormView):
+class DLCUpdateView(LoginRequiredMixin, FormView):
     form_class = DLCUpdateFormSet
     template_name = 'people/dlc_form.html'
     success_url = reverse_lazy('people:liaison_list')

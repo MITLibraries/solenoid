@@ -30,15 +30,14 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
 )
 
-THIRD_PARTY_APPS = ()
-
 SOLENOID_APPS = (
     'solenoid.records',
     'solenoid.emails',
     'solenoid.people',
+    'solenoid.userauth',
 )
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + SOLENOID_APPS
+INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 
 
 # MIDDLEWARE CONFIGURATION
@@ -188,3 +187,19 @@ LOGGING = {
 # -----------------------------------------------------------------------------
 # -----------------> third-party and solenoid configurations <-----------------
 # -----------------------------------------------------------------------------
+
+# OAUTH CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += (
+    'social_django',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'solenoid.userauth.backends.MITOAuth2',
+    # Required for user/pass authentication - this is useful for the admin
+    # site.
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+LOGIN_REQUIRED = False
