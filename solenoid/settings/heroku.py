@@ -68,3 +68,6 @@ LOGGING = {
 # via environment variable in case it's useful to have a test server be more
 # freely accessible.
 LOGIN_REQUIRED = bool(os.environ.get('DJANGO_LOGIN_REQUIRED', True))
+
+SOCIAL_AUTH_MITOAUTH2_KEY = os.environ.get('DJANGO_MITOAUTH2_KEY', None)
+SOCIAL_AUTH_MITOAUTH2_SECRET = os.environ.get('DJANGO_MITOAUTH2_SECRET', None)
