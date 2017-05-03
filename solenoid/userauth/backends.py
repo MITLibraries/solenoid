@@ -3,7 +3,7 @@ from social_core.backends.oauth import BaseOAuth2
 
 class MITOAuth2(BaseOAuth2):
     """MIT OAuth authentication backend"""
-    name = 'MITOAuth2'
+    name = 'mitoauth2'
     AUTHORIZATION_URL = 'https://oidc.mit.edu/authorize'
     ACCESS_TOKEN_URL = 'https://oidc.mit.edu/token'
 

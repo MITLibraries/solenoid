@@ -201,9 +201,15 @@ INSTALLED_APPS += (
 # to be set with an environment variable to facilitate testing. You will need
 # to fill in key and secret values for your environment as well if you set this
 # to True.
-LOGIN_REQUIRED = bool(os.environ.get('DJANGO_LOGIN_REQUIRED', False))
+if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'True':
+    # You can't actually set a Boolean environment variable, just a string.
+    LOGIN_REQUIRED = True
+else:
+    LOGIN_REQUIRED = False
 
 if LOGIN_REQUIRED:
+    # args is *case-sensitive*, even though other parts of python-social-auth
+    # are casual about casing.
     LOGIN_URL = reverse_lazy('social:begin', args=('mitoauth2',))
 
     AUTHENTICATION_BACKENDS = (
