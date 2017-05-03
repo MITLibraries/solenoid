@@ -67,7 +67,8 @@ LOGGING = {
 # Default to requiring login on Heroku servers, but allow this to be turned off
 # via environment variable in case it's useful to have a test server be more
 # freely accessible.
-LOGIN_REQUIRED = bool(os.environ.get('DJANGO_LOGIN_REQUIRED', True))
-
-SOCIAL_AUTH_MITOAUTH2_KEY = os.environ.get('DJANGO_MITOAUTH2_KEY', None)
-SOCIAL_AUTH_MITOAUTH2_SECRET = os.environ.get('DJANGO_MITOAUTH2_SECRET', None)
+if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'False':
+    # You can't actually set a Boolean environment variable, just a string.
+    LOGIN_REQUIRED = False
+else:
+    LOGIN_REQUIRED = True

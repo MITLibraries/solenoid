@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
 
+from django.core.urlresolvers import reverse_lazy
+
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -195,11 +197,29 @@ INSTALLED_APPS += (
     'social_django',
 )
 
-AUTHENTICATION_BACKENDS = (
-    'solenoid.userauth.backends.MITOAuth2',
-    # Required for user/pass authentication - this is useful for the admin
-    # site.
-    'django.contrib.auth.backends.ModelBackend',
-)
+# Default to not requiring login for ease of local development, but allow it
+# to be set with an environment variable to facilitate testing. You will need
+# to fill in key and secret values for your environment as well if you set this
+# to True.
+LOGIN_REQUIRED = bool(os.environ.get('DJANGO_LOGIN_REQUIRED', False))
 
-LOGIN_REQUIRED = False
+if LOGIN_REQUIRED:
+    LOGIN_URL = reverse_lazy('social:begin', args=('mitoauth2',))
+
+    AUTHENTICATION_BACKENDS = (
+        'solenoid.userauth.backends.MITOAuth2',
+        # Required for user/pass authentication - this is useful for the admin
+        # site.
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    SOCIAL_AUTH_MITOAUTH2_KEY = os.environ.get('DJANGO_MITOAUTH2_KEY')
+    SOCIAL_AUTH_MITOAUTH2_SECRET = os.environ.get('DJANGO_MITOAUTH2_SECRET')
+
+    MIDDLEWARE_CLASSES += (
+        'social_django.middleware.SocialAuthExceptionMiddleware',
+    )
+
+    TEMPLATES[0]['OPTIONS']['context_processors'].extend(
+        ['social_django.context_processors.backends',
+         'social_django.context_processors.login_redirect'])

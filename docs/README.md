@@ -7,11 +7,11 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
-* `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
-* `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
+* `heroku config:set DJANGO_SECRET_KEY='<a secret key>'`
+* `heroku config:set DJANGO_SETTINGS_MODULE='solenoid.settings.heroku'`
 * For OAuth2:
-  * `heroku config:set DJANGO_MITOAUTH2_KEY=<your MIT OAuth key>`
-  * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`
+  * `heroku config:set DJANGO_MITOAUTH2_KEY='<your MIT OAuth key>'`
+  * `heroku config:set DJANGO_MITOAUTH2_SECRET='<your MIT OAuth secret>'`
   * You can turn OAuth off with `heroku config:unset DJANGO_LOGIN_REQUIRED`, but you probably shouldn't.
   * See below for more on OAuth.
 * If you want `DEBUG=False` (e.g. on production):
