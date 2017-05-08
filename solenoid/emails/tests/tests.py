@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import patch
 
 from django.core.urlresolvers import reverse
@@ -151,9 +152,6 @@ class EmailCreatorTestCase(TestCase):
     def test_emails_get_cced_to_scholcomm(self):
         assert False
 
-    def test_scholcomm_can_edit_emails(self):
-        assert False
-
     def test_email_author_without_liaison(self):
         """Something logical should happen."""
         assert False
@@ -171,20 +169,38 @@ class EmailEvaluateTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "Most recent text of email 1")
 
-    def test_original_version_displays_on_unsent_page_if_latest_blank(self):
-        response = self.client.get(self.url)
-        self.assertContains(response, "Original text of email 2")
-
     def test_liaison_email_address_displays(self):
         response = self.client.get(self.url)
         self.assertContains(response, 'krug@example.com')
         self.assertEqual(response.content.count(b'krug@example.com'), 2)
 
     def test_users_can_save_changes_to_emails(self):
-        assert False
+        orig_text_1 = EmailMessage.objects.get(pk=2).latest_text
+
+        new_text = 'This is what we change the email to'
+        self.client.post(self.url, {
+            'form-TOTAL_FORMS': 2,
+            'form-INITIAL_FORMS': 2,
+            # 'form-MIN_NUM_FORMS': 0,
+            'form-0-latest_text': new_text,     # change this
+            'form-0-id': 1,
+            'form-1-latest_text': orig_text_1,  # don't change this
+            'form-1-id': 2,
+        })
+
+        self.assertEqual(new_text,
+            EmailMessage.objects.get(pk=1).latest_text)
+        self.assertEqual(orig_text_1,
+            EmailMessage.objects.get(pk=2).latest_text)
 
     def test_only_unsent_emails_appear(self):
-        assert False
+        sent_email = EmailMessage.objects.get(pk=1)
+        sent_email.date_sent = date.today()
+        sent_email.save()
+
+        response = self.client.get(self.url)
+        self.assertNotContains(response, "Most recent text of email 1")
+        self.assertContains(response, "Original text of email 2")
 
     def test_revert_changes_button_appears(self):
         response = self.client.get(self.url)
@@ -225,4 +241,3 @@ class EmailMessageModelTestCase(TestCase):
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.
-# https://github.com/django-ckeditor/django-ckeditor - uses HTML as encoding.

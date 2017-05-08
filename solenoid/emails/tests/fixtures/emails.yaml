@@ -54,6 +54,6 @@
   pk: 2
   fields:
     original_text: "Original text of email 2"
-    latest_text: ""
+    latest_text: "Original text of email 2"
     author: 1
     liaison: 1

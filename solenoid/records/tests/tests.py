@@ -272,12 +272,6 @@ class ImportViewTest(TestCase):
 
         self.assertEqual(orig_count, Record.objects.count())
 
-    def test_records_without_status_marked_invalid(self):
-        assert False
-
-    def test_records_unknown_status_marked_invalid(self):
-        assert False
-
     def test_status_timestamp_set_on_ingest(self):
         self._post_csv('single_good_record.csv')
 
