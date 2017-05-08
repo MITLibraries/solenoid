@@ -269,3 +269,22 @@ if LOGIN_REQUIRED:
     TEMPLATES[0]['OPTIONS']['context_processors'].extend(
         ['social_django.context_processors.backends',
          'social_django.context_processors.login_redirect'])
+
+
+# CKEDITOR CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += (
+    'ckeditor',
+)
+
+# This is the same version of jquery that is commented out in the base
+# template, for use by bootstrap.
+# -If you uncomment that line and load jquery in base.html, delete this
+# setting.- Loading jquery multiple times will lead to sorrow.
+
+CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'
+
+# We're intentionally not configuring CKeditor file uploads, because file
+# uploads are not part of the use case documentation, and they add security
+# headaches.
