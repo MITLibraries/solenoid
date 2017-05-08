@@ -186,6 +186,26 @@ LOGGING = {
 }
 
 
+# EMAIL CONFIGURATION
+# -----------------------------------------------------------------------------
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'outgoing.mit.edu'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'libsys'
+EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_SMTP_PASSWORD', None)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# The default backend is SMTP, but if we haven't configured the environment
+# with the password, we can't use SMTP, so use the console backend instead.
+# This will allow for local development/testing and avoid spamming anyone.
+if not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Expects a string, which is an email address, or None. Any emails sent by the
+# system will be cc:ed to this email address.
+SCHOLCOMM_MOIRA_LIST = None
+
 # -----------------------------------------------------------------------------
 # -----------------> third-party and solenoid configurations <-----------------
 # -----------------------------------------------------------------------------

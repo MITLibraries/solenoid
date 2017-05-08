@@ -7,17 +7,20 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
-* `heroku config:set DJANGO_SECRET_KEY='<a secret key>'`
-* `heroku config:set DJANGO_SETTINGS_MODULE='solenoid.settings.heroku'`
+* `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
+  * Can be anything; a 50-character random string is reasonable.
+* `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
+* `heroku config:set DJANGO_SMTP_PASSWORD=<the MIT libsys password>`
+  * This is in the Lastpass DLAD shared notes folder.
 * For OAuth2:
-  * `heroku config:set DJANGO_MITOAUTH2_KEY='<your MIT OAuth key>'`
-  * `heroku config:set DJANGO_MITOAUTH2_SECRET='<your MIT OAuth secret>'`
+  * `heroku config:set DJANGO_MITOAUTH2_KEY=<your MIT OAuth key>`
+  * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`
   * You can turn OAuth off with `heroku config:unset DJANGO_LOGIN_REQUIRED`, but you probably shouldn't.
   * See below for more on OAuth.
 * If you want `DEBUG=False` (e.g. on production):
   * `heroku config:unset DJANGO_DEBUG`
-* Else `heroku config:set DJANGO_DEBUG=True`
-  * Actually any non-null value for this setting will result in DEBUG being True.
+  * Else `heroku config:set DJANGO_DEBUG=True`
+    * Actually any non-null value for this setting will result in DEBUG being True.
 * `git push heroku master`
 * Required on the first deploy only: `heroku run python manage.py syncdb`
 * `heroku run python manage.py migrate`
@@ -40,6 +43,9 @@ Because we don't store sensitive data offsite, it is okay to turn OAuth off on t
 The python-social-auth pipeline (see `solenoid.userauth.backends`) first confirms with the MIT OAuth server that the user has a kerb; it then checks their MIT email against a whitelist defined in `settings.SOCIAL_AUTH_WHITELISTED_EMAILS`.
 
 __Only people on this whitelist will be allowed to log in.__ If the desired access list changes, edit this settings variable.
+
+Change `settings.WHITELIST` if you'd like to alter the set of people allowed to
+log in.
 
 ### Configuring your MIT OAuth provider
 Register an OAuth client at https://oidc.mit.edu with the following parameters:
