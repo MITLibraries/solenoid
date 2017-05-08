@@ -206,7 +206,16 @@ WHITELIST = ['m31', 'cjrobles', 'cquirion', 'lhanscom', 'khdunn',
 SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS = ['%s@mit.edu' % kerb
                                             for kerb in WHITELIST]
 
-SOCIAL_AUTH_ALWAYS_ASSOCIATE = True
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+)
 
 # Default to not requiring login for ease of local development, but allow it
 # to be set with an environment variable to facilitate testing. You will need

@@ -6,7 +6,6 @@ from social_core.utils import url_add_parameters
 class MITOAuth2(BaseOAuth2):
     """MIT OAuth authentication backend"""
     name = 'mitoauth2'
-    ID_KEY = 'sub'
     AUTHORIZATION_URL = 'https://oidc.mit.edu/authorize'
     ACCESS_TOKEN_URL = 'https://oidc.mit.edu/token'
     USER_INFO_URL = 'https://oidc.mit.edu/userinfo'
@@ -22,7 +21,15 @@ class MITOAuth2(BaseOAuth2):
         headers = {"Authorization": "Bearer %s" % token}
         endpoint = self.USER_INFO_URL
         response = requests.get(endpoint, headers=headers)
-        return {'email': response.json()['email'] or ''}
+        return {'email': response.json()['email'] or '',
+                # We'll need sub, the unique ID, for get_user_id.
+                'sub': response.json()['sub']}
+
+    def get_user_id(self, details, response):
+        # This is important for allowing us to associate logins with already-
+        # created accounts; otherwise we'll see an error if someone tries to
+        # log in more than once.
+        return details['sub']
 
     def auth_complete_credentials(self):
         return self.get_key_and_secret()
