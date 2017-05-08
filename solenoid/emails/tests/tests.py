@@ -251,6 +251,13 @@ class EmailSendTestCase(TestCase):
         _email_send(1)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_email_send_function_does_not_resend(self):
+        email = EmailMessage.objects.get(pk=1)
+        email.date_sent = date.today()
+        email.save()
+        _email_send(1)
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_email_send_function_sets_datestamp(self):
         self.assertFalse(EmailMessage.objects.get(pk=1).date_sent)
         _email_send(1)
@@ -271,11 +278,28 @@ class EmailSendTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn('scholcomm@example.com', mail.outbox[0].to)
 
+    @override_settings(SCHOLCOMM_MOIRA_LIST=None)
+    def test_email_handles_empty_moira_list(self):
+        """If no scholcomm list has been set, the email function should not
+        break."""
+        _email_send(1)
+        self.assertEqual(len(mail.outbox), 1)
+
     @patch('solenoid.emails.views._email_send')
     def test_email_send_view_calls_function(self, mock_send):
-        self.client.post(self.url, data={[1, 2]})
-        expected = [call(1), call(2)]
+        self.client.post(self.url, data={'emails': [1, 2]})
+        # Even if we post ints, they'll get cast to strs before we call the
+        # function, and the test will fail if we don't recognize this.
+        expected = [call('1'), call('2')]
         mock_send.assert_has_calls(expected, any_order=True)
+
+    def test_subject_is_something_logical(self):
+        assert False
+
+    def test_text_version_is_something_logical(self):
+        """We have only the html message but we need to generate a text
+        format and update the email sending function."""
+        assert False
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.

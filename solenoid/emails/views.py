@@ -1,6 +1,10 @@
+from datetime import date
 import logging
+from smtplib import SMTPException
 
+from django.conf import settings
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic.base import View
@@ -43,7 +47,38 @@ def _email_create_many(pk_list):
 
 
 def _email_send(pk):
-    pass
+    """
+    Validates and sends the EmailMessage with the given pk. Returns True if
+    successful; False otherwise.
+    """
+    # First, validate.
+    try:
+        email = EmailMessage.objects.get(pk=pk)
+        assert not email.date_sent
+    except (EmailMessage.DoesNotExist, AssertionError):
+        logger.exception('Attempt to send invalid email')
+        return False
+
+    # Then, send.
+    try:
+        recipients = [email.liaison.email_address]
+        if settings.SCHOLCOMM_MOIRA_LIST:
+            recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
+
+        send_mail(
+            'Subject here',
+            email.latest_text,
+            settings.DEFAULT_FROM_EMAIL,
+            recipients,
+            html_message=email.latest_text,
+            fail_silently=False,
+        )
+        email.date_sent = date.today()
+        email.save()
+    except SMTPException:
+        return False
+
+    return True
 
 
 class EmailCreate(LoginRequiredMixin, View):
@@ -97,4 +132,15 @@ class EmailRevert(LoginRequiredMixin, View):
 
 
 class EmailSend(LoginRequiredMixin, View):
-    pass
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        pk_list = request.POST.getlist('emails')
+        statuses = [_email_send(pk) for pk in pk_list]
+        if False in statuses:
+            messages.warning(request,
+                'Some emails were not successfully sent.')
+        else:
+            messages.success(request, 'All emails sent. Hooray!')
+
+        return HttpResponseRedirect(reverse('home'))
