@@ -9,6 +9,5 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
-        context['dlcs_exist'] = bool(DLC.objects.count())
         context['liaisons_exist'] = bool(Liaison.objects.count())
         return context

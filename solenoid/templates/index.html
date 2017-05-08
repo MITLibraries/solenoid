@@ -1,36 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if dlcs_exist %}
-  <a href="{% url 'people:dlc_update' %}" class="btn btn-default btn-lg">
-      ✔
-    Add DLCs
-  </a>
-{% else %}
-  <a href="{% url 'people:dlc_update' %}" class="btn btn-primary btn-lg">
-      <span class="badge">1</span>
-    Add DLCs
-  </a>
-{% endif %}
-
 {% if liaisons_exist %}
   <a href="{% url 'people:liaison_create' %}" class="btn btn-default btn-lg">
       ✔
     Add Liaisons
+  </a>
+
+  <a href="{% url 'records:import' %}"  class="btn btn-primary btn-lg">
+    <span class="glyphicon glyphicon-arrow-right"></span>
+    Import Data
   </a>
 {% else %}
   <a href="{% url 'people:liaison_create' %}" class="btn btn-primary btn-lg">
       <span class="badge">2</span>
     Add Liaisons
   </a>
-{% endif %}
 
-{% if liaisons_exist and dlcs_exist %}
-  <a href="{% url 'records:import' %}"  class="btn btn-primary btn-lg">
-    <span class="glyphicon glyphicon-arrow-right"></span>
-    Import Data
-  </a>
-{% else %}
   <a href="{% url 'records:import' %}" class="btn btn-default btn-lg disabled">
       <span class="badge">3</span>
       Import Data
