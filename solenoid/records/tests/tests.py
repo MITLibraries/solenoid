@@ -5,7 +5,7 @@ import os
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, resolve
 from django.forms.models import model_to_dict
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 from solenoid.people.models import DLC, Author
 
@@ -27,6 +27,7 @@ from ..views import UnsentList, InvalidList
 # Posting a set of records causes the email constructor to be invoked with that set
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class RecordModelTest(TestCase):
     fixtures = ['records.yaml']
 
@@ -100,6 +101,7 @@ class RecordModelTest(TestCase):
             record.save()
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class UnsentRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']
 
@@ -127,6 +129,7 @@ class UnsentRecordsViewsTest(TestCase):
             self.assertContains(response, record.citation)
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class InvalidRecordsViewsTest(TestCase):
     fixtures = ['records.yaml']
 
@@ -147,6 +150,7 @@ class InvalidRecordsViewsTest(TestCase):
             set(Record.objects.filter(status=Record.INVALID).values_list('pk'))) # noqa
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class ImportViewTest(TestCase):
     """Tests that make sure that the import view correctly verifies the
     imported CSV file and sets record properties accordingly."""

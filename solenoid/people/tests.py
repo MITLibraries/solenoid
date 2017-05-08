@@ -1,11 +1,12 @@
 import hashlib
 
 from django.core.urlresolvers import resolve, reverse
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 from .models import Liaison, DLC, Author
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class LiaisonViewTests(TestCase):
     fixtures = ['records.yaml']
 
@@ -39,6 +40,7 @@ class LiaisonViewTests(TestCase):
         self.assertIn(DLC.objects.get(pk=2), liaison.dlc_set.all())
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class DLCTests(TestCase):
 
     # We used to have an option for letting people manually edit DLCs. We've
@@ -51,6 +53,7 @@ class DLCTests(TestCase):
         DLC.objects.create(name='Test DLC')
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class AuthorTests(TestCase):
     def tearDown(self):
         Author.objects.all().delete()

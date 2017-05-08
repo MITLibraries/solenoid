@@ -1,3 +1,6 @@
+import logging
+
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic.base import View
@@ -7,6 +10,9 @@ from solenoid.records.models import Record
 from solenoid.userauth.mixins import LoginRequiredMixin
 
 from .models import EmailMessage
+
+
+logger = logging.getLogger(__name__)
 
 
 def _email_create_one(author, record_list):
@@ -46,3 +52,22 @@ class EmailCreate(LoginRequiredMixin, View):
 
 class EmailEvaluate(LoginRequiredMixin, ListView):
     queryset = EmailMessage.objects.filter(date_sent__isnull=True)
+
+
+class EmailRevert(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        try:
+            email = EmailMessage.objects.get(pk=pk)
+            assert not email.date_sent
+            email.revert()
+        except AssertionError:
+            logger.exception('Attempt to revert an already-sent email')
+            messages.warning(request, 'Cannot revert the text of an email '
+                'that has already been sent')
+        except EmailMessage.DoesNotExist:
+            messages.error(request, 'There is no such email message.')
+            logger.exception('Attempt to revert text of nonexistent email')
+        return HttpResponseRedirect(reverse('emails:evaluate'))

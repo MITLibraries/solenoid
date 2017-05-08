@@ -61,3 +61,12 @@ class EmailMessage(models.Model):
         """Give the latest text if available and the original if not; this is
         the version users should see and send."""
         return self.latest_text if self.latest_text else self.original_text
+
+    def revert(self):
+        """Ensure that the display_text of the email is the original text.
+
+        Right now we implement this by deleting the latest text, but we
+        explicitly don't guarantee any particular implementation."""
+
+        self.latest_text = None
+        self.save()

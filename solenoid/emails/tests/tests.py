@@ -1,14 +1,16 @@
 from unittest.mock import patch
 
 from django.core.urlresolvers import reverse
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
+from solenoid.people.models import Author, Liaison
 from solenoid.records.models import Record
 
 from ..models import EmailMessage
 from ..views import _email_create_many, _email_create_one
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class EmailCreatorTestCase(TestCase):
     fixtures = ['records.yaml']
 
@@ -157,6 +159,7 @@ class EmailCreatorTestCase(TestCase):
         assert False
 
 
+@override_settings(LOGIN_REQUIRED=False)
 class EmailEvaluateTestCase(TestCase):
     fixtures = ['emails.yaml']
 
@@ -184,10 +187,43 @@ class EmailEvaluateTestCase(TestCase):
     def test_users_can_save_changes_to_emails(self):
         assert False
 
-    def test_ask_if_we_need_to_reset_email_to_original_text(self):
-        """We can build a reset-to-original function, but let's only do that if
-        users want us to."""
-        assert False
+    def test_revert_changes_button_appears(self):
+        response = self.client.get(self.url)
+        for email in EmailMessage.objects.filter(date_sent__isnull=True):
+            url = reverse('emails:revert', args=(email.pk,))
+            self.assertContains(response, url)
+
+
+@override_settings(LOGIN_REQUIRED=False)
+class EmailMessageModelTestCase(TestCase):
+    fixtures = ['emails.yaml']
+
+    def test_revert(self):
+        original_text = 'This is the original text'
+        latest_text = 'This is the subsequent text'
+
+        email = EmailMessage.objects.create(
+            original_text=original_text,
+            latest_text=latest_text,
+            author=Author.objects.latest('pk'),
+            liaison=Liaison.objects.latest('pk'),
+        )
+
+        email.revert()
+        self.assertEqual(email.display_text, original_text)
+
+    def test_display_text(self):
+        original_text = 'This is the original text'
+        latest_text = 'This is the subsequent text'
+
+        email = EmailMessage.objects.create(
+            original_text=original_text,
+            latest_text=latest_text,
+            author=Author.objects.latest('pk'),
+            liaison=Liaison.objects.latest('pk'),
+        )
+
+        self.assertEqual(email.display_text, latest_text)
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.

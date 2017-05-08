@@ -7,6 +7,13 @@
   {% for email in object_list %}
     <div class="panel panel-default">
       <div class="panel-heading">
+        <div class="pull-right">
+          <form method="post" action="{% url 'emails:revert' email.pk %}">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-default" value="Discard changes"/>
+          </form>
+
+        </div>
         <h3 class="panel-title">{{ email }}</h3>
         <b>To:</b> {{ email.liaison.first_name }} {{ email.liaison.last_name }} ({{ email.liaison.email_address }})
       </div>
