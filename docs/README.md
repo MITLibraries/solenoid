@@ -19,9 +19,9 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
 * Else `heroku config:set DJANGO_DEBUG=True`
   * Actually any non-null value for this setting will result in DEBUG being True.
 * `git push heroku master`
-* `heroku run python manage.py syncdb`
-  * This is required on the first deploy only
-  * On subsequent deploys, if and only if you have changed the database schema, you will need `heroku run python manage.py migrate`
+* Required on the first deploy only: `heroku run python manage.py syncdb`
+* `heroku run python manage.py migrate`
+  * Technically this is only needed if you have changed the database schema, but it won't hurt to run it regardless, so you may as well do it every time
 
 ### OAuth and sensitive data
 
@@ -40,6 +40,17 @@ Because we don't store sensitive data offsite, it is okay to turn OAuth off on t
 The python-social-auth pipeline (see `solenoid.userauth.backends`) first confirms with the MIT OAuth server that the user has a kerb; it then checks their MIT email against a whitelist defined in `settings.SOCIAL_AUTH_WHITELISTED_EMAILS`.
 
 __Only people on this whitelist will be allowed to log in.__ If the desired access list changes, edit this settings variable.
+
+### Configuring your MIT OAuth provider
+Register an OAuth client at https://oidc.mit.edu with the following parameters:
+* Main:
+  * Redirect URI: `<your base URL>/oauth2/complete/mitoauth2/`
+* Access:
+  * grant types: authorization code
+  * response types: code
+  * scope: email
+
+Defaults are fine for everything else.
 
 ## Development
 * Consult DLAD development guidelines at http://mitlibraries.github.io/ .
