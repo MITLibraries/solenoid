@@ -42,6 +42,10 @@ def _email_create_many(pk_list):
         _email_create_one(author, record_list)
 
 
+def _email_send(pk):
+    pass
+
+
 class EmailCreate(LoginRequiredMixin, View):
     http_method_names = ['post']
 
@@ -90,3 +94,7 @@ class EmailRevert(LoginRequiredMixin, View):
             messages.error(request, 'There is no such email message.')
             logger.exception('Attempt to revert text of nonexistent email')
         return HttpResponseRedirect(reverse('emails:evaluate'))
+
+
+class EmailSend(LoginRequiredMixin, View):
+    pass

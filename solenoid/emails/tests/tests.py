@@ -1,6 +1,7 @@
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import patch, call
 
+from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client, override_settings
 
@@ -8,7 +9,7 @@ from solenoid.people.models import Author, Liaison
 from solenoid.records.models import Record
 
 from ..models import EmailMessage
-from ..views import _email_create_many, _email_create_one
+from ..views import _email_create_many, _email_create_one, _email_send
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -149,9 +150,6 @@ class EmailCreatorTestCase(TestCase):
               'downloading'
         self.assertNotIn(msg, email.original_text)
 
-    def test_emails_get_cced_to_scholcomm(self):
-        assert False
-
     def test_email_author_without_liaison(self):
         """Something logical should happen."""
         assert False
@@ -238,6 +236,46 @@ class EmailMessageModelTestCase(TestCase):
         )
 
         self.assertEqual(email.latest_text, original_text)
+
+
+@override_settings(LOGIN_REQUIRED=False)
+class EmailSendTestCase(TestCase):
+    fixtures = ['emails.yaml']
+
+    def setUp(self):
+        self.url = reverse('emails:send')
+        self.client = Client()
+
+    def test_email_send_function_sends(self):
+        self.assertFalse(EmailMessage.objects.get(pk=1).date_sent)
+        _email_send(1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_email_send_function_sets_datestamp(self):
+        self.assertFalse(EmailMessage.objects.get(pk=1).date_sent)
+        _email_send(1)
+        self.assertTrue(EmailMessage.objects.get(pk=1).date_sent)
+        # Conceivably this test will fail if run near midnight UTC.
+        self.assertEqual(EmailMessage.objects.get(pk=1).date_sent,
+            date.today())
+
+    def test_email_is_sent_to_liaison(self):
+        _email_send(1)
+        self.assertEqual(len(mail.outbox), 1)  # check assumption
+        self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
+            mail.outbox[0].to)
+
+    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
+    def test_email_is_sent_to_scholcomm_moira_list(self):
+        _email_send(1)
+        self.assertEqual(len(mail.outbox), 1)  # check assumption
+        self.assertIn('scholcomm@example.com', mail.outbox[0].to)
+
+    @patch('solenoid.emails.views._email_send')
+    def test_email_send_view_calls_function(self, mock_send):
+        self.client.post(self.url, data={[1, 2]})
+        expected = [call(1), call(2)]
+        mock_send.assert_has_calls(expected, any_order=True)
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.
