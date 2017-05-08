@@ -9,6 +9,7 @@ from django.views.generic.list import ListView
 from solenoid.records.models import Record
 from solenoid.userauth.mixins import LoginRequiredMixin
 
+from .forms import EmailMessageFormSet
 from .models import EmailMessage
 
 
@@ -52,6 +53,24 @@ class EmailCreate(LoginRequiredMixin, View):
 
 class EmailEvaluate(LoginRequiredMixin, ListView):
     queryset = EmailMessage.objects.filter(date_sent__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        context = super(EmailEvaluate, self).get_context_data(**kwargs)
+        context['formset'] = EmailMessageFormSet(queryset=self.get_queryset())
+        return context
+
+    def post(self, request, *args, **kwargs):
+        formset = EmailMessageFormSet(
+            request.POST, request.FILES,
+            queryset=self.get_queryset(),
+        )
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, 'Emails updated.')
+        else:
+            messages.warning(request, 'Could not update emails.')
+
+        return HttpResponseRedirect(reverse('emails:evaluate'))
 
 
 class EmailRevert(LoginRequiredMixin, View):

@@ -167,10 +167,6 @@ class EmailEvaluateTestCase(TestCase):
         self.url = reverse('emails:evaluate')
         self.client = Client()
 
-    def test_find_out_what_formats_can_be_used(self):
-        """Do I need something like CKeditor? Can they edit HTML or .md?"""
-        assert False
-
     def test_latest_version_displays_on_unsent_page_if_not_blank(self):
         response = self.client.get(self.url)
         self.assertContains(response, "Most recent text of email 1")
@@ -185,6 +181,9 @@ class EmailEvaluateTestCase(TestCase):
         self.assertEqual(response.content.count(b'krug@example.com'), 2)
 
     def test_users_can_save_changes_to_emails(self):
+        assert False
+
+    def test_only_unsent_emails_appear(self):
         assert False
 
     def test_revert_changes_button_appears(self):
@@ -210,20 +209,19 @@ class EmailMessageModelTestCase(TestCase):
         )
 
         email.revert()
-        self.assertEqual(email.display_text, original_text)
+        self.assertEqual(email.latest_text, original_text)
 
-    def test_display_text(self):
+    def test_latest_text_is_set_on_creation(self):
         original_text = 'This is the original text'
-        latest_text = 'This is the subsequent text'
 
         email = EmailMessage.objects.create(
             original_text=original_text,
-            latest_text=latest_text,
+            # Note that latest_text is not set here, hence defaults blank.
             author=Author.objects.latest('pk'),
             liaison=Liaison.objects.latest('pk'),
         )
 
-        self.assertEqual(email.display_text, latest_text)
+        self.assertEqual(email.latest_text, original_text)
 
 # https://pypi.python.org/pypi/html2text - might be of use if we need to
 # generate multipart.

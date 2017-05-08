@@ -1,3 +1,5 @@
+from ckeditor.fields import RichTextField
+
 from django.db import models
 from django.template.loader import render_to_string
 
@@ -19,14 +21,24 @@ class EmailMessage(models.Model):
         else:
             return "In re {self.author} (unsent)".format(self=self)
 
-    original_text = models.TextField(editable=False)
-    latest_text = models.TextField(blank=True, null=True)
+    original_text = RichTextField(editable=False)
+    latest_text = RichTextField(blank=True, null=True)
     date_sent = models.DateField(blank=True, null=True)
     author = models.ForeignKey(Author)
     # Although we can derive Liaison from Author via DLC, we're going to
     # record it here because liaisons can change over time; we want to record
     # the actual liaison to whom the email was sent.
     liaison = models.ForeignKey(Liaison)
+
+    def save(self, *args, **kwargs):
+        # One might have a display_text property that showed latest_text if
+        # non-null and original_text otherwise...but there's no way to set
+        # initial values for modelformset fields (as needed on the email
+        # evaluate page), so it's easiest to just ensure that the latest text
+        # reflects whatever we want users to see.
+        if not self.latest_text:
+            self.latest_text = self.original_text
+        super(EmailMessage, self).save(*args, **kwargs)
 
     @classmethod
     def _create_citations(cls, record_list):
@@ -56,17 +68,11 @@ class EmailMessage(models.Model):
                      'liaison': author.dlc.liaison,
                      'citations': citations})
 
-    @property
-    def display_text(self):
-        """Give the latest text if available and the original if not; this is
-        the version users should see and send."""
-        return self.latest_text if self.latest_text else self.original_text
-
     def revert(self):
-        """Ensure that the display_text of the email is the original text.
+        """Ensure that the display text of the email is the original text.
 
-        Right now we implement this by deleting the latest text, but we
-        explicitly don't guarantee any particular implementation."""
+        Right now we implement this by setting the latest text to the original,
+        but we explicitly don't guarantee any particular implementation."""
 
-        self.latest_text = None
+        self.latest_text = self.original_text
         self.save()
