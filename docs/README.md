@@ -35,6 +35,12 @@ The data files exported from Sympletic contain MIT IDs, which are explicitly sen
 
 Because we don't store sensitive data offsite, it is okay to turn OAuth off on test servers. However, think carefully whether those test servers are configured to send email before doing so; it isn't okay for our Heroku review apps to turn into gateways for spamming liaison librarians.
 
+### Who can log in
+
+The python-social-auth pipeline (see `solenoid.userauth.backends`) first confirms with the MIT OAuth server that the user has a kerb; it then checks their MIT email against a whitelist defined in `settings.SOCIAL_AUTH_WHITELISTED_EMAILS`.
+
+__Only people on this whitelist will be allowed to log in.__ If the desired access list changes, edit this settings variable.
+
 ## Development
 * Consult DLAD development guidelines at http://mitlibraries.github.io/ .
 * The github repo is https://github.com/MITLibraries/solenoid .
