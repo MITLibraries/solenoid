@@ -221,7 +221,7 @@ INSTALLED_APPS += (
 # of strings representing MIT usernames; they will be correctly formatted in
 # the SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS list comprehension.
 WHITELIST = ['m31', 'cjrobles', 'cquirion', 'lhanscom', 'khdunn',
-             'dfazio', 'efinnie', 'orbitee']
+             'dfazio', 'efinnie', 'orbitee', 'francesb']
 
 SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS = ['%s@mit.edu' % kerb
                                             for kerb in WHITELIST]
