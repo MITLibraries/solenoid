@@ -54,7 +54,7 @@ Register an OAuth client at https://oidc.mit.edu with the following parameters:
 * Access:
   * grant types: authorization code
   * response types: code
-  * scope: email
+  * scope: email, openid
 
 Defaults are fine for everything else.
 
