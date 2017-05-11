@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+from solenoid.emails.models import EmailMessage
 from solenoid.people.models import Author
 
 from .helpers import Headers
@@ -43,6 +44,7 @@ class Record(models.Model):
     STATUS_CHOICES_LIST = [tuple[0] for tuple in STATUS_CHOICES]
 
     author = models.ForeignKey(Author)
+    email = models.ForeignKey(EmailMessage, blank=True, null=True)
     publisher_name = models.CharField(max_length=50)
     acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
     citation = models.TextField()
@@ -98,6 +100,13 @@ class Record(models.Model):
             return True
         except AssertionError:
             return False
+
+    @property
+    def is_sendable(self):
+        """We define this here to avoid circular imports in
+        solenoid.emails.models, where EmailMessage needs to check whether the
+        record has been sent."""
+        return self.status == self.UNSENT
 
     @staticmethod
     def get_or_create_from_csv(author, row):

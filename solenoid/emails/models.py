@@ -4,7 +4,6 @@ from django.db import models
 from django.template.loader import render_to_string
 
 from solenoid.people.models import Author, Liaison
-from solenoid.records.models import Record
 
 from .helpers import SPECIAL_MESSAGES
 
@@ -44,7 +43,7 @@ class EmailMessage(models.Model):
     def _create_citations(cls, record_list):
         citations = ''
         for record in record_list:
-            if record.status == Record.UNSENT:
+            if record.is_sendable:
                 citations += '<p>'
                 citations += record.citation
                 try:
