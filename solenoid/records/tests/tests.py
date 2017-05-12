@@ -24,7 +24,12 @@ from ..views import UnsentList, InvalidList
 # But the first case should have it sorted by DLC and then author (per model default)
 # People can select desired records
 # (Also there should be a 'select entire DLC' option but that's JS I won't test here)
-# Posting a set of records causes the email constructor to be invoked with that set
+# Emails getting created from records (either test that emails are autocreated
+# on import, or that they can be created manually)
+# Now that I have a ForeignKey to emails, do I care about status_timestamp at
+# all? And what should be in the STATUS field? We don't want to track SENT vs
+# UNSENT because it's tracked on EmailMessage....I think we just want a Boolean
+# for validity, and then we axe the status verification. Aw yeah.
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -278,9 +283,6 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         # This test may fail if run very close to midnight UTC.
         self.assertEqual(record.status_timestamp, date.today())
-
-    def test_status_timestamp_set_when_emailed(self):
-        assert False
 
     def test_doi_set_when_present(self):
         self._post_csv('single_good_record.csv')
