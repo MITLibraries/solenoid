@@ -288,3 +288,17 @@ CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquer
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
 # headaches.
+
+
+# SYMPLECTIC ELEMENTS CONFIGURATION
+# -----------------------------------------------------------------------------
+
+# Defaults to the dev instance - only use the production Elements app if you
+# are very sure you should!
+ELEMENTS_ENDPOINT = os.environ.get('DJANGO_ELEMENTS_ENDPOINT',
+    'https://pubdata-dev.mit.edu:8091/secure-api/v5.5')
+
+# You'll need to have an API user configured in the Elements app that matches
+# these parameters. See docs/README.md.
+ELEMENTS_USER = os.environ.get('DJANGO_ELEMENTS_USER', 'solenoid')
+ELEMENTS_PASSWORD = os.environ.get('DJANGO_ELEMENTS_PASSWORD')
