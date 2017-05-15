@@ -142,7 +142,7 @@ STATIC_URL = '/static/'
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'solenoid', 'static'),
 )
 
 FIXTURE_DIRS = [os.path.join(
@@ -302,3 +302,22 @@ ELEMENTS_ENDPOINT = os.environ.get('DJANGO_ELEMENTS_ENDPOINT',
 # these parameters. See docs/README.md.
 ELEMENTS_USER = os.environ.get('DJANGO_ELEMENTS_USER', 'solenoid')
 ELEMENTS_PASSWORD = os.environ.get('DJANGO_ELEMENTS_PASSWORD')
+
+
+# DJANGO-COMPRESSOR CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += ('compressor',)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+)
+
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-sass', 'sass {infile} {outfile}'),
+)

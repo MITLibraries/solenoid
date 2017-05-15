@@ -1,0 +1,45 @@
+// Base setup
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-size: 62.5%;
+}
+
+body {
+  background-color: $gray;
+  color: $white;
+  font-size: 16px;
+  font-size: 1.6rem;
+  line-height: $lh-base;
+  font-family: $base-font;
+
+}
+
+ol, 
+ul {
+  padding-left: 2.5rem;
+}
+
+li > ul, 
+li > ol {
+  margin-top: .5rem;
+}
+
+dd {
+  margin-left: 0;
+  margin-bottom: 1rem;
+}
+
+hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid $gray-l1;
+}
+
+a {
+  @extend %link;
+}

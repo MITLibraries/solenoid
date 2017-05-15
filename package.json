@@ -1,0 +1,17 @@
+{
+  "engines": {
+    "node": "6.10.3"
+  },
+  "dependencies": {
+    "grunt": "0.4.5",
+    "grunt-cli": "1.2.0",
+    "grunt-django-compressor": "0.2.72"
+  },
+  "scripts": {
+    "postinstall": "grunt django_compressor"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MITLibraries/solenoid.git"
+  }
+}

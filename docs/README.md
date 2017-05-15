@@ -12,6 +12,15 @@
 * `python manage.py test` to run the tests
   * Currently the app is pre-alpha and has a number of intentionally failing tests
   * This will become unacceptable later
+* Static assets
+  * To run the stylesheet compiler/compressor, you need to:
+    * Install npm
+    * `npm install`
+    * `./node_modules/grunt-cli/bin/grunt django_compressor`
+    * `gem install sass`
+    * `python manage.py collectstatic`
+    * `python manage.py compress`
+    * Note that it will only run if DEBUG=False
 
 ## Deploying to Heroku
 The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs credentials. It's connected to the MITLibraries github and has Heroku pipelines set up, so it will automatically:
@@ -20,6 +29,9 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
+* `heroku buildpacks:set heroku/python`
+* `heroku buildpacks:add --index 1 heroku/nodejs`
+  * This is needed to run the grunt task that compiles and compresses assets.
 * `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
   * Can be anything; a 50-character random string is reasonable.
 * `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
