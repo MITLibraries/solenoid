@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+indent() {
+    RE="s/^/       /"
+    [ $(uname) == "Darwin" ] && sed -l "$RE" || sed -u "$RE"
+}
+
+MANAGE_FILE=$(find . -maxdepth 3 -type f -name 'manage.py' | head -1)
+MANAGE_FILE=${MANAGE_FILE:2}
+
+echo "-----> Compressing static files"
+python $MANAGE_FILE compress 2>&1 | indent
+
+echo
+
+# This file is required for Heroku to notice our compressed static assets; see
+# http://stackoverflow.com/questions/33105440/whitenoise-and-django-compressor-cause-404-for-compressed-files .
+# The upshot is that whitenoise only checks for static files once, when the
+# app is loaded, so if you run `python manage.py compress` after that point,
+# its output cannot be served. The post-compile hook kicks in before whitenoise,
+# meaning that the assets will exist at time of check.

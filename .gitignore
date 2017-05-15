@@ -4,6 +4,7 @@ staticfiles/
 wireframes/
 node_modules
 build/*.js
+.sass-cache/
 
 # Created by https://www.gitignore.io/api/osx,linux,django,python
 

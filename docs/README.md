@@ -13,14 +13,8 @@
   * Currently the app is pre-alpha and has a number of intentionally failing tests
   * This will become unacceptable later
 * Static assets
-  * To run the stylesheet compiler/compressor, you need to:
-    * Install npm
-    * `npm install`
-    * `./node_modules/grunt-cli/bin/grunt django_compressor`
-    * `gem install sass`
-    * `python manage.py collectstatic`
-    * `python manage.py compress`
-    * Note that it will only run if DEBUG=False
+  * django-compressor will run automatically
+  * Right now compression is happening per-request, not offline - this is slower but easier to configure.
 
 ## Deploying to Heroku
 The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs credentials. It's connected to the MITLibraries github and has Heroku pipelines set up, so it will automatically:
@@ -48,9 +42,8 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
     * If you used 'solenoid' as your username you can skip this step.
   * See below for more on Elements; you'll need to have configured it on the Symplectic side.
-* If you want `DEBUG=False` (e.g. on production):
-  * `heroku config:unset DJANGO_DEBUG`
-  * Else `heroku config:set DJANGO_DEBUG=True`
+* `DEBUG` defaults to False, as it should on production
+  * If you want it to be True, `heroku config:set DJANGO_DEBUG=True`
 * `git push heroku master`
 * Required on the first deploy only: `heroku run python manage.py syncdb`
 * `heroku run python manage.py migrate`

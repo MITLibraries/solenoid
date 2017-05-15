@@ -63,8 +63,12 @@ MIDDLEWARE_CLASSES = (
 # By setting this an an environment variable, it is easy to switch debug on in
 # servers to do a quick test.
 # DEBUG SHOULD BE FALSE ON PRODUCTION for security reasons.
-DEBUG = bool(os.environ.get('DJANGO_DEBUG', True))
+PROTO_DEBUG = os.environ.get('DJANGO_DEBUG', True)
 
+if PROTO_DEBUG == 'True' or PROTO_DEBUG is True:
+    DEBUG = True
+else:
+    DEBUG = False
 
 # DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -316,8 +320,9 @@ STATICFILES_FINDERS = (
 )
 
 COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
+COMPRESS_OFFLINE = not DEBUG  # The default, but we're being explicit.
 
 COMPRESS_PRECOMPILERS = (
-    ('text/x-sass', 'sass {infile} {outfile}'),
+    ('text/x-sass', 'django_libsass.SassCompiler'),
+    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
