@@ -57,6 +57,10 @@ h2, h3, h4 {
   margin-bottom: 1.5rem;
 }
 
+input[type="file"], input[type="submit"], button {
+  cursor: pointer;
+}
+
 // Useful bootstrap-esque utilities
 .clearfix {
   @include clearfix;

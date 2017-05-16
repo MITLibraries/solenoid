@@ -137,3 +137,11 @@ class Import(LoginRequiredMixin, FormView):
                     'have been successfully updated.'.format(x=successes))
 
         return super(Import, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(Import, self).get_context_data(**kwargs)
+        context['breadcrumbs'] = [
+            {'url': reverse_lazy('home'), 'text': 'dashboard'},
+            {'url': '#', 'text': 'import csv'}
+        ]
+        return context
