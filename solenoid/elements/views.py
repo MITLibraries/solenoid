@@ -19,10 +19,10 @@ from django.conf import settings
 top = Element('update-record')
 top.set('xmlns', 'http://www.symplectic.co.uk/publications/api')
 fields = SubElement(top, 'fields')
-field = SubElement(fields, 'field')
-field.set('name', 'c-requested')
-field.set('operation', 'set')
-field.text = 'true'  # try this, but you might need a SubElement 'text'
+bool_field = SubElement(fields, 'boolean')
+bool_field.set('name', 'c-requested')
+bool_field.set('operation', 'set')
+bool_field.text = 'true'
 
 # https://pubdata-dev.mit.edu/viewobject.html?id=307811&cid=1
 pub_id = 307811  # get this from actual record later
