@@ -1,26 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if liaisons_exist %}
-  <a href="{% url 'people:liaison_create' %}" class="btn btn-default btn-lg">
-      ✔
-    Add Liaisons
-  </a>
-
-  <a href="{% url 'records:import' %}"  class="btn btn-primary btn-lg">
-    <span class="glyphicon glyphicon-arrow-right"></span>
-    Import Data
-  </a>
-{% else %}
-  <a href="{% url 'people:liaison_create' %}" class="btn btn-primary btn-lg">
-      <span class="badge">2</span>
-    Add Liaisons
-  </a>
-
-  <a href="{% url 'records:import' %}" class="btn btn-default btn-lg disabled">
-      <span class="badge">3</span>
-      Import Data
-  </a>
-{% endif %}
-
+  <div class="gridband layout-2c">
+    <div class="grid-item">
+      <div class="tile">
+        <h2>Import CSV</h2>
+        <a href="{% url 'records:import' %}" class="button-secondary pull-right">import</a>
+      </div>
+    </div>
+    <div class="grid-item">
+      <div class="tile">
+        <h2>Manage liaisons</h2>
+        <a href="{% url 'people:liaison_create' %}" class="button-secondary pull-right">create</a>
+      </div>
+    </div>
+    <div class="grid-item">
+      <div class="tile">
+        <h2>View unsent citations</h2>
+        <a href="{% url 'records:unsent_list' %}" class="button-secondary pull-right">view</a>
+      </div>
+    </div>
+    <div class="grid-item">
+      <div class="tile">
+        <h2>View pending emails</h2>
+        <a href="{% url 'emails:evaluate' %}" class="button-secondary pull-right">view</a>
+      </div>
+    </div>
+  </div>
 {% endblock %}

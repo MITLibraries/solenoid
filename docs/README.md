@@ -13,8 +13,12 @@
   * Currently the app is pre-alpha and has a number of intentionally failing tests
   * This will become unacceptable later
 * Static assets
-  * django-compressor will run automatically
-  * Right now compression is happening per-request, not offline - this is slower but easier to configure.
+  * If you have DEBUG=True:
+    * `python manage.py collectstatic`
+    * `python manage.py compress`
+    * The order of these commands is important.
+    * Restart runserver to see changes.
+  * If you have DEBUG=False you're going to have to figure out how to serve static on localhost.
 
 ## Deploying to Heroku
 The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs credentials. It's connected to the MITLibraries github and has Heroku pipelines set up, so it will automatically:

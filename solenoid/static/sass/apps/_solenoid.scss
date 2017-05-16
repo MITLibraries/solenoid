@@ -1,0 +1,72 @@
+// Make the subheader pretty
+img.img-logo {
+  height: 5.25rem;
+  margin-left: -15px;
+  max-width: inherit;
+  margin-right: -5px;
+  margin-bottom: 7px;
+}
+
+.layout-band-solenoid {
+  background-color: $blue-muted;
+
+  h1 {
+    color: $white;
+    margin-bottom: 0;
+    font-size: $fs-xxxlarge;
+    font-weight: $fw-light;
+    margin-bottom: -7px;
+  }
+
+  .button-secondary {
+    margin-top: 8px;
+    background-color: $gray;
+    color: $white;
+
+    &:hover,
+    &:focus {
+      background-color: $blue-muted;
+      border-color: $blue-muted;
+      border: 1px solid $white;
+    }
+  }
+
+  .wrap-content {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+h2, h3, h4 {
+  color: $black;
+}
+
+.tile {
+  @extend .bit;
+  @include clearfix;
+  margin-bottom: 2rem;
+}
+
+.button-secondary {
+  color: $blue-muted;
+
+  &:hover,
+  &:focus {
+    background-color: lighten($blue-muted, 10%);
+    border-color: lighten($blue-muted, 10%);
+    color: $white;
+    text-decoration: none;
+  }
+}
+// Useful bootstrap-esque utilities
+.clearfix {
+  @include clearfix;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
