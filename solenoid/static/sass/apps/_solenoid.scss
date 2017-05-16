@@ -10,6 +10,11 @@ img.img-logo {
 .layout-band-solenoid {
   background-color: $blue-muted;
 
+  a.logo {
+    color: $white;
+    text-decoration: none;
+  }
+
   h1 {
     color: $white;
     margin-bottom: 0;

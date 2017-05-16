@@ -22,6 +22,7 @@
       <link rel="stylesheet" type="text/x-sass" href="/static/sass/solenoid.sass">
     {% endcompress %}
   </head>
+
   <body>
     <!-- begin MIT branding -->
     <div class="wrap-page">
@@ -48,8 +49,10 @@
       <div class="wrap-outer-header layout-band layout-band-solenoid">
         <div class="wrap-content layout-3q1q">
           <h1 class="pull-left">
+            <a href="/" class="logo">
             <img src="{% static "img/solenoid_logo.svg" %}" alt="logo" class="img-logo">
             <span class="h1-text">Solenoid</span>
+            </a>
           </h1>
           <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
         </div>
@@ -59,6 +62,16 @@
       <!-- begin main content -->
       <div class="wrap-outer-content layout-band">
         <div class="wrap-content layout-3q1q">
+          {% comment %}
+            As desired, supply a breadcrumbs list in get_context_data whose
+            elements are of the form {'url': url, 'text': linktext}.
+          {% endcomment %}
+          {% if breadcrumbs %}
+            {% for crumb in breadcrumbs %}
+              <a href="{{ crumb.url }}">{{ crumb.text}}</a>
+              {% if not forloop.last %} > {% endif %}
+            {% endfor %}
+          {% endif %}
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">{{ message }}</div>
           {% endfor %}
