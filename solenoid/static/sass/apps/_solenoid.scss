@@ -42,6 +42,7 @@ img.img-logo {
   }
 }
 
+// Other solenoid overrides
 h2, h3, h4 {
   color: $black;
 }
@@ -52,17 +53,10 @@ h2, h3, h4 {
   margin-bottom: 2rem;
 }
 
-.button-secondary {
-  color: $blue-muted;
-
-  &:hover,
-  &:focus {
-    background-color: lighten($blue-muted, 10%);
-    border-color: lighten($blue-muted, 10%);
-    color: $white;
-    text-decoration: none;
-  }
+#breadcrumbs {
+  margin-bottom: 1.5rem;
 }
+
 // Useful bootstrap-esque utilities
 .clearfix {
   @include clearfix;

@@ -67,10 +67,12 @@
             elements are of the form {'url': url, 'text': linktext}.
           {% endcomment %}
           {% if breadcrumbs %}
-            {% for crumb in breadcrumbs %}
-              <a href="{{ crumb.url }}">{{ crumb.text}}</a>
-              {% if not forloop.last %} > {% endif %}
-            {% endfor %}
+            <div id="breadcrumbs">
+              {% for crumb in breadcrumbs %}
+                <a href="{{ crumb.url }}">{{ crumb.text}}</a>
+                {% if not forloop.last %} > {% endif %}
+              {% endfor %}              
+            </div>
           {% endif %}
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">{{ message }}</div>
