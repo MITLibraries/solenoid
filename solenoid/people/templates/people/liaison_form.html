@@ -5,7 +5,7 @@
     {% csrf_token %}
     {{ form }}
     {{ dlc_form }}
-    <button class="button-secondary">cancel</button>
+    <a href="{% url 'people:liaison_list' %}" class="button-secondary">cancel</a>
     <input type="submit" name="submit" value="save" class="button-primary">
   </form>
 {% endblock %}

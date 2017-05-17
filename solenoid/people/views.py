@@ -3,7 +3,7 @@ import logging
 from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
 from solenoid.userauth.mixins import LoginRequiredMixin
@@ -47,6 +47,7 @@ class LiaisonList(LoginRequiredMixin, ListView):
             {'url': reverse_lazy('home'), 'text': 'dashboard'},
             {'url': '#', 'text': 'manage liaisons'}
         ]
+        context['unassigned_dlcs'] = DLC.objects.filter(liaison__isnull=True)
         return context
 
 
@@ -64,7 +65,8 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
                 'text': 'manage liaisons'},
             {'url': '#', 'text': 'edit liaison'}
         ]
-        context['dlc_form'] = LiaisonDLCForm()
+        context['dlc_form'] = LiaisonDLCForm(
+            initial={'dlc': DLC.objects.filter(liaison=self.get_object())})
         return context
 
     def post(self, request, *args, **kwargs):
@@ -90,3 +92,23 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
         else:
             messages.warning(request, 'Please correct the errors below.')
             return self.form_invalid(form)
+
+
+class LiaisonDelete(LoginRequiredMixin, DeleteView):
+    model = Liaison
+
+    def get_context_data(self, **kwargs):
+        context = super(LiaisonDelete, self).get_context_data(**kwargs)
+        context['title'] = 'Delete liaison ({name})'.format(
+            name=self.get_object())
+        context['breadcrumbs'] = [
+            {'url': reverse_lazy('home'), 'text': 'dashboard'},
+            {'url': reverse_lazy('people:liaison_list'),
+                'text': 'manage liaisons'},
+            {'url': '#', 'text': 'delete liaison'}
+        ]
+        return context
+
+    def get_success_url(self):
+        messages.success(self.request, 'Liaison deleted.')
+        return reverse_lazy('people:liaison_list')

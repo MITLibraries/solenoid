@@ -47,6 +47,12 @@ h2, h3, h4 {
   color: $black;
 }
 
+p.warning {
+  font-style: italic;
+  color: $warning;
+  font-size: $fs-xxlarge;
+}
+
 .tile {
   @extend .bit;
   @include clearfix;
@@ -61,6 +67,40 @@ input[type="file"], input[type="submit"], button {
   cursor: pointer;
 }
 
+.table-solenoid {
+  border-collapse: collapse;
+
+  th {
+    text-transform: uppercase;
+    color: $gray;
+    text-align: left;
+    padding: 0.5rem 2rem 0.5rem 0px;
+  }
+
+  tr {
+    border-bottom: 2px solid $gray-l2;
+  }
+
+  td {
+    padding: 1rem 2rem 1rem 0px;
+  }
+}
+
+.button-circle {
+  border-radius: $lh-base * $fs-base;
+}
+
+.button-danger {
+  @extend .button-secondary;
+
+  &:hover,
+  &:focus {
+    background-color: $warning;
+    border-color: $warning;
+    color: $white;
+    text-decoration: none;
+  }
+}
 // Useful bootstrap-esque utilities
 .clearfix {
   @include clearfix;

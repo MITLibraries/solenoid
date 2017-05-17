@@ -1,26 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}All liaisons{% endblock %}
-
 {% block content %}
-  {% for liaison in object_list %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">{{ liaison }}</h3>
-      </div>
-      <div class="panel-body">
-        <form class="" action="{% url 'people:liaison_update' liaison.pk %}" method="post">
-          {% csrf_token %}
-          {{ liaison.dlc_form }}
-          <input type="submit" class="btn btn-default" />
-        </form>
-      </div>
-    </div>
-  {% empty %}
-    <p>
-      No liaisons yet.
-    </p>
-  {% endfor %}
-  <a href="{% url 'people:liaison_create' %}" class="btn btn-default">Add new liaison</a>
-  <a href="{% url 'people:liaison_create' %}" class="btn btn-default">Update DLCs</a>
+  <div class="clearfix">
+    <a href="{% url 'people:liaison_create' %}" class="button-secondary pull-right">Add new</a>
+  </div>
+  <div class="entry-content">
+    <table class="table-solenoid">
+      <tr>
+        <th>name</th>
+        <th>email</th>
+        <th>DLCs</th>
+        <th></th>
+      </tr>
+      {% for liaison in object_list %}
+        <tr>
+          <td>
+            {{ liaison.first_name }} {{ liaison.last_name }}
+          </td>
+          <td>
+            {{ liaison.email_address }}
+          </td>
+          <td>
+            {% for dlc in liaison.dlc_set.all %}
+              {{ dlc }}<br>
+            {% endfor %}
+          </td>
+          <td>
+            <a class="button-secondary button-circle"
+               href="{% url 'people:liaison_update' liaison.pk %}"
+               aria-label="edit liaison">
+               <i class="fa fa-pencil" aria-hidden="true"></i>
+            </a>
+            <a class="button-danger button-circle"
+               href="{% url 'people:liaison_delete' liaison.pk %}"
+               aria-label="delete liaison">
+               <i class="fa fa-times" aria-hidden="true"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">
+            No liaisons yet.
+          </td>
+        </tr>
+      {% endfor %}
+      {% if unassigned_dlcs %}
+        <td colspan="2"></td>
+        <td>
+          {% for dlc in unassigned_dlcs %}
+            {{ dlc }}<br>
+          {% endfor %}
+        </td>
+        <td></td>
+      {% endif %}
+    </table>
+  </div>
 {% endblock %}

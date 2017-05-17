@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="warning">Are you super sure?</p>
+
+<p>
+  This will delete {{ liaison }}. All associated DLCs will be unassigned (but
+  not deleted; you will be able to reassign them later).
+</p>
+
+<a href="{% url 'people:liaison_list' %}" class="button-secondary pull-left">no, don't do that</a>
+<form action="" method="post">
+  {% csrf_token %}
+  <input class="button-danger" type="submit" value="yes, delete liaison">
+</form>
+{% endblock %}
