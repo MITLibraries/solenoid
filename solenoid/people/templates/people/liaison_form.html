@@ -1,13 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Create New Liaison{% endblock %}
-
-{% block page_title %}Create New Liaison{% endblock %}
-
 {% block content %}
   <form class="" method="post">
     {% csrf_token %}
     {{ form }}
-    <input type="submit" name="Create Liaison" value="">
+    {{ dlc_form }}
+    <button class="button-secondary">cancel</button>
+    <input type="submit" name="submit" value="save" class="button-primary">
   </form>
 {% endblock %}
