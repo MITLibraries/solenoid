@@ -28,8 +28,12 @@ class EmailMessage(models.Model):
     date_sent = models.DateField(blank=True, null=True)
     # Although we can derive Liaison from Author via DLC, we're going to
     # record it here because liaisons can change over time; we want to record
-    # the actual liaison to whom the email was sent.
-    liaison = models.ForeignKey(Liaison)
+    # the actual liaison to whom the email was sent. We allow it to be blank
+    # because this allows users to use certain bits of the workflow that don't
+    # require knowledge of the liaison (e.g. editing email text). This means
+    # downstream functions that depend on the liaison's existence are
+    # responsible for handling exceptions.
+    liaison = models.ForeignKey(Liaison, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         # One might have a display_text property that showed latest_text if

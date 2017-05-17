@@ -45,6 +45,14 @@ def _email_send(pk):
         logger.exception('Attempt to send invalid email')
         return False
 
+    try:
+        # Can't send the email if there isn't a liaison.
+        assert email.liaison
+    except AssertionError:
+        logger.exception('Attempt to send email {pk}, which is missing a '
+            'liaison'.format(pk=pk))
+        return False
+
     # Then, send.
     try:
         recipients = [email.liaison.email_address]
