@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if progress %}<h3>{{ progress }}</h3>{% endif %}
+  <form method="post" action="">
+    {% csrf_token %}
+      {% comment %}
+        <div class="pull-right">
+          This discard-changes system doesn't work with the formset;
+          reconsider it.
+          <form method="post" action="{% url 'emails:revert' email.pk %}">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-default" value="Discard changes"/>
+          </form>
+        </div>
+      {% endcomment %}
+      <h3 class="panel-title">{{ email }}</h3>
+      <b>To:</b> {{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }}) <br/>
+      <b>In re:</b> {{ form.instance.record_set.first.author }}
+      {{ form.media }}
+      {{ form.as_p }}
+      <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />
+      <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
+      <input type="submit" name="submit_send" value="send &amp; next" class="button-primary" />
+  </form>
+{% endblock %}

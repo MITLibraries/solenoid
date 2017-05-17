@@ -1,11 +1,14 @@
 from ckeditor.fields import RichTextField
+import logging
 
 from django.db import models
 from django.template.loader import render_to_string
 
-from solenoid.people.models import Author, Liaison
+from solenoid.people.models import Liaison
 
 from .helpers import SPECIAL_MESSAGES
+
+logger = logging.getLogger(__name__)
 
 
 class EmailMessage(models.Model):
@@ -23,7 +26,6 @@ class EmailMessage(models.Model):
     original_text = RichTextField(editable=False)
     latest_text = RichTextField(blank=True, null=True)
     date_sent = models.DateField(blank=True, null=True)
-    author = models.ForeignKey(Author)
     # Although we can derive Liaison from Author via DLC, we're going to
     # record it here because liaisons can change over time; we want to record
     # the actual liaison to whom the email was sent.
@@ -67,6 +69,25 @@ class EmailMessage(models.Model):
                      'liaison': author.dlc.liaison,
                      'citations': citations})
 
+    @classmethod
+    def get_or_create_by_author(cls, author):
+        """Given an author, finds or creates an *unsent* email to that author
+        (there should not be more than one of these at a time)."""
+        email = cls.objects.filter(
+            record__author=author, date_sent__isnull=True).distinct()
+
+        try:
+            assert len(email) in [0, 1]
+        except AssertionError:
+            logger.exception('Multiple unsent emails found for %s' % author)
+            raise
+
+        if email:
+            return email[0]
+        else:
+            return cls(original_text=cls.create_original_text(author),
+                liaison=author.dlc.liaison)
+
     def revert(self):
         """Ensure that the display text of the email is the original text.
 
@@ -75,3 +96,10 @@ class EmailMessage(models.Model):
 
         self.latest_text = self.original_text
         self.save()
+
+    @property
+    def author(self):
+        try:
+            return self.records.first().author
+        except:
+            return None

@@ -1,11 +1,12 @@
 from ckeditor.widgets import CKEditorWidget
 
-from django.forms import modelformset_factory
+from django import forms
 
 from .models import EmailMessage
 
-EmailMessageFormSet = modelformset_factory(
-    EmailMessage,
-    fields=('latest_text',),
-    widgets={'latest_text': CKEditorWidget()},
-    extra=0)
+
+class EmailMessageForm(forms.ModelForm):
+    class Meta:
+        model = EmailMessage
+        fields = ['latest_text']
+        widgets = {'latest_text': CKEditorWidget()}

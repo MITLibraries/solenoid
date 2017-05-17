@@ -8,42 +8,28 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic.base import View
+from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
 
-from solenoid.records.models import Record
+from solenoid.people.models import Author
 from solenoid.userauth.mixins import LoginRequiredMixin
 
-from .forms import EmailMessageFormSet
+from .forms import EmailMessageForm
 from .models import EmailMessage
 
 
 logger = logging.getLogger(__name__)
 
 
-def _email_create_one(author, record_list):
-    text = EmailMessage.create_original_text(author, record_list)
-    EmailMessage.objects.create(
-        original_text=text,
-        author=author,
-        liaison=author.dlc.liaison
-    )
+def _get_or_create_emails(pk_list):
+    """Takes a list of pks of Records and gets or creates EmailMessages to all
+    associated Authors."""
+    email_pks = []
 
+    for author in Author.objects.filter(record__pk__in=pk_list):
+        email_pks.append(EmailMessage.get_or_create_by_author(author).pk)
 
-def _email_create_many(pk_list):
-    """Takes a list of pks of Records and produces Emails which cover all those
-    records."""
-    # This will be a dict whose keys are authors, and whose values are all
-    # records in the pk_list associated with that author.
-    email_contexts = {}
-    for pk in pk_list:
-        record = Record.objects.get(pk=pk)
-        if record.author in email_contexts:
-            email_contexts[record.author].append(record)
-        else:
-            email_contexts[record.author] = [record]
-
-    for author, record_list in email_contexts.items():
-        _email_create_one(author, record_list)
+    return email_pks
 
 
 def _email_send(pk):
@@ -86,30 +72,95 @@ class EmailCreate(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         pk_list = request.POST.getlist('records')
-        _email_create_many(pk_list)
-        return HttpResponseRedirect(reverse('emails:evaluate'))
+        email_pks = _get_or_create_emails(pk_list)
+        try:
+            first_pk = email_pks.pop(0)
+            request.session["email_pks"] = email_pks
+            request.session["total_email"] = len(email_pks)
+            request.session["current_email"] = 1
+            return HttpResponseRedirect(reverse('emails:evaluate',
+                args=(first_pk,)))
+        except IndexError:
+            logger.exception('No email pks found; email cannot be created.')
+            messages.warning('No email messages found.')
+            return HttpResponseRedirect(reverse('home'))
 
 
-class EmailEvaluate(LoginRequiredMixin, ListView):
-    queryset = EmailMessage.objects.filter(date_sent__isnull=True)
+class EmailEvaluate(LoginRequiredMixin, UpdateView):
+    """EmailEvaluate lets the user see, edit, and send a single email.
+    Because workflows may involve queuing up multiple unsent emails (e.g. after
+    importing a large number of citations), get_success_url will decide where
+    to redirect the user as follows:
+    1) If there is a list of email_pks in the session, get_success_url will
+       send the user to the pk of the next email (and remove that pk from the
+       list).
+    2) If there isn't, or if it's empty, users will be redirected to the
+       dashboard.
+    """
+    form_class = EmailMessageForm
+    model = EmailMessage
+
+    def _handle_cancel(self):
+        messages.info(self.request, "Any changes to the email have "
+            "been discarded. You may return to the email and update it later.")
+        return self.get_success_url()
+
+    def _handle_save(self):
+        self.form_valid(self.get_form())
+        messages.success(self.request, "Email message updated.")
+        return self.get_success_url()
+
+    def _handle_send(self):
+        self.form_valid(self.get_form())
+        _email_send(self.kwargs['pk'])
+        messages.success(self.request, "Email message updated and sent.")
+        return self.get_success_url()
+
+    def _update_session(self):
+        try:
+            next_pk = self.request.session['email_pks'].pop(0)
+            self.request.session['current_email'] += 1
+            return next_pk
+        except KeyError:
+            return None
 
     def get_context_data(self, **kwargs):
         context = super(EmailEvaluate, self).get_context_data(**kwargs)
-        context['formset'] = EmailMessageFormSet(queryset=self.get_queryset())
+        context['title'] = 'Send email'
+        try:
+            context['progress'] = '#{k} of {n}'.format(
+                k=self.request.session['current_email'],
+                n=self.request.session['total_email'])
+        except KeyError:
+            pass
+
+        context['breadcrumbs'] = [
+            {'url': reverse('home'), 'text': 'dashboard'},
+            {'url': reverse('emails:list_pending'),
+                'text': 'view pending emails'},
+            {'url': '#', 'text': 'send email'}
+        ]
         return context
 
-    def post(self, request, *args, **kwargs):
-        formset = EmailMessageFormSet(
-            request.POST, request.FILES,
-            queryset=self.get_queryset(),
-        )
-        if formset.is_valid():
-            formset.save()
-            messages.success(request, 'Emails updated.')
+    def get_success_url(self):
+        next_pk = self._update_session()
+        if next_pk:
+            return HttpResponseRedirect(reverse('emails:evaluate',
+                args=(next_pk,)))
         else:
-            messages.warning(request, 'Could not update emails.')
+            return HttpResponseRedirect(reverse('home'))
 
-        return HttpResponseRedirect(reverse('emails:evaluate'))
+    def post(self, request, *args, **kwargs):
+        if 'submit_cancel' in request.POST:
+            return self._handle_cancel()
+        elif 'submit_save' in request.POST:
+            return self._handle_save()
+        elif 'submit_send' in request.POST:
+            return self._handle_send()
+        else:
+            messages.warning(request,
+                "I'm sorry; I can't tell what you meant to do.")
+            return self.form_invalid(self.get_form())
 
 
 class EmailRevert(LoginRequiredMixin, View):
@@ -144,3 +195,7 @@ class EmailSend(LoginRequiredMixin, View):
             messages.success(request, 'All emails sent. Hooray!')
 
         return HttpResponseRedirect(reverse('home'))
+
+
+class EmailListPending(LoginRequiredMixin, ListView):
+    queryset = EmailMessage.objects.filter(date_sent__isnull=True)
