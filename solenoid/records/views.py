@@ -20,10 +20,12 @@ logger = logging.getLogger(__name__)
 class UnsentList(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(UnsentList, self).get_context_data(**kwargs)
-        context['page_title'] = 'Unsent Records'
+        context['title'] = 'Unsent citations'
         context['extension_template'] = 'records/_unsent_list.html'
-        context['dlcs'] = Author.objects.filter(
-            record__in=self.get_queryset()).values_list('dlc', flat=True)
+        context['breadcrumbs'] = [
+            {'url': reverse_lazy('home'), 'text': 'dashboard'},
+            {'url': '#', 'text': 'view unsent citations'}
+        ]
         return context
 
     def get_queryset(self):

@@ -12,7 +12,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>{% block title %}Solenoid{% endblock %}</title>
+    <title>{{ title|default:"Solenoid" }}</title>
 
     <!-- mitlib-style -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css">
@@ -71,12 +71,13 @@
               {% for crumb in breadcrumbs %}
                 <a href="{{ crumb.url }}">{{ crumb.text}}</a>
                 {% if not forloop.last %} > {% endif %}
-              {% endfor %}              
+              {% endfor %}
             </div>
           {% endif %}
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">{{ message }}</div>
           {% endfor %}
+          {% if title %}<h2>{{ title }}</h2>{% endif %}
           <main id="content-main" class="content-main" role="main">
             {% comment %}
               The content block is responsible for defining its own layout.

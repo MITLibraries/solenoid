@@ -1,22 +1,14 @@
-{% if dlcs|length > 1 %}
-  {% for dlc in dlcs %}
-      <button type="button" class="btn btn-default btn-round" id="dlc-{{ dlc|slugify}}">
-        {{ dlc }}
-      </button>
-  {% endfor %}
-{% endif %}
-
 <form method="POST" action="{% url 'emails:create' %}">
   {% csrf_token %}
   {% for record in object_list  %}
     <div class="checkbox dlc-{{ record.dlc|slugify }}">
       <label>
-        <input type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }}/ {{ record.author.last_name}}</strong>
+        <input type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
         <br>
         {{ record.citation }}
         <hr>
       </label>
     </div>
   {% endfor %}
-  <button type="submit" class="btn btn-primary">Build emails</button>
+  <button type="submit" class="button-primary">Build emails</button>
 </form>
