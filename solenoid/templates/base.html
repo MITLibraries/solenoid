@@ -62,24 +62,34 @@
       </div>
       <!-- end solenoid branding -->
 
+      <!-- begin breadcrumbs -->
+      {% if breadcrumbs %}
+        <div class="wrap-outer-breadcrumb layout-band">
+      		<div class="wrap-breadcrumb" role="navigation" aria-label="breadcrumbs">
+      			<div class="breadcrumbs">
+              {% for crumb in breadcrumbs %}
+                <a href="{{ crumb.url }}">{{ crumb.text}}</a>
+                {% if not forloop.last %} &raquo; {% endif %}
+              {% endfor %}
+      			</div>
+      		</div>
+      	</div>
+      {% endif %}
+      <!-- end breadcrumbs -->
+
       <!-- begin main content -->
       <div class="wrap-outer-content layout-band">
+        <!-- begin messages -->
+        {% for message in messages %}
+          <div class="alert alert-banner {{ message.tags }}" role="alert">{{ message }}</div>
+        {% endfor %}
+        <!-- end messages -->
+
         <div class="wrap-content layout-3q1q">
           {% comment %}
             As desired, supply a breadcrumbs list in get_context_data whose
             elements are of the form {'url': url, 'text': linktext}.
           {% endcomment %}
-          {% if breadcrumbs %}
-            <div id="breadcrumbs">
-              {% for crumb in breadcrumbs %}
-                <a href="{{ crumb.url }}">{{ crumb.text}}</a>
-                {% if not forloop.last %} > {% endif %}
-              {% endfor %}
-            </div>
-          {% endif %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-          {% endfor %}
           {% if title %}<h2>{{ title }}</h2>{% endif %}
           <main id="content-main" class="content-main" role="main">
             {% comment %}
