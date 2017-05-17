@@ -12,7 +12,9 @@ MANAGE_FILE=${MANAGE_FILE:2}
 echo "-----> Compressing static files"
 python $MANAGE_FILE compress 2>&1 | indent
 
-echo
+echo "-----> Migrating database"
+python $MANAGE_FILE migrate 2>&1 | indent
+
 
 # This file is required for Heroku to notice our compressed static assets; see
 # http://stackoverflow.com/questions/33105440/whitenoise-and-django-compressor-cause-404-for-compressed-files .
