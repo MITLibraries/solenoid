@@ -90,7 +90,7 @@ class EmailCreate(LoginRequiredMixin, View):
                 args=(first_pk,)))
         except IndexError:
             logger.exception('No email pks found; email cannot be created.')
-            messages.warning('No email messages found.')
+            messages.warning(request, 'No email messages found.')
             return HttpResponseRedirect(reverse('home'))
 
 
@@ -134,7 +134,11 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(EmailEvaluate, self).get_context_data(**kwargs)
-        context['title'] = 'Send email'
+        if self.object.date_sent:
+            context['title'] = 'View sent email'
+        else:
+            context['title'] = 'Send email'
+
         try:
             context['progress'] = '#{k} of {n}'.format(
                 k=self.request.session['current_email'],
@@ -158,7 +162,23 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         else:
             return HttpResponseRedirect(reverse('home'))
 
+    def get_template_names(self):
+        if self.object.date_sent:
+            return ['emails/evaluate_sent.html']
+        else:
+            return super(EmailEvaluate, self).get_template_names()
+
     def post(self, request, *args, **kwargs):
+        # This would normally be set by post(); since we're not calling super
+        # we are responsible for setting it.
+        self.object = self.get_object()
+
+        if self.object.date_sent:
+            messages.warning(request, 'This email has already been sent; no '
+                'further changes can be made.')
+            return HttpResponseRedirect(reverse('emails:evaluate',
+                args=(self.kwargs['pk'])))
+
         if 'submit_cancel' in request.POST:
             return self._handle_cancel()
         elif 'submit_save' in request.POST:
@@ -169,25 +189,6 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
             messages.warning(request,
                 "I'm sorry; I can't tell what you meant to do.")
             return self.form_invalid(self.get_form())
-
-
-class EmailRevert(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def post(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk')
-        try:
-            email = EmailMessage.objects.get(pk=pk)
-            assert not email.date_sent
-            email.revert()
-        except AssertionError:
-            logger.exception('Attempt to revert an already-sent email')
-            messages.warning(request, 'Cannot revert the text of an email '
-                'that has already been sent')
-        except EmailMessage.DoesNotExist:
-            messages.error(request, 'There is no such email message.')
-            logger.exception('Attempt to revert text of nonexistent email')
-        return HttpResponseRedirect(reverse('emails:evaluate'))
 
 
 class EmailSend(LoginRequiredMixin, View):

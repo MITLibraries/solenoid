@@ -89,8 +89,10 @@ class EmailMessage(models.Model):
         if email:
             return email[0]
         else:
-            return cls(original_text=cls.create_original_text(author),
+            obj = cls(original_text=cls.create_original_text(author, []),
                 liaison=author.dlc.liaison)
+            obj.save()
+            return obj
 
     def revert(self):
         """Ensure that the display text of the email is the original text.

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3 class="panel-title">{{ email }}</h3>
+  <p><em>This email was sent on {{ object.date_sent }}.</em></p>
+  <b>To:</b> {{ object.liaison.first_name }} {{ object.liaison.last_name }} ({{ object.liaison.email_address }}) <br/>
+  <b>In re:</b> {{ object.record_set.first.author }}
+
+  <p>
+    {{ object.latest_text|safe}}
+  </p>
+{% endblock %}
