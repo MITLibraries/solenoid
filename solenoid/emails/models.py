@@ -109,3 +109,10 @@ class EmailMessage(models.Model):
             return self.records.first().author
         except:
             return None
+
+    @property
+    def dlc(self):
+        try:
+            return self.records.first().author
+        except:
+            return None

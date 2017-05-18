@@ -4,56 +4,54 @@
   <div class="clearfix">
     <a href="{% url 'people:liaison_create' %}" class="button-secondary pull-right">Add new</a>
   </div>
-  <div class="entry-content">
-    <table class="table-solenoid">
+  <table class="table-solenoid">
+    <tr>
+      <th>name</th>
+      <th>email</th>
+      <th>DLCs</th>
+      <th></th>
+    </tr>
+    {% for liaison in object_list %}
       <tr>
-        <th>name</th>
-        <th>email</th>
-        <th>DLCs</th>
-        <th></th>
-      </tr>
-      {% for liaison in object_list %}
-        <tr>
-          <td>
-            {{ liaison.first_name }} {{ liaison.last_name }}
-          </td>
-          <td>
-            {{ liaison.email_address }}
-          </td>
-          <td>
-            {% for dlc in liaison.dlc_set.all %}
-              {{ dlc }}<br>
-            {% endfor %}
-          </td>
-          <td>
-            <a class="button-secondary button-circle"
-               href="{% url 'people:liaison_update' liaison.pk %}"
-               aria-label="edit liaison">
-               <i class="fa fa-pencil" aria-hidden="true"></i>
-            </a>
-            <a class="button-danger button-circle"
-               href="{% url 'people:liaison_delete' liaison.pk %}"
-               aria-label="delete liaison">
-               <i class="fa fa-times" aria-hidden="true"></i>
-            </a>
-          </td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="3">
-            No liaisons yet.
-          </td>
-        </tr>
-      {% endfor %}
-      {% if unassigned_dlcs %}
-        <td colspan="2"></td>
         <td>
-          {% for dlc in unassigned_dlcs %}
+          {{ liaison.first_name }} {{ liaison.last_name }}
+        </td>
+        <td>
+          {{ liaison.email_address }}
+        </td>
+        <td>
+          {% for dlc in liaison.dlc_set.all %}
             {{ dlc }}<br>
           {% endfor %}
         </td>
-        <td></td>
-      {% endif %}
-    </table>
-  </div>
+        <td>
+          <a class="button-secondary button-circle"
+             href="{% url 'people:liaison_update' liaison.pk %}"
+             aria-label="edit liaison">
+             <i class="fa fa-pencil" aria-hidden="true"></i>
+          </a>
+          <a class="button-danger button-circle"
+             href="{% url 'people:liaison_delete' liaison.pk %}"
+             aria-label="delete liaison">
+             <i class="fa fa-times" aria-hidden="true"></i>
+          </a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3">
+          No liaisons yet.
+        </td>
+      </tr>
+    {% endfor %}
+    {% if unassigned_dlcs %}
+      <td colspan="2"></td>
+      <td>
+        {% for dlc in unassigned_dlcs %}
+          {{ dlc }}<br>
+        {% endfor %}
+      </td>
+      <td></td> <!-- for spacing/styling purposes -->
+    {% endif %}
+  </table>
 {% endblock %}

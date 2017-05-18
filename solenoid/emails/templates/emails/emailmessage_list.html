@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table class="table-solenoid">
+  {% if object_list %}
+    {% for email in object_list %}
+      <tr>
+        <td>
+          <span class="copy-lead">{{ email.author }}</span><br />
+          {% with email.record_set|length as count %}
+            {{ count }} citation{{ count|pluralize}}
+          {% endwith %}
+        </td>
+        <td>
+          <span class="copy-lead">{{ email.dlc }}</span> <br />
+          {{ email.liaison }}
+        </td>
+        <td>
+          <a class="button-secondary button-circle"
+             href="{% url 'emails:evaluate' email.pk %}"
+             aria-label="edit email">
+             <i class="fa fa-pencil" aria-hidden="true"></i>
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  {% else %}
+    <p>
+      There are no unsent emails right now.
+    </p>
+  {% endif %}
+</table>
+
+{% endblock %}

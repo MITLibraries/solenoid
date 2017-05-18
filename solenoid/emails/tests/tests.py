@@ -195,6 +195,16 @@ class EmailMessageModelTestCase(TestCase):
               'downloading'
         self.assertNotIn(msg, email)
 
+    def test_liaison_handling(self):
+        """
+        Some things we need to do:
+        * make sure unsent emails use the current liaison for the author's dlc
+          (both dlc and liaison may have changed since the email was created)
+        * make sure sent emails record the liaison to whom it was actually sent
+        * this means we probably want liaison to be a property and _liaison to
+          be the recorded data
+        """
+        assert False
 
 
 @override_settings(LOGIN_REQUIRED=False)

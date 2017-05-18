@@ -208,3 +208,12 @@ class EmailSend(LoginRequiredMixin, View):
 
 class EmailListPending(LoginRequiredMixin, ListView):
     queryset = EmailMessage.objects.filter(date_sent__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        context = super(EmailListPending, self).get_context_data(**kwargs)
+        context['title'] = 'Unsent emails'
+        context['breadcrumbs'] = [
+            {'url': reverse('home'), 'text': 'dashboard'},
+            {'url': '#', 'text': 'view pending emails'},
+        ]
+        return context
