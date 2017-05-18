@@ -33,7 +33,7 @@ class EmailMessage(models.Model):
     # require knowledge of the liaison (e.g. editing email text). This means
     # downstream functions that depend on the liaison's existence are
     # responsible for handling exceptions.
-    liaison = models.ForeignKey(Liaison, blank=True, null=True)
+    _liaison = models.ForeignKey(Liaison, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         # One might have a display_text property that showed latest_text if
@@ -106,13 +106,29 @@ class EmailMessage(models.Model):
     @property
     def author(self):
         try:
-            return self.records.first().author
+            return self.record_set.first().author
         except:
             return None
 
     @property
     def dlc(self):
         try:
-            return self.records.first().author
+            return self.record_set.first().author.dlc
         except:
             return None
+
+    @property
+    def liaison(self):
+        """For *sent* emails, returns the liaison to whom we actually sent the
+        email (regardless of whether that is the current one).
+        For *unsent* emails, returns the liaison to whom we expect to send the
+        email. This can and should change if DLC/liaison pairings are updated.
+        """
+        if self._liaison:
+            return self._liaison
+        else:
+            try:
+                return self.dlc.liaison
+            except AttributeError:
+                # This happens when there is no DLC.
+                return None

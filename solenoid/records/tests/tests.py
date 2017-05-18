@@ -34,7 +34,7 @@ from ..views import UnsentList, InvalidList
 
 @override_settings(LOGIN_REQUIRED=False)
 class RecordModelTest(TestCase):
-    fixtures = ['records.yaml']
+    fixtures = ['testdata.yaml']
 
     def test_status_options_are_enforced(self):
         """The system should not allow records to be saved with an invalid
@@ -108,7 +108,7 @@ class RecordModelTest(TestCase):
 
 @override_settings(LOGIN_REQUIRED=False)
 class UnsentRecordsViewsTest(TestCase):
-    fixtures = ['records.yaml']
+    fixtures = ['testdata.yaml']
 
     def setUp(self):
         self.url = reverse('records:unsent_list')
@@ -136,7 +136,7 @@ class UnsentRecordsViewsTest(TestCase):
 
 @override_settings(LOGIN_REQUIRED=False)
 class InvalidRecordsViewsTest(TestCase):
-    fixtures = ['records.yaml']
+    fixtures = ['testdata.yaml']
 
     def setUp(self):
         self.url = reverse('records:invalid_list')

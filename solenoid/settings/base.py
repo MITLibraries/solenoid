@@ -149,10 +149,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'solenoid', 'static'),
 )
 
-FIXTURE_DIRS = [os.path.join(
-                BASE_DIR, 'solenoid', 'records', 'tests', 'fixtures'),
-                os.path.join(
-                BASE_DIR, 'solenoid', 'emails', 'tests', 'fixtures')]
+FIXTURE_DIRS = [os.path.join(BASE_DIR, 'solenoid', 'fixtures')]
 
 
 # LOGGING CONFIGURATION

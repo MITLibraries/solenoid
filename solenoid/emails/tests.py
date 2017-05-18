@@ -8,13 +8,13 @@ from django.test import TestCase, Client, override_settings
 from solenoid.people.models import Author, Liaison
 from solenoid.records.models import Record
 
-from ..models import EmailMessage
-from ..views import _email_send, _get_or_create_emails
+from .models import EmailMessage
+from .views import _email_send, _get_or_create_emails
 
 
 @override_settings(LOGIN_REQUIRED=False)
 class EmailCreatorTestCase(TestCase):
-    fixtures = ['records.yaml']
+    fixtures = ['testdata.yaml']
 
     @patch('solenoid.emails.views._get_or_create_emails')
     def test_posting_to_create_view_calls_creator(self, mock_create):
@@ -49,7 +49,7 @@ class EmailCreatorTestCase(TestCase):
 
 @override_settings(LOGIN_REQUIRED=False)
 class EmailEvaluateTestCase(TestCase):
-    fixtures = ['emails.yaml']
+    fixtures = ['testdata.yaml']
 
     def setUp(self):
         self.url = reverse('emails:evaluate', args=(1,))
@@ -57,6 +57,8 @@ class EmailEvaluateTestCase(TestCase):
 
     def test_latest_version_displays_on_unsent_page_if_not_blank(self):
         response = self.client.get(self.url)
+        print(self.url)
+        print(response)
         self.assertContains(response, "Most recent text of email 1")
 
     def test_liaison_email_address_displays(self):
@@ -98,7 +100,7 @@ class EmailEvaluateTestCase(TestCase):
 
 @override_settings(LOGIN_REQUIRED=False)
 class EmailMessageModelTestCase(TestCase):
-    fixtures = ['emails.yaml', 'records.yaml']
+    fixtures = ['testdata.yaml']
 
     def test_revert(self):
         original_text = 'This is the original text'
@@ -195,21 +197,52 @@ class EmailMessageModelTestCase(TestCase):
               'downloading'
         self.assertNotIn(msg, email)
 
-    def test_liaison_handling(self):
-        """
-        Some things we need to do:
-        * make sure unsent emails use the current liaison for the author's dlc
-          (both dlc and liaison may have changed since the email was created)
-        * make sure sent emails record the liaison to whom it was actually sent
-        * this means we probably want liaison to be a property and _liaison to
-          be the recorded data
-        """
+    def test_liaison_property_1(self):
+        """If EmailMessage._liaison exists, email.liaison returns it."""
+        email = EmailMessage.objects.get(pk=2)
+        self.assertEqual(email.liaison.pk, 1)
+
+    def test_liaison_property_2(self):
+        """If EmailMessage._liaison does not exist, email.liaison returns the
+        expected liaison based on the author's DLC."""
+
+        # This email is associated with author #2, who belongs to DLC #2, whose
+        # liaison is #2.
+        email = EmailMessage.objects.get(pk=1)
+        self.assertEqual(email.liaison.pk, 2)
+
+    def test_dlc_property_1(self):
+        """The DLC property returns the DLC of the author of the records
+        associated with the email, when those exist."""
+        email = EmailMessage.objects.get(pk=1)
+        self.assertEqual(email.dlc.pk, 1)
+
+    def test_dlc_property_2(self):
+        """The DLC property returns None when the email has no records."""
+        email = EmailMessage.objects.get(pk=2)
+        self.assertEqual(email.dlc, None)
+
+    def test_author_property_1(self):
+        """The DLC property returns the author of the records associated with
+        the email, when those exist."""
+        email = EmailMessage.objects.get(pk=1)
+        self.assertEqual(email.author.pk, 1)
+
+    def test_author_property_2(self):
+        """The DLC property returns None when the email has no records."""
+        email = EmailMessage.objects.get(pk=2)
+        self.assertEqual(email.author, None)
+
+    def test_liaison_deletion(self):
+        """We need email.liaison to be a foreign key, not just a name. This
+        means we can't delete liaisons who have EVER had associated emails...
+        but we do want users to be able to feel like they deleted them."""
         assert False
 
 
 @override_settings(LOGIN_REQUIRED=False)
 class EmailSendTestCase(TestCase):
-    fixtures = ['emails.yaml']
+    fixtures = ['testdata.yaml']
 
     def setUp(self):
         self.url = reverse('emails:send')

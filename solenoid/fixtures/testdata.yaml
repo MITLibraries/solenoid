@@ -68,6 +68,19 @@
     last_name: Liskov
     _mit_id_hash: 3
 
+- model: emails.EmailMessage
+  pk: 1
+  fields:
+    original_text: "Original text of email 1"
+    latest_text: "Most recent text of email 1"
+
+- model: emails.EmailMessage
+  pk: 2
+  fields:
+    original_text: "Original text of email 2"
+    latest_text: "Original text of email 2"
+    _liaison: 1
+
 - model: records.Record
   pk: 1
   fields:
@@ -77,6 +90,7 @@
     citation: Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)
     status: 'Unsent'
     doi: 10.1412/4678156
+    email: 1
 
 - model: records.Record
   pk: 2

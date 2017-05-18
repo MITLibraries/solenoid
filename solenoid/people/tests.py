@@ -8,7 +8,7 @@ from .models import Liaison, DLC, Author
 
 @override_settings(LOGIN_REQUIRED=False)
 class LiaisonViewTests(TestCase):
-    fixtures = ['records.yaml']
+    fixtures = ['testdata.yaml']
 
     def setUp(self):
         self.url = reverse('people:liaison_create')
