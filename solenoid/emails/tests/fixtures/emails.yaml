@@ -47,7 +47,6 @@
   fields:
     original_text: "Original text of email 1"
     latest_text: "Most recent text of email 1"
-    author: 1
     liaison: 1
 
 - model: emails.EmailMessage
@@ -55,5 +54,4 @@
   fields:
     original_text: "Original text of email 2"
     latest_text: "Original text of email 2"
-    author: 1
     liaison: 1

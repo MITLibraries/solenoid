@@ -20,6 +20,6 @@ try:
     # application in it.
     from whitenoise.django import DjangoWhiteNoise
     application = DjangoWhiteNoise(application)
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     # If we can't find whitenoise (e.g. on localhost), just use the default.
     pass
