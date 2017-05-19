@@ -61,7 +61,7 @@ def _email_send(pk):
 
         send_mail(
             'Subject here',
-            email.latest_text,
+            email.plaintext,
             settings.DEFAULT_FROM_EMAIL,
             recipients,
             html_message=email.latest_text,

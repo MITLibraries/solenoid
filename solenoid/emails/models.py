@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
 import logging
 
@@ -90,7 +91,7 @@ class EmailMessage(models.Model):
             return email[0]
         else:
             obj = cls(original_text=cls.create_original_text(author, []),
-                liaison=author.dlc.liaison)
+                _liaison=author.dlc.liaison)
             obj.save()
             return obj
 
@@ -132,3 +133,11 @@ class EmailMessage(models.Model):
             except AttributeError:
                 # This happens when there is no DLC.
                 return None
+
+    @property
+    def plaintext(self):
+        """Returns the latest_text in plaintext format, suitable for
+        constructing a multipart alternative email (as the html stored in
+        latest_text is properly the second part, not the main text)."""
+        soup = BeautifulSoup(self.latest_text, "html.parser")
+        return soup.get_text().replace('\n', '\n\n')

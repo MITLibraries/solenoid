@@ -81,6 +81,12 @@
     latest_text: "Original text of email 2"
     _liaison: 1
 
+- model: emails.EmailMessage
+  pk: 3
+  fields:
+    original_text: "Original text of email 3"
+    latest_text: "<b>Most recent text<b> of email 3"
+
 - model: records.Record
   pk: 1
   fields:

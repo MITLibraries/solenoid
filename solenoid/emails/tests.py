@@ -35,12 +35,12 @@ class EmailCreatorTestCase(TestCase):
     def test_email_recipient(self):
         """The email created by _get_or_create_emails must be to: the relevant
         liaison."""
-        # Expected to be a paper by Fermi, who belongs to Physics, whose
-        # liaison is Krug.
-        record = Record.objects.get(pk=1)
-        _get_or_create_emails([record.pk])
-        email = EmailMessage.objects.latest('pk')
-        self.assertEqual(email.liaison.pk, 1)
+        # Expected to be a paper by Tonegawa, who belongs to BCS, whose
+        # liaison is Cutter. This record does not yet have an email.
+        record = Record.objects.get(pk=2)
+        email_pks = _get_or_create_emails([record.pk])
+        email = EmailMessage.objects.get(pk=email_pks[0])
+        self.assertEqual(email.liaison.pk, 2)
 
     def test_email_author_without_liaison(self):
         """Something logical should happen."""
@@ -57,8 +57,6 @@ class EmailEvaluateTestCase(TestCase):
 
     def test_latest_version_displays_on_unsent_page_if_not_blank(self):
         response = self.client.get(self.url)
-        print(self.url)
-        print(response)
         self.assertContains(response, "Most recent text of email 1")
 
     def test_liaison_email_address_displays(self):
@@ -206,10 +204,10 @@ class EmailMessageModelTestCase(TestCase):
         """If EmailMessage._liaison does not exist, email.liaison returns the
         expected liaison based on the author's DLC."""
 
-        # This email is associated with author #2, who belongs to DLC #2, whose
-        # liaison is #2.
+        # This email is associated with record #1 -> author #1 -> DLC #1 ->
+        # liaison #1.
         email = EmailMessage.objects.get(pk=1)
-        self.assertEqual(email.liaison.pk, 2)
+        self.assertEqual(email.liaison.pk, 1)
 
     def test_dlc_property_1(self):
         """The DLC property returns the DLC of the author of the records
@@ -233,11 +231,14 @@ class EmailMessageModelTestCase(TestCase):
         email = EmailMessage.objects.get(pk=2)
         self.assertEqual(email.author, None)
 
-    def test_liaison_deletion(self):
-        """We need email.liaison to be a foreign key, not just a name. This
-        means we can't delete liaisons who have EVER had associated emails...
-        but we do want users to be able to feel like they deleted them."""
-        assert False
+    def test_plaintext_property(self):
+        """We have only the html message but we need to generate a text
+        format and update the email sending function."""
+        email = EmailMessage.objects.get(pk=3)
+        self.assertEqual(email.latest_text,
+                         "<b>Most recent text<b> of email 3")
+        self.assertEqual(email.plaintext,
+                         "Most recent text of email 3")
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -297,11 +298,3 @@ class EmailSendTestCase(TestCase):
 
     def test_subject_is_something_logical(self):
         assert False
-
-    def test_text_version_is_something_logical(self):
-        """We have only the html message but we need to generate a text
-        format and update the email sending function."""
-        assert False
-
-# https://pypi.python.org/pypi/html2text - might be of use if we need to
-# generate multipart.
