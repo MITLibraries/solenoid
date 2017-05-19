@@ -1,8 +1,17 @@
 import hashlib
 
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.db import IntegrityError
+from django.dispatch import receiver
 
 from solenoid.records.helpers import Headers
+
+
+class ActiveLiaisonManager(models.Manager):
+    def get_queryset(self):
+        return super(ActiveLiaisonManager, self).get_queryset().filter(
+            active=True)
 
 
 class Liaison(models.Model):
@@ -17,11 +26,38 @@ class Liaison(models.Model):
     first_name = models.CharField(max_length=15)
     last_name = models.CharField(max_length=30)
     email_address = models.EmailField()
+    # We don't actually want to delete Liaisons who have associated emails.
+    # Instead, we create a custom manager to only show active Liaisons.
+    active = models.BooleanField(default=True)
+
+    objects_all = models.Manager()  # The default manager.
+    objects = ActiveLiaisonManager()  # Our standard manager.
+
+    def save(self, *args, **kwargs):
+        if not self.active:
+            self.dlc_set.clear()
+
+        return super(Liaison, self).save(*args, **kwargs)
 
     @property
     def dlc_form(self):
         from .forms import LiaisonDLCForm  # Avoid circular imports
         return LiaisonDLCForm(initial={'dlc': self.dlc_set.all()})
+
+
+@receiver(pre_delete, sender=Liaison)
+def delete_or_hide(sender, instance, **kwargs):
+    if instance.emailmessage_set.count():
+        # We should hide but not actually delete Liaisons who have associated
+        # emails - users don't need to see them, but we don't want to
+        # alter the paper trail on associated emails.
+        instance.active = False
+        instance.save()
+        raise IntegrityError('Cannot delete liaison with associated email.')
+    else:
+        # It's totally legit to delete Liaisons who are not connected to other
+        # database options.
+        pass
 
 
 class DLC(models.Model):

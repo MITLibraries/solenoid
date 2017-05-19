@@ -1,6 +1,7 @@
 import hashlib
 
 from django.core.urlresolvers import resolve, reverse
+from django.db import IntegrityError
 from django.test import TestCase, Client, override_settings
 
 from .models import Liaison, DLC, Author
@@ -113,3 +114,36 @@ class AuthorTests(TestCase):
 
         self.assertEqual(Author.get_hash(mit_id),
                          hashlib.md5(mit_id.encode('utf-8')).hexdigest())
+
+
+class LiaisonModelTests(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def test_filter_only_shows_active(self):
+        self.assertEqual(Liaison.objects.count(), 3)
+        l3 = Liaison.objects.get(pk=3)
+        l3.active = False
+        l3.save()
+        self.assertEqual(Liaison.objects.count(), 2)
+
+    def test_setting_inactive_unsets_DLCs(self):
+        l1 = Liaison.objects.get(pk=1)
+        self.assertTrue(l1.dlc_set.count())
+        l1.active = False
+        l1.save()
+        self.assertFalse(l1.dlc_set.count())
+
+    def test_deleting_liaison_with_emails_sets_to_inactive(self):
+        l1 = Liaison.objects.get(pk=1)  # This one has an EmailMessage
+
+        with self.assertRaises(IntegrityError):
+            l1.delete()
+        self.assertFalse(l1.active)
+
+    def test_deleting_liaison_without_emails_behaves_normally(self):
+        l2 = Liaison.objects.get(pk=2)  # This one does not have EmailMessages
+
+        # This should raise no error.
+        l2.delete()
+
+        self.assertFalse(Liaison.objects.filter(pk=2))
