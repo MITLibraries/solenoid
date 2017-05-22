@@ -8,7 +8,7 @@ from django.views.generic.list import ListView
 
 from solenoid.userauth.mixins import LoginRequiredMixin
 
-from .forms import LiaisonCreateForm, LiaisonDLCForm
+from .forms import LiaisonCreateForm
 from .models import Liaison, DLC
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class LiaisonList(LoginRequiredMixin, ListView):
 
 class LiaisonUpdate(LoginRequiredMixin, UpdateView):
     model = Liaison
-    fields = ('first_name', 'last_name', 'email_address')
+    form_class = LiaisonCreateForm
     success_url = reverse_lazy('people:liaison_list')
 
     def get_context_data(self, **kwargs):
@@ -65,9 +65,12 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
                 'text': 'manage liaisons'},
             {'url': '#', 'text': 'edit liaison'}
         ]
-        context['dlc_form'] = LiaisonDLCForm(
-            initial={'dlc': DLC.objects.filter(liaison=self.get_object())})
         return context
+
+    def get_initial(self):
+        initial = super(LiaisonUpdate, self).get_initial()
+        initial['dlc'] = DLC.objects.filter(liaison=self.get_object())
+        return initial
 
     def post(self, request, *args, **kwargs):
         # This would normally be set in post(), but we're not calling super, so

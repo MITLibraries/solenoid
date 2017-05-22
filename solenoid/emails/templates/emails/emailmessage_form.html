@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block content %}
   {% if progress %}<h3>{{ progress }}</h3>{% endif %}
@@ -7,8 +8,7 @@
       <h3 class="panel-title">{{ email }}</h3>
       <b>To:</b> {{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }}) <br/>
       <b>In re:</b> {{ form.instance.record_set.first.author }}
-      {{ form.media }}
-      {{ form.as_p }}
+      {{ form | crispy }}
       <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />
       <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
       <input type="submit" name="submit_send" value="send &amp; next" class="button-primary" />

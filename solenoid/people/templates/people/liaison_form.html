@@ -1,10 +1,10 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block content %}
   <form class="" method="post">
     {% csrf_token %}
-    {{ form }}
-    {{ dlc_form }}
+    {{ form | crispy }}
     <a href="{% url 'people:liaison_list' %}" class="button-secondary">cancel</a>
     <input type="submit" name="submit" value="save" class="button-primary">
   </form>

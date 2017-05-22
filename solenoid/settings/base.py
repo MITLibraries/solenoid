@@ -280,7 +280,7 @@ INSTALLED_APPS += (
 )
 
 # This is the same version of jquery that is commented out in the base
-# template, for use by bootstrap.
+# template.
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
 
@@ -323,3 +323,16 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-sass', 'django_libsass.SassCompiler'),
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
+
+
+# CRISPY-FORMS CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += (
+    'crispy_forms',
+)
+
+# See http://django-crispy-forms.readthedocs.io/en/latest/template_packs.html .
+CRISPY_TEMPLATE_PACK = 'mitlib_crispy'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('mitlib_crispy',)

@@ -63,3 +63,7 @@ def _validate_csv(csv_file):
 
 class ImportForm(forms.Form):
     csv_file = forms.FileField(validators=[_validate_csv])
+
+    def __init__(self, *args, **kwargs):
+        super(ImportForm, self).__init__(*args, **kwargs)
+        self.fields['csv_file'].widget.attrs['class'] = 'field field-upload'

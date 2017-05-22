@@ -67,6 +67,10 @@ input[type="file"], input[type="submit"], button {
   cursor: pointer;
 }
 
+.field-email {
+  @extend .field-text;
+}
+
 .table-solenoid {
   border-collapse: collapse;
 

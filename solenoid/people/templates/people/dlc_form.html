@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}Update DLCs{% endblock %}
 
@@ -7,7 +8,7 @@
 {% block content %}
   <form class="" method="post">
     {% csrf_token %}
-    {{ form }}
-    <input type="submit" name="Update DLCs" value="Update DLCs" class="btn btn-default">
+    {{ form | crispy }}
+    <input type="submit" name="Update DLCs" value="Update DLCs" class="button button-primary">
   </form>
 {% endblock %}

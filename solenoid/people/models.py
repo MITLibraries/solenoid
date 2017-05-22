@@ -75,11 +75,6 @@ class Liaison(models.Model):
         else:
             super(Liaison, self).delete()
 
-    @property
-    def dlc_form(self):
-        from .forms import LiaisonDLCForm  # Avoid circular imports
-        return LiaisonDLCForm(initial={'dlc': self.dlc_set.all()})
-
 
 class DLC(models.Model):
 

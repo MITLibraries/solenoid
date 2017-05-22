@@ -1,0 +1,13 @@
+{% load crispy_forms_filters %}
+
+<div class="field-wrap"{% if flat_attrs %} {{ flat_attrs|safe }}{% endif %}>
+  {% include 'mitlib_style/layout/field_errors_block.html' %}
+
+  {% for choice in field.field.choices %}
+    <label class="field-radio">
+      <input type="radio"{% if choice.0|stringformat:"s" == field.value|stringformat:"s" %} checked="checked"{% endif %} name="{{ field.html_name }}" id="id_{{ field.html_name }}_{{ forloop.counter }}" value="{{ choice.0 }}" {{ field.field.widget.attrs|flatatt }}>{{ choice.1 }}
+    </label>
+  {% endfor %}
+
+  {% include 'mitlib_style/layout/help_text.html' %}
+</div>
