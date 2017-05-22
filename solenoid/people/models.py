@@ -14,10 +14,15 @@ logger = logging.getLogger(__name__)
 # have associated EmailMessages. Liaison.delete() will do this in cases where =
 # object.delete() is called; however, we need to override the queryset behavior
 # to protect against mass deletions, invoked by QuerySet.delete().
+# This will be wicked slow for large querysets, but we're unlikely to have
+# those. It turns out we can't just filter the queryset, using update() on the
+# ones we want to keep and delete() on the ones we don't, because we end up in
+# unending recursion, so we're following the suggestion in the documentation:
+# https://docs.djangoproject.com/en/1.8/topics/db/queries/#deleting-objects
 class ProtectiveQueryset(QuerySet):
     def delete(self):
-        self.filter(emailmessage__isnull=False).update(active=False)
-        self.filter(emailmessage__isnull=True).delete()
+        for obj in self.all():
+            obj.delete()
 
 
 class DefaultManager(models.Manager):

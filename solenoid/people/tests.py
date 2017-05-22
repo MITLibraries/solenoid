@@ -42,7 +42,7 @@ class LiaisonCreateViewTests(TestCase):
 
 
 @override_settings(LOGIN_REQUIRED=False)
-class LiaisonDeleteViewTests(TestCase):
+class LiaisonDeletionTests(TestCase):
     fixtures = ['testdata.yaml']
 
     def setUp(self):
@@ -66,6 +66,12 @@ class LiaisonDeleteViewTests(TestCase):
         self.assertRedirects(response, reverse('people:liaison_list'))
         self.assertFalse(Liaison.objects.filter(pk=1))
         self.assertTrue(Liaison.objects_all.filter(pk=1))
+
+    def test_queryset_delete(self):
+        qs = Liaison.objects.filter(pk__in=[1, 2])
+        qs.delete()
+        self.assertEqual(Liaison.objects.filter(pk__in=[1, 2]).count(), 0)
+        self.assertEqual(Liaison.objects_all.filter(pk__in=[1, 2]).count(), 1)
 
 
 @override_settings(LOGIN_REQUIRED=False)
