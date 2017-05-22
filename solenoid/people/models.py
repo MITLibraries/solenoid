@@ -19,6 +19,7 @@ class Liaison(models.Model):
     class Meta:
         verbose_name = "Liaison"
         verbose_name_plural = "Liaisons"
+        ordering = ['last_name', 'first_name']
 
     def __str__(self):
         return "{self.first_name} {self.last_name}".format(self=self)
@@ -65,6 +66,7 @@ class DLC(models.Model):
     class Meta:
         verbose_name = "DLC"
         verbose_name_plural = "DLCs"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -80,6 +82,7 @@ class Author(models.Model):
     class Meta:
         verbose_name = "Author"
         verbose_name_plural = "Authors"
+        ordering = ['last_name', 'first_name']
 
     def __str__(self):
         return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)  # noqa
