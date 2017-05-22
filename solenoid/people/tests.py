@@ -8,7 +8,7 @@ from .models import Liaison, DLC, Author
 
 
 @override_settings(LOGIN_REQUIRED=False)
-class LiaisonViewTests(TestCase):
+class LiaisonCreateViewTests(TestCase):
     fixtures = ['testdata.yaml']
 
     def setUp(self):
@@ -39,6 +39,33 @@ class LiaisonViewTests(TestCase):
         self.assertEqual(liaison.dlc_set.count(), 2)
         self.assertIn(DLC.objects.get(pk=1), liaison.dlc_set.all())
         self.assertIn(DLC.objects.get(pk=2), liaison.dlc_set.all())
+
+
+@override_settings(LOGIN_REQUIRED=False)
+class LiaisonDeleteViewTests(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_create_liaison_url_exists(self):
+        resolve(reverse('people:liaison_delete', args=(1,)))
+
+    def test_delete_view_1(self):
+        """Delete view works for a liaison without attached emails."""
+        response = self.client.post(reverse('people:liaison_delete',
+                                            args=(2,)))
+        self.assertRedirects(response, reverse('people:liaison_list'))
+        self.assertFalse(Liaison.objects.filter(pk=2))
+        self.assertFalse(Liaison.objects_all.filter(pk=2))
+
+    def test_delete_view_2(self):
+        """Delete view works for a liaison with attached emails."""
+        response = self.client.post(reverse('people:liaison_delete',
+                                            args=(1,)))
+        self.assertRedirects(response, reverse('people:liaison_list'))
+        self.assertFalse(Liaison.objects.filter(pk=1))
+        self.assertTrue(Liaison.objects_all.filter(pk=1))
 
 
 @override_settings(LOGIN_REQUIRED=False)
