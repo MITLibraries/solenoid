@@ -3,6 +3,7 @@ from unittest.mock import patch, call
 
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.template import loader
 from django.test import TestCase, Client, override_settings
 
 from solenoid.people.models import Author, Liaison
@@ -94,6 +95,16 @@ class EmailEvaluateTestCase(TestCase):
 
         self.client.post(self.url, {'submit_send': 'send & next'})
         assert not mock_send.called
+
+    def test_template_renders_form_media(self):
+        """Make sure we remembered to include {{ form.media }}, which is
+        required for rendering the WYSIWYG editor.
+        It's hard to directly test that the template HTML contains that
+        string, but we can check that the rendered template contains part of
+        the expected output of form.media, which would be unlikely to get there
+        any other way."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'ckeditor/ckeditor.js')
 
 
 @override_settings(LOGIN_REQUIRED=False)
