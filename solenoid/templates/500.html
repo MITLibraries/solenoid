@@ -1,6 +1,3 @@
-{% load staticfiles %}
-{% load compress %}
-
 <!DOCTYPE html>
 <!--[if lte IE 9]><html class="no-js lte-ie9" lang="en"><![endif]-->
 <!--[if !(IE 8) | !(IE 9) ]><!-->
@@ -12,18 +9,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>{{ title|default:"Solenoid" }}</title>
+    <title>Solenoid &mdash; server error</title>
 
-    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
-    <link rel="apple-touch-icon" href="{% static 'img/favicon.png' %}">
+    <link rel="shortcut icon" href="static/img/favicon.png">
+    <link rel="apple-touch-icon" href="static/img/favicon.png">
 
     <!-- mitlib-style -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic&subset=latin,latin-ext" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
-    {% compress css %}
-      <link rel="stylesheet" type="text/x-sass" href="/static/sass/solenoid.sass">
-    {% endcompress %}
+    <link rel="stylesheet" type="text/x-sass" href="/static/css/solenoid.css">
   </head>
 
   <body>
@@ -53,50 +48,49 @@
         <div class="wrap-content layout-3q1q">
           <h1 class="pull-left">
             <a href="/" class="logo">
-            <img src="{% static "img/solenoid_logo.svg" %}" alt="logo" class="img-logo">
+            <img src="/static/img/solenoid_logo.svg" alt="logo" class="img-logo">
             <span class="h1-text">Solenoid</span>
             </a>
           </h1>
-          <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+          <a class="button-secondary pull-right" href="/logout">Log out</a>
         </div>
       </div>
       <!-- end solenoid branding -->
 
-      <!-- begin breadcrumbs -->
-      {% comment %}
-        As desired, supply a breadcrumbs list in get_context_data whose
-        elements are of the form {'url': url, 'text': linktext}.
-      {% endcomment %}
-      {% if breadcrumbs %}
-        <div class="wrap-outer-breadcrumb layout-band">
-      		<div class="wrap-breadcrumb" role="navigation" aria-label="breadcrumbs">
-      			<div class="breadcrumbs">
-              {% for crumb in breadcrumbs %}
-                <a href="{{ crumb.url }}">{{ crumb.text}}</a>
-                {% if not forloop.last %} &raquo; {% endif %}
-              {% endfor %}
-      			</div>
-      		</div>
-      	</div>
-      {% endif %}
-      <!-- end breadcrumbs -->
-
       <!-- begin main content -->
       <div class="wrap-outer-content layout-band">
-        <!-- begin messages -->
-        {% for message in messages %}
-          <div class="alert alert-banner {{ message.tags }}" role="alert">{{ message }}</div>
-        {% endfor %}
-        <!-- end messages -->
 
         <div class="wrap-content layout-3q1q">
-          {% if title %}<h2>{{ title }}</h2>{% endif %}
+          <h2>Server error</h2>
           <main id="content-main" class="content-main" role="main">
-            {% comment %}
-              The content block is responsible for defining its own layout.
-            {% endcomment %}
-            {% block content %}
-            {% endblock %}
+            <p>
+              Something went wrong. Try reloading the page.
+            </p>
+
+            <p>
+              If you're seeing this page, please send m31@mit.edu a message
+              with the following information:
+            </p>
+
+            <ul>
+              <li>
+                The time and date (including time zone, if not US Eastern);
+              </li>
+              <li>
+                What you were trying to do when you got to this page;
+              </li>
+              <li>
+                If you were uploading a CSV file, please send a copy of that
+                file;
+              </li>
+              <li>
+                Any other contextual information you think might be helpful.
+              </li>
+            </ul>
+
+            <p>
+              Thanks.
+            </p>
           </main>
         </div>
       </div>
@@ -123,21 +117,5 @@
     </div>
     <!-- end footer-->
 
-    {% comment %}
-      We'll add js back if we turn out to use it.
-      <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-      <!-- Include all compiled plugins (below), or include individual files as needed -->
-      <script src="js/bootstrap.min.js"></script>
-    {% endcomment %}
-
-    {% comment %}
-      If you'd like to add extra js to the bottom of the page, include an
-      `extra_scripts` variable in your context which is a list of script file
-      names suitable as arguments for the static tag.
-    {% endcomment %}
-    {% for script in extra_scripts %}
-      <script src="{% static script %}"></script>
-    {% endfor %}
   </body>
 </html>
