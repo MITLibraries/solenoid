@@ -1,9 +1,16 @@
+<h3>Select all citations by...</h3>
+{% for author in authors %}
+  <button id="button_{{ author.pk }}" class="button-secondary author-toggle">
+    {{ author.last_name }}
+  </button>
+{% endfor %}
+
 <form method="POST" action="{% url 'emails:create' %}">
   {% csrf_token %}
   {% for record in object_list  %}
     <div class="checkbox dlc-{{ record.dlc|slugify }}">
       <label>
-        <input type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
+        <input class="input_{{ record.author.pk }}" type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
         <br>
         {{ record.citation }}
         <hr>
@@ -12,3 +19,44 @@
   {% endfor %}
   <button type="submit" class="button-primary">Build emails</button>
 </form>
+
+<script type="text/javascript">
+  var author_toggle = document.getElementsByClassName('author-toggle');
+
+  function uncheck(checkboxes) {
+    for (var i = 0; i < checkboxes.length; i++) {
+       checkboxes[i].removeAttribute('checked');
+    }
+  }
+
+  function check(checkboxes) {
+    for (var i = 0; i < checkboxes.length; i++) {
+       checkboxes[i].setAttribute('checked', 'checked');
+    }
+  }
+
+  var toggler = function () {
+    console.log(this);
+    var author_id = this.getAttribute('id').slice(7);
+    var checkboxes = document.getElementsByClassName('input_' + author_id);
+
+    // If button is currently inactive...
+    if ( this.className.indexOf('active') == -1 ) {
+      // Add active state
+      this.className += ' active';
+      // Check all relevant buttons
+      check(checkboxes);
+
+    // Otherwise button is active...
+    } else {
+      // Remove active state
+      this.className = this.className.replace(' active', '');
+      // Uncheck all relevant buttons
+      uncheck(checkboxes);
+    }
+  }
+
+  for (var i = 0; i < author_toggle.length; i++) {
+    author_toggle[i].addEventListener('click', toggler, false);
+  }
+</script>

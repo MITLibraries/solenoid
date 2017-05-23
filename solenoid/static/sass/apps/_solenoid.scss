@@ -105,6 +105,15 @@ input[type="file"], input[type="submit"], button {
     text-decoration: none;
   }
 }
+
+.button-secondary.active {
+  @extend .button-secondary:focus;
+  outline: none;
+  -webkit-box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+	-moz-box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+	box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
 // Useful bootstrap-esque utilities
 .clearfix {
   @include clearfix;
