@@ -125,14 +125,24 @@ class Import(LoginRequiredMixin, FormView):
                 updates += 1
 
             if successes:
-                messages.success(self.request, '{x} publications have been '
-                    'successfully imported. You can now generate emails to '
-                    'authors about them.'.format(x=successes))
+                if successes == 1:
+                    messages.success(self.request, '{x} publication has been '
+                        'successfully imported. You can now email its author'
+                        'about it.'.format(x=successes))
+                else:
+                    messages.success(self.request, '{x} publications have '
+                        'been successfully imported. You can now generate '
+                        'emails to authors about them.'.format(x=successes))
 
             if failures:
-                messages.info(self.request, '{x} publications could not be '
-                    'imported. Please fix them in Sympletic and generate a '
-                    'new CSV file.'.format(x=failures))
+                if failures == 1:
+                    messages.info(self.request, '{x} publication could not be '
+                        'imported. Please fix it in Sympletic and generate a '
+                        'new CSV file.'.format(x=failures))
+                else:
+                    messages.info(self.request, '{x} publications could not '
+                        'be imported. Please fix them in Sympletic and '
+                        'generate a new CSV file.'.format(x=failures))
 
             if updates:
                 messages.info(self.request, '{x} existing publication records '
