@@ -20,7 +20,7 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return "In re {self.author} (sent {self.date_sent})".format(self=self)
+            return "In re {self.author} (sent {self.date_sent})".format(self=self)  # noqa
         else:
             return "In re {self.author} (unsent)".format(self=self)
 

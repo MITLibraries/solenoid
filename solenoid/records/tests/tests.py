@@ -456,3 +456,9 @@ class ImportViewTest(TestCase):
 
         self.assertIn('warning',
                       [m.level_tag for m in response.context['messages']])
+
+    def test_form_includes_multipart(self):
+        """If you forgot to add the enctype to the form, the data won't post
+        and the form won't validate even if everything else is correct."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'enctype="multipart/form-data"')
