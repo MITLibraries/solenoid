@@ -26,10 +26,10 @@ def _get_or_create_emails(pk_list):
     associated Authors."""
     email_pks = []
 
-    for author in Author.objects.filter(record__pk__in=pk_list):
+    for author in Author.objects.filter(record__pk__in=pk_list).distinct():
         email_pks.append(EmailMessage.get_or_create_by_author(author).pk)
 
-    return email_pks
+    return list(set(email_pks))  # remove duplicates, if any
 
 
 def _email_send(pk):
@@ -84,7 +84,7 @@ class EmailCreate(LoginRequiredMixin, View):
         try:
             first_pk = email_pks.pop(0)
             request.session["email_pks"] = email_pks
-            request.session["total_email"] = len(email_pks)
+            request.session["total_email"] = len(email_pks) + 1
             request.session["current_email"] = 1
             return HttpResponseRedirect(reverse('emails:evaluate',
                 args=(first_pk,)))
@@ -108,28 +108,49 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
     form_class = EmailMessageForm
     model = EmailMessage
 
+    def _finish_handle(self):
+        next_pk = self._update_session()
+        if next_pk:
+            self.kwargs['next_pk'] = next_pk
+        else:
+            try:
+                del self.kwargs['next_pk']
+            except:
+                pass
+
+        return HttpResponseRedirect(self.get_success_url())
+
     def _handle_cancel(self):
         messages.info(self.request, "Any changes to the email have "
             "been discarded. You may return to the email and update it later.")
-        return self.get_success_url()
+        return self._finish_handle()
 
     def _handle_save(self):
         self.form_valid(self.get_form())
         messages.success(self.request, "Email message updated.")
-        return self.get_success_url()
+        return self._finish_handle()
 
     def _handle_send(self):
         self.form_valid(self.get_form())
         _email_send(self.kwargs['pk'])
         messages.success(self.request, "Email message updated and sent.")
-        return self.get_success_url()
+        return self._finish_handle()
 
     def _update_session(self):
         try:
             next_pk = self.request.session['email_pks'].pop(0)
             self.request.session['current_email'] += 1
             return next_pk
-        except KeyError:
+        except (KeyError, IndexError):
+            # If we don't have email_pks in session, or we have run off the end
+            # of the list and have no more to pop, then we should clean up any
+            # other email-pk-related stuff that still exists.
+            try:
+                del self.request.session['current_email']
+                del self.request.session['total_email']
+            except KeyError:
+                pass
+
             return None
 
     def get_context_data(self, **kwargs):
@@ -155,12 +176,10 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        next_pk = self._update_session()
-        if next_pk:
-            return HttpResponseRedirect(reverse('emails:evaluate',
-                args=(next_pk,)))
+        if 'next_pk' in self.kwargs:
+            return reverse('emails:evaluate', args=(self.kwargs['next_pk'],))
         else:
-            return HttpResponseRedirect(reverse('home'))
+            return reverse('home')
 
     def get_template_names(self):
         if self.object.date_sent:
