@@ -57,7 +57,9 @@
             <span class="h1-text">Solenoid</span>
             </a>
           </h1>
-          <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+          {% ifnotequal request.path '/logout/' %}
+            <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+          {% endifnotequal %}
         </div>
       </div>
       <!-- end solenoid branding -->
