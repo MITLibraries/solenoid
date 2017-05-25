@@ -5,6 +5,9 @@
   </button>
 {% endfor %}
 
+{% comment %}
+  the 'regroup' tag might do what you're looking for here
+{% endcomment %}
 <form method="POST" action="{% url 'emails:create' %}">
   {% csrf_token %}
   {% for record in object_list  %}

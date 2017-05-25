@@ -31,18 +31,7 @@ class UnsentList(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        return Record.objects.filter(status=Record.UNSENT)
-
-
-class InvalidList(LoginRequiredMixin, ListView):
-    def get_context_data(self, **kwargs):
-        context = super(InvalidList, self).get_context_data(**kwargs)
-        context['page_title'] = 'Invalid Records'
-        context['extension_template'] = 'records/_invalid_list.html'
-        return context
-
-    def get_queryset(self):
-        return Record.objects.filter(status=Record.INVALID)
+        return Record.objects.exclude(email__date_sent__isnull=False)
 
 
 class Import(LoginRequiredMixin, FormView):

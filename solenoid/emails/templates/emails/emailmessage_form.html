@@ -5,7 +5,6 @@
   {% if progress %}<h3>{{ progress }}</h3>{% endif %}
   <form method="post" action="">
     {% csrf_token %}
-      <h3 class="panel-title">{{ email }}</h3>
       <b>To:</b> {{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }}) <br/>
       <b>In re:</b> {{ form.instance.record_set.first.author }}
       {{ form.media }}

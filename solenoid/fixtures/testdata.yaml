@@ -87,6 +87,12 @@
     original_text: "Original text of email 3"
     latest_text: "<b>Most recent text<b> of email 3"
 
+- model: emails.EmailMessage
+  pk: 4
+  fields:
+    original_text: "Original text of email 3"
+    latest_text: "<b>Most recent text<b> of email 3"
+
 - model: records.Record
   pk: 1
   fields:
@@ -94,7 +100,6 @@
     publisher_name: Wiley
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)
-    status: 'Unsent'
     doi: 10.1412/4678156
     email: 1
 
@@ -105,7 +110,6 @@
     publisher_name: Nature
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)
-    status: 'Sent'
     doi: 10.1240.2/4914241
 
 - model: records.Record
@@ -115,7 +119,6 @@
     publisher_name: ACM
     acq_method: RECRUIT_FROM_AUTHOR_MANUSCRIPT
     citation: Liskov, Barbara. The Design of the Venus Operating System. Comm. of the ACM 15, 3 (March 1972).
-    status: 'Unsent'
     doi: 10.1248.65/3167862
 
 - model: records.Record
@@ -125,7 +128,6 @@
     publisher_name: ACM-Special Message
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Liskov, Barbara. Data Abstraction and Hierarchy. Addendum to the Proceedings of OOPSLA ’87, SIGPLAN Notices 23, 5 (May 1988), 17-34
-    status: 'Unsent'
     doi: 10.5789/3167846
 
 - model: records.Record
@@ -135,5 +137,14 @@
     publisher_name: Scholastic
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: For some reason this is garbage data and we shouldn't email about it.
-    status: 'Invalid'
     doi: 10.1820/417852
+
+- model: records.Record
+  pk: 6
+  fields:
+    author: 3
+    email: 4
+    publisher_name: ACM-Special Message
+    acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
+    citation: Barbara Liskov. A design methodology for reliable software systems. AFIPS Fall Joint Computing Conference, 1 (1972), 191-199
+    doi: 10.5789/3167846

@@ -2,10 +2,11 @@ from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
 import logging
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.template.loader import render_to_string
 
-from solenoid.people.models import Liaison
+from solenoid.people.models import Liaison, Author
 
 from .helpers import SPECIAL_MESSAGES
 
@@ -50,7 +51,7 @@ class EmailMessage(models.Model):
     def _create_citations(cls, record_list):
         citations = ''
         for record in record_list:
-            if record.is_sendable:
+            if not record.email:
                 citations += '<p>'
                 citations += record.citation
                 try:
@@ -67,17 +68,48 @@ class EmailMessage(models.Model):
         return citations
 
     @classmethod
-    def create_original_text(cls, author, record_list):
+    def create_original_text(cls, record_list):
+        """Given a queryset of records, creates the default text of an email
+        about them.
+
+        Will discard records that already have an email, and raise an error if
+        that leaves zero records. Will also verify that all records have the
+        same author and raise a ValidationError if not."""
+        if not record_list:
+            raise ValidationError('No records provided.')
+
+        available_records = record_list.filter(email__isnull=True)
+        if not available_records:
+            raise ValidationError('All records already have emails.')
+
+        try:
+            authors = record_list.values_list('author')
+            # list(set()) removes duplicates.
+            assert len(list(set(authors))) == 1
+        except AssertionError:
+            raise ValidationError('All records must have the same author.')
+
+        author = record_list.first().author
         citations = cls._create_citations(record_list)
+
         return render_to_string('emails/author_email_template.html',
             context={'author': author,
                      'liaison': author.dlc.liaison,
                      'citations': citations})
 
     @classmethod
-    def get_or_create_by_author(cls, author):
-        """Given an author, finds or creates an *unsent* email to that author
-        (there should not be more than one of these at a time)."""
+    def get_or_create_for_records(cls, records):
+        """Given a queryset of records, finds or creates an *unsent* email to
+        their author (there should not be more than one of these at a time).
+        Records must all be by the same author."""
+        count = Author.objects.filter(record__in=records).distinct().count()
+        if count == 0:
+            return None
+        elif count > 1:
+            raise ValidationError('Records do not all have the same author.')
+        else:
+            author = Author.objects.filter(record__in=records)[0]
+
         email = cls.objects.filter(
             record__author=author, date_sent__isnull=True).distinct()
 
@@ -90,9 +122,13 @@ class EmailMessage(models.Model):
         if email:
             return email[0]
         else:
-            obj = cls(original_text=cls.create_original_text(author, []),
+            obj = cls(original_text=cls.create_original_text(records),
                 _liaison=author.dlc.liaison)
             obj.save()
+            # Make sure to create the ForeignKey relation from those records to
+            # the email! Otherwise this method will only ever create new emails
+            # rather than finding existing ones.
+            records.update(email=obj)
             return obj
 
     def revert(self):

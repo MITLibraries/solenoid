@@ -5,8 +5,8 @@ from .models import Record
 
 
 class RecordAdmin(admin.ModelAdmin):
-    list_filter = ('status', 'acq_method')
-    list_display = ('doi', 'author', 'publisher_name', 'status')
+    list_filter = ('acq_method',)
+    list_display = ('doi', 'author', 'publisher_name', 'is_sent')
 
 
 admin.site.register(Record, RecordAdmin)

@@ -12,6 +12,7 @@ from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
 
 from solenoid.people.models import Author
+from solenoid.records.models import Record
 from solenoid.userauth.mixins import LoginRequiredMixin
 
 from .forms import EmailMessageForm
@@ -22,12 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 def _get_or_create_emails(pk_list):
-    """Takes a list of pks of Records and gets or creates EmailMessages to all
-    associated Authors."""
+    """Takes a list of pks of Records and gets or creates associated
+    EmailMessages."""
     email_pks = []
 
     for author in Author.objects.filter(record__pk__in=pk_list).distinct():
-        email_pks.append(EmailMessage.get_or_create_by_author(author).pk)
+        records = Record.objects.filter(pk__in=pk_list, author=author)
+        email_pks.append(EmailMessage.get_or_create_for_records(records).pk)
 
     return list(set(email_pks))  # remove duplicates, if any
 

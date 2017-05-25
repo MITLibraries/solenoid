@@ -140,23 +140,16 @@ class EmailMessageModelTestCase(TestCase):
     def test_email_has_all_expected_records(self):
         """The email text includes all expected records."""
         records = Record.objects.filter(pk__in=[3, 4, 5])
-        email = EmailMessage.create_original_text(records[0].author, records)
+        email = EmailMessage.create_original_text(records)
         assert Record.objects.get(pk=3).citation in email
         assert Record.objects.get(pk=4).citation in email
-
-    def test_invalid_records_do_not_get_emailed(self):
-        """If the input set contains invalid records, they do not make it
-        into the EmailMessage text."""
-        records = Record.objects.filter(pk__in=[3, 4, 5])
-        email = EmailMessage.create_original_text(records[0].author, records)
-        assert Record.objects.get(pk=5).citation not in email
 
     def test_already_sent_records_do_not_get_emailed(self):
         """If the input set contains already-sent records, they do not make it
         into the EmailMessage text."""
-        records = Record.objects.filter(pk__in=[2, 3, 4, 5])
-        email = EmailMessage.create_original_text(records[0].author, records)
-        assert Record.objects.get(pk=2).citation not in email
+        records = Record.objects.filter(pk__in=[3, 4, 6])
+        email = EmailMessage.create_original_text(records)
+        assert Record.objects.get(pk=6).citation not in email
 
     @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
                 {'ACM-Special Message': 'A very special message'})
@@ -164,7 +157,7 @@ class EmailMessageModelTestCase(TestCase):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
         records = Record.objects.filter(pk__in=[3, 4, 5])
-        text = EmailMessage.create_original_text(records[0].author, records)
+        text = EmailMessage.create_original_text(records)
         self.assertEqual(text.count('A very special message'), 1)
 
     @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
@@ -174,7 +167,7 @@ class EmailMessageModelTestCase(TestCase):
         """The email text does not include special messages for publishers not
         in its record set."""
         records = Record.objects.filter(pk__in=[3, 4, 5])
-        email = EmailMessage.create_original_text(records[0].author, records)
+        email = EmailMessage.create_original_text(records)
         self.assertNotIn('A very special message', email)
         self.assertNotIn('An equally special message', email)
 
@@ -184,7 +177,7 @@ class EmailMessageModelTestCase(TestCase):
         template without the |safe filter, we'll end up with escaped HTML,
         which is no good for our purposes.)"""
         records = Record.objects.filter(pk__in=[3, 4, 5])
-        email = EmailMessage.create_original_text(records[0].author, records)
+        email = EmailMessage.create_original_text(records)
         self.assertNotIn('&lt;p&gt;', email)
 
     def test_fpv_accepted_message_included(self):
@@ -192,15 +185,15 @@ class EmailMessageModelTestCase(TestCase):
         the recruitment strategy."""
         # Record 4 should have an fpv message; 3 does not
         records = Record.objects.filter(pk__in=[3, 4])
-        email = EmailMessage.create_original_text(records[0].author, records)
+        email = EmailMessage.create_original_text(records)
         self.assertIn(Record.objects.get(pk=4).fpv_message,
                       email)
 
     def test_fpv_accepted_message_excluded(self):
         """The Recruit from Author - FPV Accepted message is NOT included if
         that ISN'T the recruitment strategy."""
-        record = Record.objects.get(pk=3)
-        email = EmailMessage.create_original_text(record.author, [record])
+        record = Record.objects.filter(pk=3)
+        email = EmailMessage.create_original_text(record)
         msg = 'allows authors to download and deposit the final published ' \
               'article, but does not allow the Libraries to perform the ' \
               'downloading'
