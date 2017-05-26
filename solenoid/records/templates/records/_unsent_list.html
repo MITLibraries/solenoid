@@ -1,30 +1,51 @@
 <h3>Select all citations by...</h3>
-{% for author in authors %}
-  <button id="button_{{ author.pk }}" class="button-secondary author-toggle">
-    {{ author.last_name }}
-  </button>
-{% endfor %}
 
-{% comment %}
-  the 'regroup' tag might do what you're looking for here
-{% endcomment %}
-<form method="POST" action="{% url 'emails:create' %}">
-  {% csrf_token %}
-  {% for record in object_list  %}
-    <div class="checkbox dlc-{{ record.dlc|slugify }}">
-      <label>
-        <input class="input_{{ record.author.pk }}" type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
-        <br>
-        {{ record.citation }}
-        <hr>
-      </label>
-    </div>
-  {% endfor %}
-  <button type="submit" class="button-primary">Build emails</button>
-</form>
+<div class="layout-3q1q">
+  <div class="col3q">
+    <form method="POST" action="{% url 'emails:create' %}">
+      {% csrf_token %}
+      {% for record in object_list  %}
+        <div class="checkbox dlc-{{ record.dlc|slugify }}">
+          <label>
+            <input class="input_author_{{ record.author.pk }} input_dlc_{{ record.author.dlc.pk }}" type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
+            <br>
+            {{ record.citation }}
+            <hr>
+          </label>
+        </div>
+      {% endfor %}
+      <button type="submit" class="button-primary">Build emails</button>
+    </form>
+  </div>
+  <div class="col1q-r">
+    <h3>Select all by author</h3>
+    <form class="full-width">
+      <select multiple class="field field-select" id="author-toggle">
+        {% for author in authors %}
+          <option id="author_{{ author.pk }}">
+            {{ author.last_name }}, {{ author.first_name}}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <h3>Select all by DLC</h3>
+    <form>
+      <select multiple class="field field-select" id="dlc-toggle">
+        {% for dlc in dlcs %}
+          <option id="dlcdlc_{{ dlc.pk }}"> {# not a typo; 'dlcdlc' is the same length as 'author' which simplifies the javascript #}
+            {{ dlc.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+</div>
 
 <script type="text/javascript">
-  var author_toggle = document.getElementsByClassName('author-toggle');
+  var author_toggle = document.getElementById('author-toggle');
+  var dlc_toggle = document.getElementById('dlc-toggle');
 
   function uncheck(checkboxes) {
     for (var i = 0; i < checkboxes.length; i++) {
@@ -38,28 +59,34 @@
     }
   }
 
-  var toggler = function () {
-    console.log(this);
-    var author_id = this.getAttribute('id').slice(7);
-    var checkboxes = document.getElementsByClassName('input_' + author_id);
+  var toggler = function (obj, prefix) {
+    var options = obj.options;
+    for (i = 0; i < options.length ; i++) {
+      var option = options[i]
+      var target_id = option.getAttribute('id').slice(7);
+      var checkboxes = document.getElementsByClassName('input_' + prefix + '_' + target_id);
 
-    // If button is currently inactive...
-    if ( this.className.indexOf('active') == -1 ) {
-      // Add active state
-      this.className += ' active';
-      // Check all relevant buttons
-      check(checkboxes);
+      // If option is now selected...
+      if ( option.selected ) {
+        // Check all relevant buttons
+        check(checkboxes);
 
-    // Otherwise button is active...
-    } else {
-      // Remove active state
-      this.className = this.className.replace(' active', '');
-      // Uncheck all relevant buttons
-      uncheck(checkboxes);
+      // Otherwise option is unselected...
+      } else {
+        // Uncheck all relevant buttons
+        uncheck(checkboxes);
+      }
     }
   }
 
-  for (var i = 0; i < author_toggle.length; i++) {
-    author_toggle[i].addEventListener('click', toggler, false);
+  var author_toggler = function () {
+    toggler(this, 'author');
   }
+
+  var dlc_toggler = function () {
+    toggler(this, 'dlc');
+  }
+
+  author_toggle.addEventListener('click', author_toggler, false);
+  dlc_toggle.addEventListener('click', dlc_toggler, false);
 </script>

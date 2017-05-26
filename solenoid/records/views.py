@@ -26,8 +26,10 @@ class UnsentList(LoginRequiredMixin, ListView):
             {'url': reverse_lazy('home'), 'text': 'dashboard'},
             {'url': '#', 'text': 'view unsent citations'}
         ]
-        context['authors'] = Author.objects.filter(
+        authors = Author.objects.filter(
             record__in=self.get_queryset()).distinct()
+        context['authors'] = authors
+        context['dlcs'] = DLC.objects.filter(author__in=authors).distinct()
         return context
 
     def get_queryset(self):
