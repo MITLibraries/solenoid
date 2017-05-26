@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client, override_settings
 
 from solenoid.people.models import Author, Liaison
-from solenoid.records.models import Record
+from solenoid.records.models import Record, Message
 
 from .models import EmailMessage
 from .views import _email_send, _get_or_create_emails
@@ -271,25 +271,17 @@ class EmailMessageModelTestCase(TestCase):
         email = EmailMessage.create_original_text(records)
         assert Record.objects.get(pk=6).citation not in email
 
-    @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
-                {'ACM-Special Message': 'A very special message'})
     def test_publisher_special_message_included(self):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
+        message = Message.objects.create(text='A very special message')
+        r3 = Record.objects.get(pk=3)
+        r3.message = message
+        r3.save()
+
         records = Record.objects.filter(pk__in=[3, 4, 5])
         text = EmailMessage.create_original_text(records)
         self.assertEqual(text.count('A very special message'), 1)
-
-    @patch.dict('solenoid.emails.helpers.SPECIAL_MESSAGES',
-                {'Scholastic': 'A very special message',
-                 'Wiley': 'An equally special message'})
-    def test_irrelevant_publisher_special_message_excluded(self):
-        """The email text does not include special messages for publishers not
-        in its record set."""
-        records = Record.objects.filter(pk__in=[3, 4, 5])
-        email = EmailMessage.create_original_text(records)
-        self.assertNotIn('A very special message', email)
-        self.assertNotIn('An equally special message', email)
 
     def test_html_rendered_as_html(self):
         """Make sure that we see <p>, not &lt;p&gt;, and so forth, in our

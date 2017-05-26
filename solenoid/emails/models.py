@@ -8,8 +8,6 @@ from django.template.loader import render_to_string
 
 from solenoid.people.models import Liaison, Author
 
-from .helpers import SPECIAL_MESSAGES
-
 logger = logging.getLogger(__name__)
 
 
@@ -54,14 +52,10 @@ class EmailMessage(models.Model):
             if not record.email:
                 citations += '<p>'
                 citations += record.citation
-                try:
-                    msg_template = SPECIAL_MESSAGES[record.publisher_name]
-                    msg = msg_template.format(doi=record.doi)
-                    citations += '<b>[{msg}]</b>'.format(msg=msg)
-                except KeyError:
-                    # If the publisher doesn't have a corresponding special
-                    # message, that's fine; just keep going.
-                    pass
+
+                if record.message:
+                    citations += '<b>[{msg}]</b>'.format(msg=record.message.text)  # noqa
+
                 if record.fpv_message:
                     citations += record.fpv_message
                 citations += '</p>'

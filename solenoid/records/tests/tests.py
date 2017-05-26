@@ -70,6 +70,7 @@ class UnsentRecordsViewsTest(TestCase):
 
 @override_settings(LOGIN_REQUIRED=False)
 class ImportViewTest(TestCase):
+    fixtures = ['testdata.yaml']
     """Tests that make sure that the import view correctly verifies the
     imported CSV file and sets record properties accordingly."""
 
@@ -147,6 +148,8 @@ class ImportViewTest(TestCase):
         self._post_csv('single_good_record.csv')
 
         record = Record.objects.latest('pk')
+        print(record)
+        print(record.pk)
         self.assertEqual(record.publisher_name, 'Elsevier')
 
     def test_records_without_publishers_rejected(self):
@@ -380,6 +383,33 @@ class ImportViewTest(TestCase):
         and the form won't validate even if everything else is correct."""
         response = self.client.get(self.url)
         self.assertContains(response, 'enctype="multipart/form-data"')
+
+    def test_special_message_added(self):
+        # Case 1: the special message field is blank.
+        self._post_csv('single_good_record.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertFalse(record.message)
+
+        # Case 2: the special message field is not blank.
+        # Note that this record has a different paper ID than the first one -
+        # that's important, as it means we're creating a new record rather than
+        # accessing the existing one, which may not have a message, depending
+        # on how we ultimately handle citation updates.
+        self._post_csv('single_good_record_with_message.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.message.text, 'special message goes here')
+
+        # Case 3: the special message field is not blank, *and* it's one we've
+        # seen before.
+        # Note that this CSV has the same as single_good_record_with_message,
+        # except for a different paper ID.
+        self._post_csv('single_good_record_with_message.csv')
+
+        record2 = Record.objects.latest('pk')
+        self.assertEqual(record2.message.text, 'special message goes here')
+        self.assertEqual(record.message, record2.message)
 
 
 class RecordModelTest(TestCase):
