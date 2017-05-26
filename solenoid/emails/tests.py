@@ -3,7 +3,6 @@ from unittest.mock import patch, call
 
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.template import loader
 from django.test import TestCase, Client, override_settings
 
 from solenoid.people.models import Author, Liaison
@@ -105,6 +104,111 @@ class EmailEvaluateTestCase(TestCase):
         any other way."""
         response = self.client.get(self.url)
         self.assertContains(response, 'ckeditor/ckeditor.js')
+
+    def test_email_evaluate_workflow_1(self):
+        """
+        Make sure that EmailEvaluate walks through the expected set of emails
+        when users are hitting 'cancel & next'.
+
+        It'd be nice to test that the session variables are set correctly, but
+        testing Django session is a pain.
+        """
+        # Set up a path that should take us through the evaluate view 3 times.
+        # Implicitly, we entered the email evaluation workflow with the pks =
+        # [1, 2, 3], but 1 has already been popped by EmailCreate.
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # for info on how to use sessions in testing.
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
+        current_url = reverse('emails:evaluate', args=(1,))
+        self.client.get(current_url)
+
+        response = self.client.post(current_url,
+                                    data={'submit_cancel': 'submit_cancel'})
+        expected_url = reverse('emails:evaluate', args=(2,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_cancel': 'submit_cancel'})
+        expected_url = reverse('emails:evaluate', args=(3,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_cancel': 'submit_cancel'})
+        expected_url = reverse('home')
+        self.assertRedirects(response, expected_url)
+
+    def test_email_evaluate_workflow_2(self):
+        """
+        Make sure that EmailEvaluate walks through the expected set of emails
+        when users are hitting 'save & next'.
+        """
+        # Set up a path that should take us through the evaluate view 3 times.
+        # Implicitly, we entered the email evaluation workflow with the pks =
+        # [1, 2, 3], but 1 has already been popped by EmailCreate.
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # for info on how to use sessions in testing.
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
+        current_url = reverse('emails:evaluate', args=(1,))
+        self.client.get(current_url)
+
+        response = self.client.post(current_url,
+                                    data={'submit_save': 'submit_save'})
+        expected_url = reverse('emails:evaluate', args=(2,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_save': 'submit_save'})
+        expected_url = reverse('emails:evaluate', args=(3,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_save': 'submit_save'})
+        expected_url = reverse('home')
+        self.assertRedirects(response, expected_url)
+
+    def test_email_evaluate_workflow_3(self):
+        """
+        Make sure that EmailEvaluate walks through the expected set of emails
+        when users are hitting 'send & next'.
+        """
+        # Set up a path that should take us through the evaluate view 3 times.
+        # Implicitly, we entered the email evaluation workflow with the pks =
+        # [1, 2, 3], but 1 has already been popped by EmailCreate.
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # for info on how to use sessions in testing.
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
+        current_url = reverse('emails:evaluate', args=(1,))
+        self.client.get(current_url)
+
+        response = self.client.post(current_url,
+                                    data={'submit_send': 'submit_send'})
+        expected_url = reverse('emails:evaluate', args=(2,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_send': 'submit_send'})
+        expected_url = reverse('emails:evaluate', args=(3,))
+        self.assertRedirects(response, expected_url)
+
+        response = self.client.post(expected_url,
+                                    data={'submit_send': 'submit_send'})
+        expected_url = reverse('home')
+        self.assertRedirects(response, expected_url)
 
 
 @override_settings(LOGIN_REQUIRED=False)
