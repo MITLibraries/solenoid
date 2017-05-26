@@ -102,6 +102,7 @@
     citation: Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)
     doi: 10.1412/4678156
     email: 1
+    paper_id: 1
 
 - model: records.Record
   pk: 2

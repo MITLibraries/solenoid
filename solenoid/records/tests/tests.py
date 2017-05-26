@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 import os
+from string import Template
 from unittest import skip
 
 from django.core.exceptions import ValidationError
@@ -13,6 +14,7 @@ from solenoid.emails.models import EmailMessage
 from solenoid.people.models import DLC, Author, Liaison
 
 from ..forms import _validate_csv
+from ..helpers import Headers
 from ..models import Record
 from ..views import UnsentList
 
@@ -378,3 +380,149 @@ class ImportViewTest(TestCase):
         and the form won't validate even if everything else is correct."""
         response = self.client.get(self.url)
         self.assertContains(response, 'enctype="multipart/form-data"')
+
+
+class RecordModelTest(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def test_is_record_creatable(self):
+        # Data includes the basics? Good!
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: 'random',
+            Headers.CITATION: 'nonempty'
+        }
+        assert Record.is_record_creatable(data)
+
+        # Missing data for required basics? Bad!
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: 'random',
+            Headers.CITATION: ''
+        }
+        assert not Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: '',
+            Headers.CITATION: 'nonempty'
+        }
+        assert not Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: '',
+            Headers.ACQ_METHOD: 'random',
+            Headers.CITATION: 'nonempty'
+        }
+        assert not Record.is_record_creatable(data)
+
+        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED requires a DOI.
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'nonempty',
+            Headers.DOI: ''
+        }
+        assert not Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'nonempty',
+            Headers.DOI: '4217896'
+        }
+        assert Record.is_record_creatable(data)
+
+    def test_is_valid(self):
+        record = Record.objects.get(pk=1)
+        record.acq_method = 'NOT_A_METHOD'
+        record.save()
+
+        # acq_method not in ACQ_METHODS_LIST: invalid
+        assert not record.is_valid
+
+        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED and no DOI: invalid
+        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        record.doi = ''
+        record.save()
+        assert not record.is_valid
+
+        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED and yes DOI: valid
+        record.doi = '53297853'
+        record.save()
+        assert record.is_valid
+
+        # RECRUIT_FROM_AUTHOR_MANUSCRIPT and no DOI: valid
+        record.acq_method = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
+        record.doi = ''
+        record.save()
+        assert record.is_valid
+
+        # RECRUIT_FROM_AUTHOR_MANUSCRIPT and yes DOI: valid
+        record.doi = '53297853'
+        record.save()
+        assert record.is_valid
+
+    def test_is_sent(self):
+        # Record with an email that hasn't been sent
+        record = Record.objects.get(pk=1)
+        email = record.email
+        email.date_sent = None
+        email.save()
+        assert not record.is_sent
+
+        # Record with an email that has been sent
+        email.date_sent = date.today()
+        email.save()
+        assert record.is_sent
+
+        # Record with no email
+        record = Record.objects.get(pk=2)
+        assert not record.is_sent
+
+    def test_fpv_message(self):
+        record = Record.objects.get(pk=1)
+        record.acq_method = 'not fpv'
+        record.save()
+
+        assert record.fpv_message is None
+
+        fake_doi = 'fake_doi'
+        publisher_name = 'fake_publisher'
+        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        record.doi = fake_doi
+        record.publisher_name = publisher_name
+        record.save()
+
+        msg = Template('<b>[Note: $publisher_name allows authors to download '
+                       'and deposit the final published article, but does not '
+                       'allow the Libraries to perform the downloading. If you ' # noqa
+                       'follow this link, download the article, and attach it '
+                       'to an email reply, we can deposit it on your behalf: '
+                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>')  # noqa
+
+        assert record.fpv_message == msg.substitute(
+            publisher_name=publisher_name, doi=fake_doi)
+
+    def test_get_or_create_from_csv(self):
+        author = Author.objects.get(pk=1)
+        record, created = Record.get_or_create_from_csv(
+            author, {Headers.PAPER_ID: 1})
+        assert record.pk == 1
+        assert not created
+
+        row = {
+            Headers.PUBLISHER_NAME: 'publisher_name',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'citation',
+            Headers.DOI: 'doi',
+            Headers.PAPER_ID: 'paper_id'
+        }
+
+        record, created = Record.get_or_create_from_csv(author, row)
+        assert created
+        assert record.publisher_name == 'publisher_name'
+        assert record.acq_method == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        assert record.citation == 'citation'
+        assert record.doi == 'doi'
+        assert record.paper_id == 'paper_id'

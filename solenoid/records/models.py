@@ -1,7 +1,6 @@
 import logging
 from string import Template
 
-from django.core.exceptions import ValidationError
 from django.db import models
 
 from solenoid.emails.models import EmailMessage
@@ -16,7 +15,10 @@ class Record(models.Model):
     """The Record contains:
         * citation information for an MIT author publication
         * plus all of the other data from Elements we will need to construct an
-          email"""
+          email
+    This information is extracted from CSV files at time of import (not, e.g.,
+    pulled from Elements by API).
+    """
 
     class Meta:
         ordering = ['author__dlc', 'author__last_name']
