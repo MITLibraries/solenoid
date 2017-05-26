@@ -102,6 +102,12 @@ class EmailMessage(models.Model):
         """Given a queryset of records, finds or creates an *unsent* email to
         their author (there should not be more than one of these at a time).
         Records must all be by the same author."""
+        # First, throw out all emails that have already been sent.
+        records = records.filter(email__date_sent__isnull=True)
+
+        if records.count() == 0:
+            return None
+
         count = Author.objects.filter(record__in=records).distinct().count()
         if count == 0:
             return None
@@ -110,26 +116,27 @@ class EmailMessage(models.Model):
         else:
             author = Author.objects.filter(record__in=records)[0]
 
-        email = cls.objects.filter(
+        emails = cls.objects.filter(
             record__author=author, date_sent__isnull=True).distinct()
 
         try:
-            assert len(email) in [0, 1]
+            assert len(emails) in [0, 1]
         except AssertionError:
             logger.exception('Multiple unsent emails found for %s' % author)
-            raise
+            raise ValidationError('Multiple unsent emails found.')
 
-        if email:
-            return email[0]
+        if emails:
+            email = emails[0]
         else:
-            obj = cls(original_text=cls.create_original_text(records),
+            email = cls(original_text=cls.create_original_text(records),
                 _liaison=author.dlc.liaison)
-            obj.save()
-            # Make sure to create the ForeignKey relation from those records to
-            # the email! Otherwise this method will only ever create new emails
-            # rather than finding existing ones.
-            records.update(email=obj)
-            return obj
+            email.save()
+
+        # Make sure to create the ForeignKey relation from those records to
+        # the email! Otherwise this method will only ever create new emails
+        # rather than finding existing ones.
+        records.update(email=email)
+        return email
 
     def revert(self):
         """Ensure that the display text of the email is the original text.

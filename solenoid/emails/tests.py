@@ -2,6 +2,7 @@ from datetime import date
 from unittest.mock import patch, call
 
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client, override_settings
 
@@ -37,14 +38,29 @@ class EmailCreatorTestCase(TestCase):
         liaison."""
         # Expected to be a paper by Tonegawa, who belongs to BCS, whose
         # liaison is Cutter. This record does not yet have an email.
-        record = Record.objects.get(pk=2)
-        email_pks = _get_or_create_emails([record.pk])
+        email_pks = _get_or_create_emails([2])
         email = EmailMessage.objects.get(pk=email_pks[0])
         self.assertEqual(email.liaison.pk, 2)
 
     def test_email_author_without_liaison(self):
         """Something logical should happen."""
         assert False
+
+    def test_get_or_create_emails_returns_correctly(self):
+        """When we pass in records to _get_or_create_emails, we should get back
+        one email per author in the recordset."""
+        email_pks = _get_or_create_emails([1])
+        self.assertEqual(len(email_pks), 1)
+
+        email_pks = _get_or_create_emails([1, 2])
+        self.assertEqual(len(email_pks), 2)
+
+        email_pks = _get_or_create_emails([1, 2, 3])
+        self.assertEqual(len(email_pks), 3)
+
+        email_pks = _get_or_create_emails([1, 2, 3, 4])
+        # Records 3 and 4 are by the same author.
+        self.assertEqual(len(email_pks), 3)
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -347,6 +363,76 @@ class EmailMessageModelTestCase(TestCase):
                          "<b>Most recent text<b> of email 3")
         self.assertEqual(email.plaintext,
                          "Most recent text of email 3")
+
+    def test_get_or_create_for_records_1(self):
+        """EmailMessage.get_or_create_for_records raises an error if the given
+        records do not all have the same author."""
+        with self.assertRaises(ValidationError):
+            records = Record.objects.filter(pk__in=[1, 2])
+            EmailMessage.get_or_create_for_records(records)
+
+    def test_get_or_create_for_records_2(self):
+        """EmailMessage.get_or_create_for_records returns an already existing
+        email where appropriate."""
+        records = Record.objects.filter(pk__in=[1])
+        email = EmailMessage.get_or_create_for_records(records)
+        self.assertEqual(email.pk, 1)
+
+    def test_get_or_create_for_records_3(self):
+        """EmailMessage.get_or_create_for_records makes sure all Records fed
+        into it have FKs to its returned EmailMessage, regardless of whether
+        they were already linked."""
+        records = Record.objects.filter(pk__in=[1, 7])
+        email = EmailMessage.get_or_create_for_records(records)
+        self.assertEqual(email.pk, 1)
+        self.assertEqual(Record.objects.get(pk=1).email.pk, 1)
+        self.assertEqual(Record.objects.get(pk=7).email.pk, 1)
+
+    def test_get_or_create_for_records_4(self):
+        """EmailMessage.get_or_create_for_records excludes all Records that
+        were attached to an already-sent EmailMessage."""
+        # This email is attached to record #1.
+        email = EmailMessage.objects.get(pk=1)
+        email.date_sent = date.today()
+        email.save()
+
+        records = Record.objects.filter(pk__in=[1, 7])
+        email = EmailMessage.get_or_create_for_records(records)
+        self.assertNotEqual(email.pk, 1)  # should be a new email
+
+        # Record 1 should still be attached to its existing email.
+        self.assertEqual(Record.objects.get(pk=1).email.pk, 1)
+
+        # Record 7 should be attached to a new, unsent email.
+        self.assertEqual(Record.objects.get(pk=7).email.pk, email.pk)
+        self.assertFalse(Record.objects.get(pk=7).email.date_sent)
+
+    def test_get_or_create_for_records_5(self):
+        """EmailMessage.get_or_create_for_records returns None if all records
+        have already been sent."""
+        email = EmailMessage.objects.get(pk=1)
+        email.date_sent = date.today()
+        email.save()
+
+        records = Record.objects.filter(pk__in=[1])
+        email = EmailMessage.get_or_create_for_records(records)
+        assert email is None
+
+    def test_get_or_create_for_records_6(self):
+        """EmailMessage.get_or_create_for_records raises an error if there are
+        multiple unsent EmailMessages corresponding to its Author."""
+        email = EmailMessage.objects.get(pk=2)
+        self.assertFalse(email.date_sent)
+
+        record = Record.objects.get(pk=7)
+        record.email = email
+        record.save()
+
+        with self.assertRaises(ValidationError):
+            # Note that these records have the same author, so we are not
+            # failing the author validation criterion.
+            records = Record.objects.filter(pk__in=[1, 7])
+            EmailMessage.get_or_create_for_records(records)
 
 
 @override_settings(LOGIN_REQUIRED=False)

@@ -148,3 +148,12 @@
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Barbara Liskov. A design methodology for reliable software systems. AFIPS Fall Joint Computing Conference, 1 (1972), 191-199
     doi: 10.5789/3167846
+
+- model: records.Record
+  pk: 7
+  fields:
+    author: 1
+    publisher_name: Wiley
+    acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
+    citation: Fermi, Enrico. A different paper. Some journal or other. 145:5 (2016)
+    doi: 10.1412/4216771
