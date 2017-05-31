@@ -13,10 +13,10 @@
       <b>To:</b>
       {% if form.instance.liaison %}
         <span id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <a href="{% url 'people:liaison_list' %}" rel="modal:open" class="is-hidden" id="liaison-none">Assign liaison</a>
+        <span class="is-hidden" id="liaison-none"><a href="{% url 'people:liaison_list' %}" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
       {% else %}
         <span class="is-hidden" id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <a href="{% url 'people:liaison_list' %}" rel="modal:open" id="liaison-none">Assign liaison</a>
+        <span id="liaison-none"><a href="{% url 'people:liaison_list' %}" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
       {% endif %}<br />
       <b>In re:</b> {{ form.instance.record_set.first.author }}
       {{ form.media }}
