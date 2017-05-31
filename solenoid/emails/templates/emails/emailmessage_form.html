@@ -89,5 +89,10 @@
     $("body").on('submit', '#liaison-create', function(event) {
       handle_ajax(event, this, '#liaison-create');
     });
+
+    $("body").on('submit', '#liaison-delete', function(event) {
+      event.preventDefault();
+      $.modal.close();
+    });
   </script>
 {% endblock %}

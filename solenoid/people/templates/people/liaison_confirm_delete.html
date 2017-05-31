@@ -9,7 +9,12 @@
 </p>
 
 <a href="{% url 'people:liaison_list' %}" class="button-secondary pull-left">no, don't do that</a>
-<form action="" method="post">
+{% comment %}
+  We must specify the form action in case this page has been reached via the
+  modal window in the email evaluation page. Otherwise it'll post to the email
+  form and we'll be sad. The id is also used by the javascript on that page.
+{% endcomment %}
+<form action="{% url 'people:liaison_delete' liaison.pk %}" method="post" id="liaison-delete">
   {% csrf_token %}
   <input class="button-danger" type="submit" value="yes, delete liaison">
 </form>
