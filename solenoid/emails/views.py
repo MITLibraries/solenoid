@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
-from django.views.generic.base import View
+from django.http import HttpResponseRedirect, HttpResponse
+from django.views.generic import View, DetailView
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
 
@@ -238,3 +238,18 @@ class EmailListPending(LoginRequiredMixin, ListView):
             {'url': '#', 'text': 'view pending emails'},
         ]
         return context
+
+
+class EmailLiaison(LoginRequiredMixin, DetailView):
+    """
+    A simple API to let the front end ask the back end who the liaison for an
+    email is.
+
+    We need this on the email evaluation page, so that we can figure out the
+    outcome of the assign-liaison process that happens in the modal.
+    """
+    model = EmailMessage
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return HttpResponse(self.object.liaison)

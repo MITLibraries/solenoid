@@ -2,7 +2,8 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-  <form class="" method="post">
+  {# This form ID is needed by the modal-handling javascript on the email evaluation page.#}
+  <form action="{{ request.get_full_path }} "method="post" id="{{ form_id }}">
     {% csrf_token %}
     {{ form | crispy }}
     <a href="{% url 'people:liaison_list' %}" class="button-secondary">cancel</a>

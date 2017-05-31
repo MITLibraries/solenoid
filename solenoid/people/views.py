@@ -6,10 +6,12 @@ from django.http import HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
+from solenoid.emails.models import EmailMessage
 from solenoid.userauth.mixins import LoginRequiredMixin
 
 from .forms import LiaisonCreateForm
 from .models import Liaison, DLC
+from .signals import update_emails_with_dlcs
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +30,14 @@ class LiaisonCreate(LoginRequiredMixin, CreateView):
                 'text': 'manage liaisons'},
             {'url': '#', 'text': 'edit liaison'}
         ]
+        context['form_id'] = 'liaison-create'
         return context
 
     def form_valid(self, form):
         liaison = form.save()
-        liaison.dlc_set.add(*form.cleaned_data['dlc'])
+        dlcs = form.cleaned_data['dlc']
+        liaison.dlc_set.add(*dlcs)
+        update_emails_with_dlcs(dlcs, liaison)
         return HttpResponseRedirect(self.success_url)
 
 
@@ -65,6 +70,7 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
                 'text': 'manage liaisons'},
             {'url': '#', 'text': 'edit liaison'}
         ]
+        context['form_id'] = 'liaison-update'
         return context
 
     def get_initial(self):
@@ -87,8 +93,17 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
                 raise
 
             liaison = self.get_object()
+
+            # Clear existing DLCs (and related EmailMessage liaisons)
+            EmailMessage.objects.filter(
+                record__author__dlc__in=liaison.dlc_set.all(),
+                date_sent__isnull=True).update(_liaison=None)
             liaison.dlc_set.clear()
+
+            # Update liaison ane EmailMessages with new DLCs
             liaison.dlc_set.add(*dlcs)
+            update_emails_with_dlcs(dlcs, liaison)
+
             messages.success(request, 'Liaison updated.')
             return self.form_valid(form)
 

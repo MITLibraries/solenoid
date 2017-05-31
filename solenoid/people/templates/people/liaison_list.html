@@ -2,7 +2,16 @@
 
 {% block content %}
   <div class="clearfix">
-    <a href="{% url 'people:liaison_create' %}" class="button-secondary pull-right">Add new</a>
+    {% comment %}
+      If this page has been opened via the email editing page - which
+      includes the javascript for the modals - the `rel="modal:open"`
+      will make this link open in the modal. If we've gone directly to
+      the liaison list page, which does not include the modal js, it
+      will have no effect. This is exactly the desired behavior.
+    {% endcomment %}
+    <a href="{% url 'people:liaison_create' %}"
+       class="button-secondary pull-right"
+       rel="modal:open">Add new</a>
   </div>
   <table class="table-solenoid">
     <tr>
@@ -27,12 +36,14 @@
         <td>
           <a class="button-secondary button-circle"
              href="{% url 'people:liaison_update' liaison.pk %}"
-             aria-label="edit liaison">
+             aria-label="edit liaison"
+             rel="modal:open">
              <i class="fa fa-pencil" aria-hidden="true"></i>
           </a>
           <a class="button-danger button-circle"
              href="{% url 'people:liaison_delete' liaison.pk %}"
-             aria-label="delete liaison">
+             aria-label="delete liaison"
+             rel="modal:open">
              <i class="fa fa-times" aria-hidden="true"></i>
           </a>
         </td>

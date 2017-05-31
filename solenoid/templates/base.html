@@ -24,6 +24,8 @@
     {% compress css %}
       <link rel="stylesheet" type="text/x-sass" href="/static/sass/solenoid.sass">
     {% endcompress %}
+    {% block extra_headers %}
+    {% endblock %}
   </head>
 
   <body>

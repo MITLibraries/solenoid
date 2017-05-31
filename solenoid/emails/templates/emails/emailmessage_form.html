@@ -1,11 +1,23 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
+
+{% block extra_headers %}
+  <link rel="stylesheet" href="{% static 'css/jquery.modal.css' %}" type="text/css" media="screen" />
+{% endblock %}
 
 {% block content %}
-  {% if progress %}<h3>{{ progress }}</h3>{% endif %}
+  {% if progress %}<strong>{{ progress }}</strong>{% endif %}
   <form method="post" action="">
     {% csrf_token %}
-      <b>To:</b> {{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }}) <br/>
+      <b>To:</b>
+      {% if form.instance.liaison %}
+        <span id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
+        <a href="{% url 'people:liaison_list' %}" rel="modal:open" class="is-hidden" id="liaison-none">Assign liaison</a>
+      {% else %}
+        <span class="is-hidden" id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
+        <a href="{% url 'people:liaison_list' %}" rel="modal:open" id="liaison-none">Assign liaison</a>
+      {% endif %}<br />
       <b>In re:</b> {{ form.instance.record_set.first.author }}
       {{ form.media }}
       {{ form | crispy }}
@@ -13,4 +25,69 @@
       <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
       <input type="submit" name="submit_send" value="send &amp; next" class="button-primary" />
   </form>
+
+  {% comment %}
+    Note that jquery is loaded by form.media, so we have its affordances.
+    However, it isn't loaded until the form, so we can't put the script in the
+    headers.
+  {% endcomment %}
+  <script src="{% static 'js/jquery.modal.min.js' %}" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+    var liaison_name = $('#liaison-name');
+    var liaison_none = $('#liaison-none');
+    var handle_ajax = function(event, form, form_id) {
+      // We need to get the URL from the form action because it can take
+      // infinitely many potential values, depending on the pk of the liaison.
+      var url = $(form).attr('action');
+
+      // Post the liaison form data to the server via ajax.
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: $(form_id).serialize(),
+
+        // On successful form submit, ask the server who the new liaison is.
+        success: function(data) {
+          $.ajax({
+            type: "GET",
+            url: '{% url 'emails:get_liaison' form.instance.pk %}',
+            success: function(data) {
+              console.log(data);
+              if (data == 'None') {
+                // If there's no liaison, hide the liaison-name info and show
+                // the assign-liaison option.
+                if (!liaison_name.hasClass('is-hidden')) {
+                  liaison_name.addClass('is-hidden');
+                }
+                liaison_none.removeClass('is-hidden');
+              } else {
+                // If there IS a liaison, hide the assign-liaison option; show
+                // the liaison-name area; and add the liaison name.
+                if (!liaison_none.hasClass('is-hidden')) {
+                  liaison_none.addClass('is-hidden');
+                }
+                liaison_name.removeClass('is-hidden');
+                liaison_name.text(data);
+              }
+            }
+          })
+
+          $.modal.close();
+        }
+      });
+      event.preventDefault();
+    }
+
+    // Note that this depends on the ID in liaison_form.html - don't change it
+    // without changing this selector!
+    // Make sure to use 'on', not 'submit', because we need to bind dynamically
+    // to content inside the modal - it doesn't exist on pageload.
+    $("body").on('submit', '#liaison-update', function(event) {
+      handle_ajax(event, this, '#liaison-update');
+    });
+
+    $("body").on('submit', '#liaison-create', function(event) {
+      handle_ajax(event, this, '#liaison-create');
+    });
+  </script>
 {% endblock %}
