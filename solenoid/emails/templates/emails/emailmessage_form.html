@@ -23,7 +23,7 @@
       {{ form | crispy }}
       <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />
       <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
-      <input type="submit" name="submit_send" value="send &amp; next" class="button-primary" />
+      <input type="submit" name="submit_send" id="submit-send" value="send &amp; next" class="button-primary" {% if not form.instance.liaison %}disabled{% endif %}/>
   </form>
 
   {% comment %}
@@ -35,6 +35,8 @@
   <script type="text/javascript">
     var liaison_name = $('#liaison-name');
     var liaison_none = $('#liaison-none');
+    var submit_send = $('#submit-send');
+
     var handle_ajax = function(event, form, form_id) {
       // We need to get the URL from the form action because it can take
       // infinitely many potential values, depending on the pk of the liaison.
@@ -52,7 +54,6 @@
             type: "GET",
             url: '{% url 'emails:get_liaison' form.instance.pk %}',
             success: function(data) {
-              console.log(data);
               if (data == 'None') {
                 // If there's no liaison, hide the liaison-name info and show
                 // the assign-liaison option.
@@ -60,6 +61,7 @@
                   liaison_name.addClass('is-hidden');
                 }
                 liaison_none.removeClass('is-hidden');
+                submit_send.prop({disabled: true});
               } else {
                 // If there IS a liaison, hide the assign-liaison option; show
                 // the liaison-name area; and add the liaison name.
@@ -68,6 +70,7 @@
                 }
                 liaison_name.removeClass('is-hidden');
                 liaison_name.text(data);
+                submit_send.prop({disabled: false});
               }
             }
           })

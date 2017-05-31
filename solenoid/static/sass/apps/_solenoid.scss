@@ -67,6 +67,17 @@ input[type="file"], input[type="submit"], button {
   cursor: pointer;
 }
 
+input:disabled {
+  cursor: not-allowed;
+  background-color: $gray-l2;
+  border-color: $gray-l2;
+
+  &:hover {
+    background-color: $gray-l2;
+    border-color: $gray-l2;    
+  }
+}
+
 .field-email {
   @extend .field-text;
 }
