@@ -8,7 +8,7 @@
   not deleted; you will be able to reassign them later).
 </p>
 
-<a href="{% url 'people:liaison_list' %}" class="button-secondary pull-left">no, don't do that</a>
+<a href="{% url 'people:liaison_list' %}" class="button-secondary pull-left" rel="modal:close">no, don't do that</a>
 {% comment %}
   We must specify the form action in case this page has been reached via the
   modal window in the email evaluation page. Otherwise it'll post to the email
