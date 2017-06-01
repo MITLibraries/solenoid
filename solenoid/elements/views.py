@@ -17,27 +17,103 @@
 #   the API fails
 # * If we can get the record number from the CSV, do that (and definitely
 #   monitor it).
+# Make sure to validate for the record ID when you ingest CSV.
 
+# Note: Christine has figured out how to include record ID (YAY), so we only
+# have to issue the patch call. However, I'm not sure how to validate the date
+# field.
+
+from datetime import date
+import logging
 import requests
 from urllib.parse import urljoin
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.dispatch import receiver
 
-top = Element('update-object')
+from solenoid.emails.models import email_sent
+
+from .models import ElementsAPICall
+
+
+logger = logging.getLogger(__name__)
+
+
+@receiver(email_sent)
+def issue_elements_api_call(sender):
+    """Notifies Elements when a record has been requested.
+
+    Note that this wants to be a *signal receiver* and not anything that could
+    conceivably block a view, since the latency on the response may be high
+    (it may even time out)."""
+    if not settings.USE_ELEMENTS:
+        return
+
+    if not settings.ELEMENTS_PASSWORD:
+        logger.warning('Tried to issue Elements API call without password')
+        raise ImproperlyConfigured
+
+    # Construct XML. (This is the same for all records in the email.)
+    xml = ElementsAPICall.make_xml()
+
+    for record in sender.record_set.all():
+        # Get endpoint for this record
+        url = urljoin(settings.ELEMENTS_ENDPOINT,
+                      'publication/records/{source}/{id}'.format(
+                          source=record.source, id=record.elements_id))
+
+        # Send request
+        response = requests.patch(url,
+            data=tostring(xml).decode('utf-8'),
+            headers=headers,
+            # Passing in an auth parameter makes requests handle HTTP Basic
+            # Auth transparently.
+            auth=(settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD))
+
+        # Record response
+        ElementsAPICall.objects.create(
+            request_data=xml,
+            request_url=url,
+            response_content=response.content,
+            response_status=response.status_code
+        )
+
+        # * error handling???
+
+
+top = Element('update-record')
 top.set('xmlns', 'http://www.symplectic.co.uk/publications/api')
 fields = SubElement(top, 'fields')
+
+# Update c-requested field
 container_field = SubElement(fields, 'field')
 container_field.set('name', 'c-requested')
 container_field.set('operation', 'set')
 bool_field = SubElement(container_field, 'boolean')
 bool_field.text = 'true'
 
+# Update c-reqdate field
+container_field = SubElement(fields, 'field')
+container_field.set('name', 'c-reqdate')
+container_field.set('operation', 'set')
+date_field = SubElement(container_field, 'date')
+date_field.text = date.today().strftime('%d/-%m-%Y')
+
+# Update c-reqnote field
+container_field = SubElement(fields, 'field')
+container_field.set('name', 'c-reqdate')
+container_field.set('operation', 'set')
+date_field = SubElement(container_field, 'text')
+date_field.text = 'Email sent by solenoid'
+
 # https://pubdata-dev.mit.edu/viewobject.html?id=307811&cid=1
-pub_id = 307811  # get this from actual record later
+record_id = 22667  # get this from actual record later
+source = "Manual"  # this too
 headers = {'Content-Type': 'application/xml'}
 url = urljoin(settings.ELEMENTS_ENDPOINT,
-              'publications/{id}'.format(id=pub_id))
+              'publication/records/{source}/{id}'.format(source=source, id=record_id))
 
 requests.patch(url,
                data=tostring(top).decode('utf-8'),
@@ -85,10 +161,4 @@ From response = requests.get(settings.ELEMENTS_ENDPOINT + 'publication/types',
             <operation type="clear"/>
         </update-field-operations>
     </field>
-"""
-
-"""
-Error:
-<api:warning associated-field="c-requested">Invalid Field Warning: Field
-c-requested does not exist on a Publication object.</api:warning>
 """

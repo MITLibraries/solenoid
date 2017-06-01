@@ -305,6 +305,11 @@ ELEMENTS_ENDPOINT = os.environ.get('DJANGO_ELEMENTS_ENDPOINT',
 ELEMENTS_USER = os.environ.get('DJANGO_ELEMENTS_USER', 'solenoid')
 ELEMENTS_PASSWORD = os.environ.get('DJANGO_ELEMENTS_PASSWORD')
 
+# Set this to False if you don't want to issue API calls (e.g. during testing,
+# on localhost, on environments that don't know the password or don't have IPs
+# known to the Elements firewall).
+USE_ELEMENTS = False
+
 
 # DJANGO-COMPRESSOR CONFIGURATION
 # -----------------------------------------------------------------------------

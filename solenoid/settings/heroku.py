@@ -72,3 +72,9 @@ if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'False':
     LOGIN_REQUIRED = False
 else:
     LOGIN_REQUIRED = True
+
+
+# SYMPLECTIC ELEMENTS CONFIGURATION
+# -----------------------------------------------------------------------------
+
+USE_ELEMENTS = True

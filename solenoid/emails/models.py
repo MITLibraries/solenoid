@@ -8,11 +8,14 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
+from django.dispatch import Signal
 from django.template.loader import render_to_string
 
 from solenoid.people.models import Liaison, Author
 
 logger = logging.getLogger(__name__)
+
+email_sent = Signal()
 
 
 class EmailMessage(models.Model):
@@ -195,6 +198,7 @@ class EmailMessage(models.Model):
             return False
 
         self._update_after_sending()
+        email_sent.send(sender=self)
 
         return True
 
