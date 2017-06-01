@@ -33,9 +33,10 @@ DJANGO_APPS = (
 )
 
 SOLENOID_APPS = (
-    'solenoid.records',
+    'solenoid.elements',
     'solenoid.emails',
     'solenoid.people',
+    'solenoid.records',
     'solenoid.userauth',
 )
 
