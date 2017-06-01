@@ -1,10 +1,6 @@
-from datetime import date
 import logging
-from smtplib import SMTPException
 
-from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import View, DetailView
@@ -32,49 +28,6 @@ def _get_or_create_emails(pk_list):
         email_pks.append(EmailMessage.get_or_create_for_records(records).pk)
 
     return list(set(email_pks))  # remove duplicates, if any
-
-
-def _email_send(pk):
-    """
-    Validates and sends the EmailMessage with the given pk. Returns True if
-    successful; False otherwise.
-    """
-    # First, validate.
-    try:
-        email = EmailMessage.objects.get(pk=pk)
-        assert not email.date_sent
-    except (EmailMessage.DoesNotExist, AssertionError):
-        logger.exception('Attempt to send invalid email')
-        return False
-
-    try:
-        # Can't send the email if there isn't a liaison.
-        assert email.liaison
-    except AssertionError:
-        logger.exception('Attempt to send email {pk}, which is missing a '
-            'liaison'.format(pk=pk))
-        return False
-
-    # Then, send.
-    try:
-        recipients = [email.liaison.email_address]
-        if settings.SCHOLCOMM_MOIRA_LIST:
-            recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
-
-        send_mail(
-            'Subject here',
-            email.plaintext,
-            settings.DEFAULT_FROM_EMAIL,
-            recipients,
-            html_message=email.latest_text,
-            fail_silently=False,
-        )
-        email.date_sent = date.today()
-        email.save()
-    except SMTPException:
-        return False
-
-    return True
 
 
 class EmailCreate(LoginRequiredMixin, View):
@@ -134,7 +87,11 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
 
     def _handle_send(self):
         self.form_valid(self.get_form())
-        _email_send(self.kwargs['pk'])
+        # This should exist, because if it doesn't dispatch() will have already
+        # thrown an error and we won't reach this line.
+        # If it doesn't exist, users will see a 500, which is also reasonable.
+        email = EmailMessage.objects.get(pk=self.kwargs['pk'])
+        email.send()
         messages.success(self.request, "Email message updated and sent.")
         return self._finish_handle()
 
@@ -217,10 +174,15 @@ class EmailSend(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         pk_list = request.POST.getlist('emails')
-        statuses = [_email_send(pk) for pk in pk_list]
+        statuses = []
+        for pk in pk_list:
+            sent = EmailMessage.objects.get(pk=pk).send()
+            statuses.append(sent)
+
         if False in statuses:
             messages.warning(request,
-                'Some emails were not successfully sent.')
+                'Some emails were not successfully sent. Check to be sure '
+                'that a liaison has been assigned for each DLC and try again.')
         else:
             messages.success(request, 'All emails sent. Hooray!')
 

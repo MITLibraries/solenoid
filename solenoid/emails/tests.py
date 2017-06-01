@@ -10,7 +10,7 @@ from solenoid.people.models import Author, Liaison
 from solenoid.records.models import Record, Message
 
 from .models import EmailMessage
-from .views import _email_send, _get_or_create_emails
+from .views import _get_or_create_emails
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -41,10 +41,6 @@ class EmailCreatorTestCase(TestCase):
         email_pks = _get_or_create_emails([2])
         email = EmailMessage.objects.get(pk=email_pks[0])
         self.assertEqual(email.liaison.pk, 2)
-
-    def test_email_author_without_liaison(self):
-        """Something logical should happen."""
-        assert False
 
     def test_get_or_create_emails_returns_correctly(self):
         """When we pass in records to _get_or_create_emails, we should get back
@@ -100,7 +96,7 @@ class EmailEvaluateTestCase(TestCase):
         self.assertContains(response, "Most recent text of email 1")
         self.assertNotContains(response, "</form>")
 
-    @patch('solenoid.emails.views._email_send')
+    @patch('solenoid.emails.models.EmailMessage.send')
     def test_only_unsent_emails_are_editable_2(self, mock_send):
         """On post, the email evaluate page does not re-send emails that have
         already been sent."""
@@ -207,6 +203,13 @@ class EmailEvaluateTestCase(TestCase):
         session['total_email'] = 3
         session['current_email'] = 1
         session.save()
+
+        # Make sure email 2 is sendable - in the test data it's missing a
+        # record, meaning its author can't be identified.
+        record = Record.objects.get(pk=2)
+        email = EmailMessage.objects.get(pk=2)
+        record.email = email
+        record.save()
 
         current_url = reverse('emails:evaluate', args=(1,))
         self.client.get(current_url)
@@ -436,34 +439,49 @@ class EmailSendTestCase(TestCase):
         self.client = Client()
 
     def test_email_send_function_sends(self):
-        self.assertFalse(EmailMessage.objects.get(pk=1).date_sent)
-        _email_send(1)
+        email = EmailMessage.objects.get(pk=1)
+        self.assertFalse(email.date_sent)
+        email.send()
         self.assertEqual(len(mail.outbox), 1)
 
     def test_email_send_function_does_not_resend(self):
         email = EmailMessage.objects.get(pk=1)
         email.date_sent = date.today()
         email.save()
-        _email_send(1)
+        email.send()
         self.assertEqual(len(mail.outbox), 0)
 
     def test_email_send_function_sets_datestamp(self):
-        self.assertFalse(EmailMessage.objects.get(pk=1).date_sent)
-        _email_send(1)
-        self.assertTrue(EmailMessage.objects.get(pk=1).date_sent)
+        email = EmailMessage.objects.get(pk=1)
+        self.assertFalse(email.date_sent)
+        email.send()
+        email.refresh_from_db()
+        self.assertTrue(email.date_sent)
         # Conceivably this test will fail if run near midnight UTC.
-        self.assertEqual(EmailMessage.objects.get(pk=1).date_sent,
-            date.today())
+        self.assertEqual(email.date_sent, date.today())
+
+    def test_email_send_function_sets_liaison(self):
+        email = EmailMessage.objects.get(pk=1)
+        liaison = email.liaison
+        assert not email.date_sent
+
+        email.send()
+        email.refresh_from_db()
+        assert email.date_sent
+
+        self.assertEqual(email._liaison, liaison)
 
     def test_email_is_sent_to_liaison(self):
-        _email_send(1)
+        email = EmailMessage.objects.get(pk=1)
+        email.send()
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
             mail.outbox[0].to)
 
     @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
     def test_email_is_sent_to_scholcomm_moira_list(self):
-        _email_send(1)
+        email = EmailMessage.objects.get(pk=1)
+        email.send()
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn('scholcomm@example.com', mail.outbox[0].to)
 
@@ -471,16 +489,32 @@ class EmailSendTestCase(TestCase):
     def test_email_handles_empty_moira_list(self):
         """If no scholcomm list has been set, the email function should not
         break."""
-        _email_send(1)
+        email = EmailMessage.objects.get(pk=1)
+        email.send()
         self.assertEqual(len(mail.outbox), 1)
 
-    @patch('solenoid.emails.views._email_send')
+    # autospec=True ensures that 'self' is passed into the mock, allowing us to
+    # examine the call args as desired:
+    # https://docs.python.org/3.3/library/unittest.mock-examples.html#mocking-unbound-methods
+    @patch('solenoid.emails.models.EmailMessage.send', autospec=True)
     def test_email_send_view_calls_function(self, mock_send):
         self.client.post(self.url, data={'emails': [1, 2]})
-        # Even if we post ints, they'll get cast to strs before we call the
-        # function, and the test will fail if we don't recognize this.
-        expected = [call('1'), call('2')]
+        email1 = EmailMessage.objects.get(pk=1)
+        email2 = EmailMessage.objects.get(pk=2)
+        expected = [call(email1), call(email2)]
         mock_send.assert_has_calls(expected, any_order=True)
 
     def test_subject_is_something_logical(self):
-        assert False
+        email = EmailMessage.objects.get(pk=1)
+        email.send()
+        self.assertEqual(len(mail.outbox), 1)
+        expected = 'OA outreach message to forward: {author}'.format(
+            author=email.author.last_name)
+        self.assertEqual(mail.outbox[0].subject, expected)
+
+    def test_email_not_sent_when_missing_liaison(self):
+        email = EmailMessage.objects.get(pk=3)
+        assert not email.liaison  # check assumption: no liaison
+        assert not email.date_sent  # check assumption: unsent
+        self.assertFalse(email.send())
+        self.assertEqual(len(mail.outbox), 0)

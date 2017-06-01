@@ -1,8 +1,12 @@
 from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
+from datetime import date
 import logging
+from smtplib import SMTPException
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
 
@@ -132,6 +136,68 @@ class EmailMessage(models.Model):
         records.update(email=email)
         return email
 
+    def _is_valid_for_sending(self):
+        try:
+            assert not self.date_sent
+        except AssertionError:
+            logger.exception('Attempt to send invalid email')
+            return False
+
+        try:
+            # Can't send the email if there isn't a liaison.
+            assert self.liaison
+        except AssertionError:
+            logger.exception('Attempt to send email {pk}, which is missing a '
+                'liaison'.format(pk=self.pk))
+            return False
+
+        return True
+
+    def _update_after_sending(self):
+        """Set the metadata that should be set after sending an email."""
+        self.date_sent = date.today()
+        self._liaison = self.liaison
+        self.save()
+
+    def _inner_send(self):
+        """Actually perform the sending of an EmailMessage. Return True on
+        success, False otherwise."""
+        try:
+            recipients = [self.liaison.email_address]
+            if settings.SCHOLCOMM_MOIRA_LIST:
+                recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
+
+            send_mail(
+                self.subject,
+                self.plaintext,
+                settings.DEFAULT_FROM_EMAIL,
+                recipients,
+                html_message=self.latest_text,
+                fail_silently=False,
+            )
+        except SMTPException:
+            return False
+
+        return True
+
+    def send(self):
+        """
+        Validates and sends an EmailMessage with the given pk. Upon send,
+        updates sending-related metadata. Returns True if successful; False
+        otherwise.
+        """
+        # First, validate.
+        if not self._is_valid_for_sending():
+            return False
+
+        # Then, send.
+        if not self._inner_send():
+            return False
+
+        self._update_after_sending()
+
+        return True
+
     def revert(self):
         """Ensure that the display text of the email is the original text.
 
@@ -178,3 +244,17 @@ class EmailMessage(models.Model):
         latest_text is properly the second part, not the main text)."""
         soup = BeautifulSoup(self.latest_text, "html.parser")
         return soup.get_text().replace('\n', '\n\n')
+
+    @property
+    def subject(self):
+        # This will throw an exception if there is no author for the email.
+        # That's fine - we *shouldn't* be able to send emails with no author,
+        # and we *should* notice if this problem happens - but we should log
+        # it.
+        try:
+            return 'OA outreach message to forward: {author}'.format(
+                author=self.author.last_name)
+        except AttributeError:
+            logger.exception('Could not find author for email #{pk}'.format(
+                pk=self.pk))
+            raise
