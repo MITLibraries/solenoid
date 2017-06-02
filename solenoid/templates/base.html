@@ -31,7 +31,7 @@
   <body>
     <!-- begin MIT branding -->
     <div class="wrap-page">
-      <div class="wrap-outer-header layout-band">
+      <div class="wrap-outer-header layout-band{% if request.GET.rainbows %} reasons{% endif %}">
         <div class="wrap-header">
           <header class="header-site header-slim" role="banner">
             <div class="wrap-header-core">

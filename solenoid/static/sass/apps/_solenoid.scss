@@ -74,7 +74,7 @@ input:disabled {
 
   &:hover {
     background-color: $gray-l2;
-    border-color: $gray-l2;    
+    border-color: $gray-l2;
   }
 }
 
@@ -142,3 +142,14 @@ select, option {
 .pull-left {
   float: left;
 }
+
+// Make the header even prettier
+/* csslint ignore:start */
+.wrap-outer-header.reasons {
+  background: #f23074; /* Old browsers */
+  background: -moz-linear-gradient(45deg, #f23074 0%, #d6d628 36%, #207cca 66%, #544b8c 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(45deg, #f23074 0%,#d6d628 36%,#207cca 66%,#544b8c 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(45deg, #f23074 0%,#d6d628 36%,#207cca 66%,#544b8c 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f23074', endColorstr='#544b8c',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+/* csslint ignore:end */
