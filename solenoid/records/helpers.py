@@ -10,9 +10,12 @@ class Headers(object):
     DLC = 'DLC'
     PAPER_ID = 'PaperID'
     MESSAGE = 'c-publisher-related-email-message'
+    SOURCE = 'Data Source (Publication)'
+    RECORD_ID = 'Data Source Proprietary ID (Publication)'
 
     EXPECTED_HEADERS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
-                        PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE]
+                        PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE,
+                        SOURCE, RECORD_ID]
 
     # This is information we can get from the database if it happens to be
     # missing from a row in an Elements CSV file, if we already know about
@@ -21,8 +24,13 @@ class Headers(object):
     AUTHOR_DATA = [EMAIL, FIRST_NAME, LAST_NAME, DLC]
 
     # And this is the information from EXPECTED_HEADERS that we can't find if
-    # it isn't in the CSV. DOI is optional because we only need it for FPV
-    # manuscripts - the model is responsible for checking. MESSAGE is optional
-    # because not all publishers have a special message.
+    # it isn't in the CSV.
+    # Some information is optional because...
+    # * DOI: only needed for FPV manuscripts - the model is responsible for
+    #   checking.
+    # * MESSAGE: not all publishers have a special message.
+    # * SOURCE and RECORD_ID: convenient to have, but we can acquire from the
+    #   API if we must.
     REQUIRED_DATA = list(set(EXPECTED_HEADERS) -
-                         set(AUTHOR_DATA) - {DOI} - {MESSAGE})
+                         set(AUTHOR_DATA) - {DOI} - {MESSAGE} -
+                         {SOURCE} - {RECORD_ID})

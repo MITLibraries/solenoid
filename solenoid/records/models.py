@@ -54,6 +54,8 @@ class Record(models.Model):
     doi = models.CharField(max_length=30, blank=True)
     paper_id = models.CharField(max_length=10)
     message = models.ForeignKey(Message, blank=True, null=True)
+    source = models.CharField(max_length=15)
+    elements_id = models.CharField(max_length=50)
 
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
@@ -151,6 +153,8 @@ class Record(models.Model):
                 citation=row[Headers.CITATION],
                 doi=row[Headers.DOI],
                 paper_id=row[Headers.PAPER_ID],
-                message=msg)
+                message=msg,
+                source=row[Headers.SOURCE],
+                elements_id=row[Headers.RECORD_ID])
 
             return record, True
