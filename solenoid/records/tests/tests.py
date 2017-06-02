@@ -289,13 +289,16 @@ class ImportViewTest(TestCase):
 
     def test_paper_id_respected_case_2(self):
         """
-        If we re-import an already sent record with a known ID, we should raise
-        a warning and leave the existing record alone, not create a new one."""
+        If we re-import an already sent record with a known ID & author, we
+        should raise a warning and leave the existing record alone, not create
+        a new one."""
+        orig_count = Record.objects.count()
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(paper_id='182960')
 
         self._post_csv('single_good_record.csv')
-        orig_count = Record.objects.count()
+        new_count = Record.objects.count()
+        self.assertEqual(orig_count + 1, new_count)
         record = Record.objects.latest('pk')
 
         self.assertEqual(record.paper_id, '182960')
@@ -376,6 +379,44 @@ class ImportViewTest(TestCase):
                          model_to_dict(Record.objects.get(paper_id='182960')))
 
         self.assertIn('warning',
+                      [m.level_tag for m in response.context['messages']])
+
+    def test_paper_id_respected_case_5(self):
+        """
+        If we re-import an already sent record with a known ID and a new
+        author, we should raise a warning and not create a new record."""
+        # First, import the basic CSV.
+        orig_count = Record.objects.count()
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        new_count = Record.objects.count()
+        self.assertEqual(orig_count + 1, new_count)
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')
+        liaison = Liaison.objects.create(first_name='foo',
+            last_name='bar',
+            email_address='fake@example.com')
+
+        email = EmailMessage.objects.create(original_text='gjhdka',
+            date_sent=date.today(),
+            _liaison=liaison)
+
+        record.email = email
+        record.save()
+
+        orig_record = model_to_dict(record)
+
+        # Next, import new CSV of the same paper as recorded under a different
+        # author. This should *not* create any new records.
+        response = self._post_csv('single_good_record_new_author.csv')
+        self.assertEqual(new_count, Record.objects.count())
+        self.assertEqual(orig_record,
+                         model_to_dict(Record.objects.get(paper_id='182960')))
+
+        self.assertIn('info',
                       [m.level_tag for m in response.context['messages']])
 
     def test_form_includes_multipart(self):

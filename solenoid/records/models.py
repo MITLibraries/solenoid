@@ -33,6 +33,10 @@ class Record(models.Model):
 
     class Meta:
         ordering = ['author__dlc', 'author__last_name']
+        # PaperID is not unique, because papers with multiple MIT authors may
+        # show up in the CSV multiple times. However, we should only see them
+        # once per author.
+        unique_together = (('author', 'paper_id'))
 
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
     ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV_ACCEPTED"
@@ -109,7 +113,8 @@ class Record(models.Model):
         imported data, it updates the record.
         """
         try:
-            record = Record.objects.get(paper_id=row[Headers.PAPER_ID])
+            record = Record.objects.get(paper_id=row[Headers.PAPER_ID],
+                                        author=author)
             """
             if not all([record.author == author,
                         record.publisher_name == row[Headers.PUBLISHER_NAME],

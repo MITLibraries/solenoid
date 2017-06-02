@@ -112,6 +112,7 @@
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)
     doi: 10.1240.2/4914241
+    paper_id: 123141
 
 - model: records.Record
   pk: 3
@@ -121,6 +122,7 @@
     acq_method: RECRUIT_FROM_AUTHOR_MANUSCRIPT
     citation: Liskov, Barbara. The Design of the Venus Operating System. Comm. of the ACM 15, 3 (March 1972).
     doi: 10.1248.65/3167862
+    paper_id: 215626
 
 - model: records.Record
   pk: 4
@@ -129,7 +131,8 @@
     publisher_name: ACM-Special Message
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Liskov, Barbara. Data Abstraction and Hierarchy. Addendum to the Proceedings of OOPSLA ’87, SIGPLAN Notices 23, 5 (May 1988), 17-34
-    doi: 10.5789/3167846
+    doi: 10.5789/3167285
+    paper_id: 125647
 
 - model: records.Record
   pk: 5
@@ -139,6 +142,7 @@
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: For some reason this is garbage data and we shouldn't email about it.
     doi: 10.1820/417852
+    paper_id: 36271
 
 - model: records.Record
   pk: 6
@@ -148,7 +152,8 @@
     publisher_name: ACM-Special Message
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Barbara Liskov. A design methodology for reliable software systems. AFIPS Fall Joint Computing Conference, 1 (1972), 191-199
-    doi: 10.5789/3167846
+    doi: 10.5789/3167666
+    paper_id: 9725167
 
 - model: records.Record
   pk: 7
@@ -158,3 +163,4 @@
     acq_method: RECRUIT_FROM_AUTHOR_FPV_ACCEPTED
     citation: Fermi, Enrico. A different paper. Some journal or other. 145:5 (2016)
     doi: 10.1412/4216771
+    paper_id: 657815

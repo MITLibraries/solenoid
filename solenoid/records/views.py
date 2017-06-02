@@ -80,6 +80,23 @@ class Import(LoginRequiredMixin, FormView):
     def _is_row_valid(self, row):
         return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
 
+    def _is_row_superfluous(self, row, author):
+        """If we have already requested this paper from another author, let's
+        not import it."""
+
+        # Find records of the same paper with different authors, if any.
+        records = Record.objects.filter(
+            paper_id=row[Headers.PAPER_ID]
+        ).exclude(
+            author=author
+        )
+
+        # Return True if we've already sent an email for any of those papers;
+        # False otherwise.
+        return any([record.email.date_sent
+                    for record in records
+                    if record.email])
+
     def form_valid(self, form):
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
         successes = 0
@@ -88,13 +105,25 @@ class Import(LoginRequiredMixin, FormView):
 
         for row in reader:
             if not self._is_row_valid(row):
-                messages.warning(self.request, 'Publication #{id} is missing '
-                    'required data, so this citation will not be '
-                    'imported.'.format(id=row[Headers.PAPER_ID]))
+                messages.warning(self.request, 'Publication #{id} by {author} '
+                    'is missing required data, so this citation will not be '
+                    'imported.'.format(id=row[Headers.PAPER_ID],
+                                       author=row[Headers.LAST_NAME]))
                 failures += 1
                 continue
 
             author = self._get_author(row)
+
+            if self._is_row_superfluous(row, author):
+                messages.info(self.request, 'Publication #{id} by {author} '
+                    'has already been requested from another author, so this '
+                    'record will not be imported. Please add this citation '
+                    'manually to an email, and manually mark it as requested '
+                    'in Sympletic, if you would like to request it from this '
+                    'author also'.format(id=row[Headers.PAPER_ID],
+                                         author=row[Headers.LAST_NAME]))
+                failures += 1
+                continue
 
             if not author:
                 messages.warning(self.request, 'The author for publication '
@@ -107,8 +136,9 @@ class Import(LoginRequiredMixin, FormView):
 
             if not record:
                 messages.warning(self.request, 'The record for publication '
-                    '#{id} is missing required information and will not be '
-                    'created.'.format(id=row[Headers.PAPER_ID]))
+                    '#{id} by {author} is missing required information and '
+                    'will not be created.'.format(id=row[Headers.PAPER_ID],
+                        author=row[Headers.LAST_NAME]))
                 failures += 1
                 continue
 
@@ -139,7 +169,7 @@ class Import(LoginRequiredMixin, FormView):
 
             if updates:
                 messages.info(self.request, '{x} existing publication records '
-                    'have been successfully updated.'.format(x=successes))
+                    'have been successfully updated.'.format(x=updates))
 
         return super(Import, self).form_valid(form)
 
