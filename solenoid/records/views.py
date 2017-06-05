@@ -62,6 +62,7 @@ class Import(LoginRequiredMixin, FormView):
         # This used to be a much more complicated function, when we were
         # dealing with an InMemoryUploadedFile rather than a string. See git
         # commit 0fe569e or previous for fun times.
+        logger.info(csv_file.splitlines())
         return csv.DictReader(csv_file.splitlines())
 
     def _get_author(self, row):
@@ -88,7 +89,9 @@ class Import(LoginRequiredMixin, FormView):
             return None, None
 
     def form_valid(self, form):
+        logger.info(type(form.cleaned_data['csv_file']))
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
+        logger.info('csv reader gotten')
         successes = 0
         failures = 0
         updates = 0
