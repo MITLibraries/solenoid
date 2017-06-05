@@ -23,6 +23,8 @@ def _validate_encoding(csv_file):
     encoding = encoding_info['encoding']
     if (not encoding or
             encoding.lower() not in ENCODING_OPTS):
+        logger.warning('Unsupported encoding {enc} for CSV file {name}'.format(
+            enc=encoding, name=csv_file.name))
         raise ValidationError("File encoding not recognized. Please "
             "make sure you have exported from Excel to CSV with UTF-8 "
             "encoding.")
@@ -32,7 +34,8 @@ def _validate_filetype(csv_file):
     try:
         csv.Sniffer().sniff(csv_file)
     except csv.Error:
-        logger.warning('Invalid CSV file uploaded')
+        logger.warning('Invalid CSV file {name} uploaded'.format(
+            name=csv_file.name))
         raise ValidationError("This file doesn't appear to be CSV format.")
 
 
@@ -70,10 +73,12 @@ class ImportForm(forms.Form):
 
     def clean_csv_file(self):
         csv_file = self.cleaned_data['csv_file']
+        logger.info('Cleaning CSV file %s...' % csv_file.name)
 
         # Check encodings before proceeding. Will raise exception for
         # unsupported encodings.
         _validate_encoding(csv_file)
+        logger.info('CSV file %s encoding is valid' % csv_file.name)
 
         # Reset file pointer so we get actual data on read.
         csv_file.seek(0)
@@ -87,6 +92,8 @@ class ImportForm(forms.Form):
         # Excel saved as CSV on a Mac will break the upload.)
         csv_utf_8 = dammit.unicode_markup.replace(
             '\r\n', '\n').replace('\r', '\n')
+        logger.info('CSV file %s converted to unicode' % csv_file.name)
 
         _validate_csv(csv_utf_8)
+        logger.info('CSV file %s is valid' % csv_file.name)
         return csv_utf_8
