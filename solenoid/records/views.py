@@ -62,7 +62,6 @@ class Import(LoginRequiredMixin, FormView):
         # This used to be a much more complicated function, when we were
         # dealing with an InMemoryUploadedFile rather than a string. See git
         # commit 0fe569e or previous for fun times.
-        logger.info(csv_file.splitlines())
         return csv.DictReader(csv_file.splitlines())
 
     def _get_author(self, row):
@@ -89,15 +88,15 @@ class Import(LoginRequiredMixin, FormView):
             return None, None
 
     def form_valid(self, form):
-        logger.info(type(form.cleaned_data['csv_file']))
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
-        logger.info('csv reader gotten')
         successes = 0
         failures = 0
         updates = 0
 
         for row in reader:
+            logger.info('this row is %s' % row)
             if not Record.is_row_valid(row):
+                logger.warning('Invalid record row')
                 messages.warning(self.request, 'Publication #{id} by {author} '
                     'is missing required data, so this citation will not be '
                     'imported.'.format(id=row[Headers.PAPER_ID],
@@ -106,8 +105,10 @@ class Import(LoginRequiredMixin, FormView):
                 continue
 
             author = self._get_author(row)
+            logger.info('author was %s' % author)
 
             if not author:
+                logger.warning('No author can be found for record')
                 messages.warning(self.request, 'The author for publication '
                     '#{id} is missing required information. This record will '
                     'not be created'.format(id=row[Headers.PAPER_ID]))
@@ -115,6 +116,7 @@ class Import(LoginRequiredMixin, FormView):
                 continue
 
             if Record.is_row_superfluous(row, author):
+                logger.info('Record is superfluous')
                 messages.info(self.request, 'Publication #{id} by {author} '
                     'has already been requested from another author, so this '
                     'record will not be imported. Please add this citation '
@@ -126,6 +128,8 @@ class Import(LoginRequiredMixin, FormView):
                 continue
 
             dupes = Record.get_duplicates(author, row)
+            logger.info('dupes {dupes}'.format(dupes=dupes))
+
             if dupes:
                 dupe_list = [id
                              for id
@@ -145,6 +149,9 @@ class Import(LoginRequiredMixin, FormView):
             record, created = self._get_record(row, author)
 
             if not record:
+                logger.warning('Cannot create record for publication {id} '
+                    'with author {author}'.format(id=row[Headers.PAPER_ID],
+                        author=row[Headers.LAST_NAME]))
                 messages.warning(self.request, 'The record for publication '
                     '#{id} by {author} is missing required information and '
                     'will not be created.'.format(id=row[Headers.PAPER_ID],
