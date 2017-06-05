@@ -23,11 +23,9 @@
 # have to issue the patch call. However, I'm not sure how to validate the date
 # field.
 
-from datetime import date
 import logging
 import requests
 from urllib.parse import urljoin
-from xml.etree.ElementTree import Element, SubElement, tostring
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -37,19 +35,43 @@ from solenoid.emails.models import email_sent
 
 from .models import ElementsAPICall
 
-
 logger = logging.getLogger(__name__)
 
 
+def _issue_elements_api_call(call):
+    """Sends a patch request to Elements about a Record. Takes a call argument,
+    which is an ElementsAPICall prepared with request data. Updates it with
+    response data. Does not return anything.
+    """
+
+    try:
+        response = call.issue()
+    except requests.TooManyRedirects:
+        logger.exception("Call %d raised too many redirects" % call.pk)
+        return
+
+    # Handle timeouts.
+    if not response:
+        logger.warning('No response received from Elements API call')
+        return
+
+    call.update(response)
+
+    if call.should_retry:
+        logger.warning("Call %d must be retried" % call.pk)
+        call.retry()
+
+
 @receiver(email_sent)
-def issue_elements_api_call(sender):
-    """Notifies Elements when a record has been requested.
+def wrap_elements_api_call(sender):
+    """Notifies Elements when a record has been requested. Returns True on
+    success, False otherwise.
 
     Note that this wants to be a *signal receiver* and not anything that could
     conceivably block a view, since the latency on the response may be high
     (it may even time out)."""
     if not settings.USE_ELEMENTS:
-        return
+        return False
 
     if not settings.ELEMENTS_PASSWORD:
         logger.warning('Tried to issue Elements API call without password')
@@ -59,106 +81,14 @@ def issue_elements_api_call(sender):
     xml = ElementsAPICall.make_xml()
 
     for record in sender.record_set.all():
-        # Get endpoint for this record
         url = urljoin(settings.ELEMENTS_ENDPOINT,
                       'publication/records/{source}/{id}'.format(
                           source=record.source, id=record.elements_id))
 
-        # Send request
-        response = requests.patch(url,
-            data=tostring(xml).decode('utf-8'),
-            headers=headers,
-            # Passing in an auth parameter makes requests handle HTTP Basic
-            # Auth transparently.
-            auth=(settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD))
-
-        # Record response
-        ElementsAPICall.objects.create(
+        # Construct call
+        call = ElementsAPICall.objects.create(
             request_data=xml,
-            request_url=url,
-            response_content=response.content,
-            response_status=response.status_code
+            request_url=url
         )
 
-        # * error handling???
-
-
-top = Element('update-record')
-top.set('xmlns', 'http://www.symplectic.co.uk/publications/api')
-fields = SubElement(top, 'fields')
-
-# Update c-requested field
-container_field = SubElement(fields, 'field')
-container_field.set('name', 'c-requested')
-container_field.set('operation', 'set')
-bool_field = SubElement(container_field, 'boolean')
-bool_field.text = 'true'
-
-# Update c-reqdate field
-container_field = SubElement(fields, 'field')
-container_field.set('name', 'c-reqdate')
-container_field.set('operation', 'set')
-date_field = SubElement(container_field, 'date')
-date_field.text = date.today().strftime('%d/-%m-%Y')
-
-# Update c-reqnote field
-container_field = SubElement(fields, 'field')
-container_field.set('name', 'c-reqdate')
-container_field.set('operation', 'set')
-date_field = SubElement(container_field, 'text')
-date_field.text = 'Email sent by solenoid'
-
-# https://pubdata-dev.mit.edu/viewobject.html?id=307811&cid=1
-record_id = 22667  # get this from actual record later
-source = "Manual"  # this too
-headers = {'Content-Type': 'application/xml'}
-url = urljoin(settings.ELEMENTS_ENDPOINT,
-              'publication/records/{source}/{id}'.format(source=source, id=record_id))
-
-requests.patch(url,
-               data=tostring(top).decode('utf-8'),
-               params={'validate': 'true'},  # take this out once it's verified
-               headers=headers,
-               # Passing in an auth parameter makes requests handle HTTP Basic
-               # Auth transparently.
-               auth=(settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD))
-
-"""
-From response = requests.get(settings.ELEMENTS_ENDPOINT + 'publication/types',
-                             params={'validate': 'true'},
-                             auth=(settings.ELEMENTS_USER,
-                                   settings.ELEMENTS_PASSWORD)):
-   <field>
-        <name>c-requested</name>
-        <display-name>Requested</display-name>
-        <type>boolean</type>
-        <field-group>metadata</field-group>
-        <is-mandatory>false</is-mandatory>
-        <update-field-operations>
-            <operation type="set"/>
-            <operation type="clear"/>
-        </update-field-operations>
-    </field>
-    <field>
-        <name>c-reqdate</name>
-        <display-name>ReqDate</display-name>
-        <type>date</type>
-        <field-group>metadata</field-group>
-        <is-mandatory>false</is-mandatory>
-        <update-field-operations>
-            <operation type="set"/>
-            <operation type="clear"/>
-        </update-field-operations>
-    </field>
-    <field>
-        <name>c-reqnote</name>
-        <display-name>ReqNote</display-name>
-        <type>text</type>
-        <field-group>metadata</field-group>
-        <is-mandatory>false</is-mandatory>
-        <update-field-operations>
-            <operation type="set"/>
-            <operation type="clear"/>
-        </update-field-operations>
-    </field>
-"""
+        _issue_elements_api_call(call)
