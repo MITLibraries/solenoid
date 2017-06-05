@@ -41,6 +41,31 @@ class Import(LoginRequiredMixin, FormView):
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')
 
+    def _add_messages(self, successes, failures, updates):
+        if successes:
+            if successes == 1:
+                messages.success(self.request, '{x} publication has been '
+                    'successfully imported. You can now email its author'
+                    'about it.'.format(x=successes))
+            else:
+                messages.success(self.request, '{x} publications have '
+                    'been successfully imported. You can now generate '
+                    'emails to authors about them.'.format(x=successes))
+
+        if failures:
+            if failures == 1:
+                messages.info(self.request, '{x} publication could not be '
+                    'imported. Please fix it in Sympletic and generate a '
+                    'new CSV file.'.format(x=failures))
+            else:
+                messages.info(self.request, '{x} publications could not '
+                    'be imported. Please fix them in Sympletic and '
+                    'generate a new CSV file.'.format(x=failures))
+
+        if updates:
+            messages.info(self.request, '{x} existing publication records '
+                'have been successfully updated.'.format(x=updates))
+
     def _get_csv_reader(self, csv_file):
         # What's going on in these next two lines?
         # First, we have to make sure we're at the beginning of the file - our
@@ -77,26 +102,6 @@ class Import(LoginRequiredMixin, FormView):
         else:
             return None, None
 
-    def _is_row_valid(self, row):
-        return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
-
-    def _is_row_superfluous(self, row, author):
-        """If we have already requested this paper from another author, let's
-        not import it."""
-
-        # Find records of the same paper with different authors, if any.
-        records = Record.objects.filter(
-            paper_id=row[Headers.PAPER_ID]
-        ).exclude(
-            author=author
-        )
-
-        # Return True if we've already sent an email for any of those papers;
-        # False otherwise.
-        return any([record.email.date_sent
-                    for record in records
-                    if record.email])
-
     def form_valid(self, form):
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
         successes = 0
@@ -104,7 +109,7 @@ class Import(LoginRequiredMixin, FormView):
         updates = 0
 
         for row in reader:
-            if not self._is_row_valid(row):
+            if not Record.is_row_valid(row):
                 messages.warning(self.request, 'Publication #{id} by {author} '
                     'is missing required data, so this citation will not be '
                     'imported.'.format(id=row[Headers.PAPER_ID],
@@ -114,7 +119,14 @@ class Import(LoginRequiredMixin, FormView):
 
             author = self._get_author(row)
 
-            if self._is_row_superfluous(row, author):
+            if not author:
+                messages.warning(self.request, 'The author for publication '
+                    '#{id} is missing required information. This record will '
+                    'not be created'.format(id=row[Headers.PAPER_ID]))
+                failures += 1
+                continue
+
+            if Record.is_row_superfluous(row, author):
                 messages.info(self.request, 'Publication #{id} by {author} '
                     'has already been requested from another author, so this '
                     'record will not be imported. Please add this citation '
@@ -125,10 +137,20 @@ class Import(LoginRequiredMixin, FormView):
                 failures += 1
                 continue
 
-            if not author:
-                messages.warning(self.request, 'The author for publication '
-                    '#{id} is missing required information. This record will '
-                    'not be created'.format(id=row[Headers.PAPER_ID]))
+            dupes = Record.get_duplicates(author, row)
+            if dupes:
+                dupe_list = [id
+                             for id
+                             in dupes.values_list('paper_id', flat=True)]
+                dupe_list = ', '.join(dupe_list)
+                messages.warning(self.request, 'Publication #{id} by {author} '
+                    'duplicates the following record(s) already in the '
+                    'database: {dupes}. Please merge #{id} into an existing '
+                    'record in Elements. It will not be imported.'.format(
+                        id=row[Headers.PAPER_ID],
+                        author=row[Headers.LAST_NAME],
+                        dupes=dupe_list))
+
                 failures += 1
                 continue
 
@@ -147,29 +169,7 @@ class Import(LoginRequiredMixin, FormView):
             else:
                 updates += 1
 
-            if successes:
-                if successes == 1:
-                    messages.success(self.request, '{x} publication has been '
-                        'successfully imported. You can now email its author'
-                        'about it.'.format(x=successes))
-                else:
-                    messages.success(self.request, '{x} publications have '
-                        'been successfully imported. You can now generate '
-                        'emails to authors about them.'.format(x=successes))
-
-            if failures:
-                if failures == 1:
-                    messages.info(self.request, '{x} publication could not be '
-                        'imported. Please fix it in Sympletic and generate a '
-                        'new CSV file.'.format(x=failures))
-                else:
-                    messages.info(self.request, '{x} publications could not '
-                        'be imported. Please fix them in Sympletic and '
-                        'generate a new CSV file.'.format(x=failures))
-
-            if updates:
-                messages.info(self.request, '{x} existing publication records '
-                    'have been successfully updated.'.format(x=updates))
+            self._add_messages(successes, failures, updates)
 
         return super(Import, self).form_valid(form)
 

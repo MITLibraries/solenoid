@@ -61,50 +61,7 @@ class Record(models.Model):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
             self=self)
 
-    @staticmethod
-    def is_record_creatable(row):
-        """This expects a row of data from a CSV import and determines whether
-        a valid record can be created from that data. It is not responsible for
-        confirming that the foreign-keyed Author exists or can be created.
-        """
-        try:
-            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD,
-                          Headers.CITATION]
-            assert all([bool(row[x]) for x in desiderata])
-
-            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED':
-                assert bool(row[Headers.DOI])
-            return True
-        except AssertionError:
-            return False
-
-    @property
-    def is_valid(self):
-        return all([self.acq_method in self.ACQ_METHODS_LIST,
-                    # If acq_method is FPV, we must have the DOI. If not, it
-                    # doesn't matter. That's what this truth table says.
-                    self.acq_method != Record.ACQ_FPV or bool(self.doi)])
-
-    @property
-    def is_sent(self):
-        if self.email:
-            return bool(self.email.date_sent)
-        else:
-            return False
-
-    @property
-    def fpv_message(self):
-        msg = Template('<b>[Note: $publisher_name allows authors to download '
-                       'and deposit the final published article, but does not '
-                       'allow the Libraries to perform the downloading. If you ' # noqa
-                       'follow this link, download the article, and attach it '
-                       'to an email reply, we can deposit it on your behalf: '
-                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>') # noqa
-        if self.acq_method == self.ACQ_FPV:
-            return msg.substitute(publisher_name=self.publisher_name,
-                                  doi=self.doi)
-        else:
-            return None
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ STATIC METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @staticmethod
     def get_or_create_from_csv(author, row):
@@ -158,3 +115,93 @@ class Record(models.Model):
                 elements_id=row[Headers.RECORD_ID])
 
             return record, True
+
+    @staticmethod
+    def get_duplicates(author, row):
+        """See if this CSV row would duplicate a record already in the
+        database.
+
+        A _duplicate_ is a record with a different PaperID but the same author
+        and citation. We want to reject these so they can be fixed in Elements.
+
+        (Same citation doesn't suffice, as we may legitimately receive a paper
+        with the same citation multiple times, once per author.)"""
+
+        dupes = Record.objects.filter(author=author,
+                                      citation=row[Headers.CITATION]
+                                      ).exclude(paper_id=row[Headers.PAPER_ID])
+        if dupes:
+            return dupes
+        else:
+            return None
+
+    @staticmethod
+    def is_record_creatable(row):
+        """This expects a row of data from a CSV import and determines whether
+        a valid record can be created from that data. It is not responsible for
+        confirming that the foreign-keyed Author exists or can be created.
+        """
+        try:
+            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD,
+                          Headers.CITATION]
+            assert all([bool(row[x]) for x in desiderata])
+
+            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED':
+                assert bool(row[Headers.DOI])
+            return True
+        except AssertionError:
+            return False
+
+    @staticmethod
+    def is_row_superfluous(row, author):
+        """Return True if we have already requested this paper from another
+        author, False otherwise."""
+
+        # Find records of the same paper with different authors, if any.
+        records = Record.objects.filter(
+            paper_id=row[Headers.PAPER_ID]
+        ).exclude(
+            author=author
+        )
+
+        # Return True if we've already sent an email for any of those papers;
+        # False otherwise.
+        return any([record.email.date_sent
+                    for record in records
+                    if record.email])
+
+    @staticmethod
+    def is_row_valid(row):
+        """Returns True if this row of CSV has the required data for making a
+        Record; False otherwise."""
+        return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    @property
+    def fpv_message(self):
+        msg = Template('<b>[Note: $publisher_name allows authors to download '
+                       'and deposit the final published article, but does not '
+                       'allow the Libraries to perform the downloading. If you ' # noqa
+                       'follow this link, download the article, and attach it '
+                       'to an email reply, we can deposit it on your behalf: '
+                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>') # noqa
+        if self.acq_method == self.ACQ_FPV:
+            return msg.substitute(publisher_name=self.publisher_name,
+                                  doi=self.doi)
+        else:
+            return None
+
+    @property
+    def is_sent(self):
+        if self.email:
+            return bool(self.email.date_sent)
+        else:
+            return False
+
+    @property
+    def is_valid(self):
+        return all([self.acq_method in self.ACQ_METHODS_LIST,
+                    # If acq_method is FPV, we must have the DOI. If not, it
+                    # doesn't matter. That's what this truth table says.
+                    self.acq_method != Record.ACQ_FPV or bool(self.doi)])

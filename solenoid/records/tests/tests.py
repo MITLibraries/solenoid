@@ -148,8 +148,6 @@ class ImportViewTest(TestCase):
         self._post_csv('single_good_record.csv')
 
         record = Record.objects.latest('pk')
-        print(record)
-        print(record.pk)
         self.assertEqual(record.publisher_name, 'Elsevier')
 
     def test_records_without_publishers_rejected(self):
@@ -587,7 +585,9 @@ class RecordModelTest(TestCase):
             Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
             Headers.CITATION: 'citation',
             Headers.DOI: 'doi',
-            Headers.PAPER_ID: 'paper_id'
+            Headers.PAPER_ID: 'paper_id',
+            Headers.SOURCE: 'Manual',
+            Headers.RECORD_ID: '841-1758293x-15',
         }
 
         record, created = Record.get_or_create_from_csv(author, row)
@@ -597,3 +597,78 @@ class RecordModelTest(TestCase):
         assert record.citation == 'citation'
         assert record.doi == 'doi'
         assert record.paper_id == 'paper_id'
+        assert record.source == 'Manual'
+        assert record.elements_id == '841-1758293x-15'
+
+    def test_get_duplicates_1(self):
+        """There are no duplicates: this should return None."""
+
+        row = {
+            Headers.PUBLISHER_NAME: 'publisher_name',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'citation',
+            Headers.DOI: 'doi',
+            Headers.PAPER_ID: 'paper_id',
+            Headers.SOURCE: 'Manual',
+            Headers.RECORD_ID: '841-1758293x-15',
+        }
+        author = Author.objects.get(pk=1)
+
+        assert Record.get_duplicates(author, row) is None
+
+    def test_get_duplicates_2(self):
+        """There's a paper with the same citation but a different author;
+        this should return None."""
+
+        row = {
+            Headers.PUBLISHER_NAME: 'Wiley',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',
+            Headers.DOI: '10.1412/4678156',
+            Headers.PAPER_ID: 'paper_id',
+            Headers.SOURCE: 'Manual',
+            Headers.RECORD_ID: '841-1758293x-15',
+            Headers.FIRST_NAME: 'Different',
+            Headers.LAST_NAME: 'Author',
+            Headers.MIT_ID: 214614,
+        }
+
+        # Check assumption - we don't have this author in the db at all, so
+        # we can't have a record associated with this author yet
+        id_hash = Author.get_hash('214614')
+        assert not Author.objects.filter(_mit_id_hash=id_hash)
+
+        author = Author.objects.create(
+            first_name='Different',
+            last_name='Author',
+            _mit_id_hash=id_hash,
+            dlc=DLC.objects.first(),
+            email='da@example.com'
+        )
+
+        assert Record.get_duplicates(author, row) is None
+
+    def test_get_duplicates_3(self):
+        """There's a paper with the same citation, the same author, and a
+        different paper_id; this should return that duplicate."""
+        # Check assumption
+        assert not Record.objects.filter(paper_id=24618)
+
+        # This is a duplicate of record #2, except for the paper ID.
+        row = {
+            Headers.PUBLISHER_NAME: 'Nature',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',
+            Headers.DOI: '10.1240.2/4914241',
+            Headers.PAPER_ID: '24618',
+            Headers.SOURCE: 'Manual',
+            Headers.RECORD_ID: '841-1758293x-15',
+            Headers.FIRST_NAME: 'Susumu',
+            Headers.LAST_NAME: 'Tonegawa',
+            Headers.MIT_ID: '2',
+        }
+        author = Author.objects.get(last_name='Tonegawa')
+
+        dupes = Record.get_duplicates(author, row)
+        assert dupes.count() == 1
+        assert int(dupes[0].paper_id) == 123141

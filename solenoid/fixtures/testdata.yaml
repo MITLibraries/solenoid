@@ -57,7 +57,7 @@
     email: susumu@example.com
     first_name: Susumu
     last_name: Tonegawa
-    _mit_id_hash: 2
+    _mit_id_hash: 'c81e728d9d4c2f636f067f89cc14862c'  # This is the hash of '2'
 
 - model: people.Author
   pk: 3
