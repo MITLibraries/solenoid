@@ -43,9 +43,9 @@ class Import(LoginRequiredMixin, FormView):
     def _add_messages(self, successes, updates):
         if successes:
             if successes == 1:
-                messages.success(self.request, '{x} publication has been '
+                messages.success(self.request, '1 publication has been '
                     'successfully imported. You can now email its author'
-                    'about it.'.format(x=successes))
+                    'about it.')
             else:
                 messages.success(self.request, '{x} publications have '
                     'been successfully imported. You can now generate '
@@ -55,8 +55,14 @@ class Import(LoginRequiredMixin, FormView):
         # specific, useful messages about each one.
 
         if updates:
-            messages.info(self.request, '{x} existing publication records '
-                'have been successfully updated.'.format(x=updates))
+            if updates == 1:
+                messages.info(self.request, '1 existing publication record '
+                    'has been successfully updated.')
+            else:
+                messages.info(self.request, '{x} existing publication records '
+                    'have been successfully updated.'.format(x=updates))
+
+        logger.info('messages added')
 
     def _get_csv_reader(self, csv_file):
         # This used to be a much more complicated function, when we were
@@ -147,6 +153,8 @@ class Import(LoginRequiredMixin, FormView):
                 continue
 
             record, created = self._get_record(row, author)
+            logger.info('record was %s' % record)
+            logger.info('created was %s' % created)
 
             if not record:
                 logger.warning('Cannot create record for publication {id} '
