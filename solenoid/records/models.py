@@ -87,20 +87,25 @@ class Record(models.Model):
                               doi=row[Headers.DOI]
                               )
             """
+            logger.info('Got an existing record')
             return record, False
         except Record.DoesNotExist:
             try:
                 message = row[Headers.MESSAGE]
             except KeyError:
                 message = None
+            logger.info('Message text was %s' % message)
 
             if message:
                 try:
                     msg = Message.objects.get(text=message)
+                    logger.info('got message %s' % msg)
                 except Message.DoesNotExist:
                     msg = Message.objects.create(text=message)
                     msg.save()
+                    logger.info('created message %s' % msg)
             else:
+                logger.info('no message')
                 msg = None
 
             record = Record.objects.create(
@@ -113,6 +118,7 @@ class Record(models.Model):
                 message=msg,
                 source=row[Headers.SOURCE],
                 elements_id=row[Headers.RECORD_ID])
+            logger.info('record created')
 
             return record, True
 
