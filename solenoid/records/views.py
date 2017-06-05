@@ -67,17 +67,10 @@ class Import(LoginRequiredMixin, FormView):
                 'have been successfully updated.'.format(x=updates))
 
     def _get_csv_reader(self, csv_file):
-        # What's going on in these next two lines?
-        # First, we have to make sure we're at the beginning of the file - our
-        # previous validation steps may have gotten the pointer to the end, in
-        # which case there's nothing left for us to read.
-        # Second, we can't feed the csv_file directly into DictReader, because
-        # DictReader expects str but in python3 it will get bytes. read()
-        # exposes a decode() method, which will coerce its output to str. Then
-        # we need to wrap it in StringIO so that it will respond to iteration,
-        # as required by DictReader.
-        csv_file.seek(0)
-        return csv.DictReader(io.StringIO(csv_file.read().decode('utf-8')))
+        # This used to be a much more complicated function, when we were
+        # dealing with an InMemoryUploadedFile rather than a string. See git
+        # commit 0fe569e or previous for fun times.
+        return csv.DictReader(csv_file.splitlines())
 
     def _get_author(self, row):
         try:
@@ -169,7 +162,7 @@ class Import(LoginRequiredMixin, FormView):
             else:
                 updates += 1
 
-            self._add_messages(successes, failures, updates)
+        self._add_messages(successes, failures, updates)
 
         return super(Import, self).form_valid(form)
 
