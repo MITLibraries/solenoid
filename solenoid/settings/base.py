@@ -195,8 +195,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'outgoing.mit.edu'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'libsys'
-EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_SMTP_PASSWORD', None)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# THIS CONTROLS WHETHER THE SYSTEM WILL SEND EMAIL. If you don't want to send
+# real actual email, don't set this environment variable.
+EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_SMTP_PASSWORD', None)
 
 # The default backend is SMTP, but if we haven't configured the environment
 # with the password, we can't use SMTP, so use the console backend instead.
