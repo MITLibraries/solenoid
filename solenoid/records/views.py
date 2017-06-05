@@ -1,5 +1,4 @@
 import csv
-import io
 import logging
 
 from django.contrib import messages
@@ -41,7 +40,7 @@ class Import(LoginRequiredMixin, FormView):
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')
 
-    def _add_messages(self, successes, failures, updates):
+    def _add_messages(self, successes, updates):
         if successes:
             if successes == 1:
                 messages.success(self.request, '{x} publication has been '
@@ -52,15 +51,8 @@ class Import(LoginRequiredMixin, FormView):
                     'been successfully imported. You can now generate '
                     'emails to authors about them.'.format(x=successes))
 
-        if failures:
-            if failures == 1:
-                messages.info(self.request, '{x} publication could not be '
-                    'imported. Please fix it in Sympletic and generate a '
-                    'new CSV file.'.format(x=failures))
-            else:
-                messages.info(self.request, '{x} publications could not '
-                    'be imported. Please fix them in Sympletic and '
-                    'generate a new CSV file.'.format(x=failures))
+        # Don't add a message tallying failures; we have already sent more
+        # specific, useful messages about each one.
 
         if updates:
             messages.info(self.request, '{x} existing publication records '
@@ -162,7 +154,7 @@ class Import(LoginRequiredMixin, FormView):
             else:
                 updates += 1
 
-        self._add_messages(successes, failures, updates)
+        self._add_messages(successes, updates)
 
         return super(Import, self).form_valid(form)
 
