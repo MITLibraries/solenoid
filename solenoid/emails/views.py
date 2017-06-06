@@ -37,6 +37,7 @@ class EmailCreate(LoginRequiredMixin, View):
         pk_list = request.POST.getlist('records')
         email_pks = _get_or_create_emails(pk_list)
         try:
+            logger.info('Creating emails for {pks}.'.format(pks=email_pks))
             first_pk = email_pks.pop(0)
             request.session["email_pks"] = email_pks
             request.session["total_email"] = len(email_pks) + 1
@@ -76,16 +77,19 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def _handle_cancel(self):
+        logger.info('Canceling changes to email {pk}'.format(pk=self.kwargs['pk']))
         messages.info(self.request, "Any changes to the email have "
             "been discarded. You may return to the email and update it later.")
         return self._finish_handle()
 
     def _handle_save(self):
+        logger.info('Saving changes to email {pk}'.format(pk=self.kwargs['pk']))
         self.form_valid(self.get_form())
         messages.success(self.request, "Email message updated.")
         return self._finish_handle()
 
     def _handle_send(self):
+        logger.info('Sending email {pk}'.format(pk=self.kwargs['pk']))
         self.form_valid(self.get_form())
         # This should exist, because if it doesn't dispatch() will have already
         # thrown an error and we won't reach this line.
@@ -97,10 +101,12 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
 
     def _update_session(self):
         try:
+            logger.info('Updating email pks in session')
             next_pk = self.request.session['email_pks'].pop(0)
             self.request.session['current_email'] += 1
             return next_pk
         except (KeyError, IndexError):
+            logger.exception('Could not update email pks in session')
             # If we don't have email_pks in session, or we have run off the end
             # of the list and have no more to pop, then we should clean up any
             # other email-pk-related stuff that still exists.
@@ -176,15 +182,20 @@ class EmailSend(LoginRequiredMixin, View):
         pk_list = request.POST.getlist('emails')
         statuses = []
         for pk in pk_list:
+            logger.info('Sending email {pk}'.format(pk=pk))
             sent = EmailMessage.objects.get(pk=pk).send(
                 self.request.user.username)
             statuses.append(sent)
 
         if False in statuses:
+            logger.warning('Could not send all emails. {bad} of {all} were '
+                'not sent.'.format(bad=statuses.count(False),
+                                   all=len(pk_list)))
             messages.warning(request,
                 'Some emails were not successfully sent. Check to be sure '
                 'that a liaison has been assigned for each DLC and try again.')
         else:
+            logger.info('All emails successfully sent')
             messages.success(request, 'All emails sent. Hooray!')
 
         return HttpResponseRedirect(reverse('home'))

@@ -197,7 +197,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'outgoing.mit.edu'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'libsys'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + '@mit.edu'
 
 # THIS CONTROLS WHETHER THE SYSTEM WILL SEND EMAIL. If you don't want to send
 # real actual email, don't set this environment variable.
