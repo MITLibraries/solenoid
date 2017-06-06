@@ -31,7 +31,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import receiver
 
-from solenoid.emails.models import email_sent
+from solenoid.emails.signals import email_sent
 
 from .models import ElementsAPICall
 
@@ -67,7 +67,7 @@ def _issue_elements_api_call(call):
 
 
 @receiver(email_sent)
-def wrap_elements_api_call(sender, username):
+def wrap_elements_api_call(sender, **kwargs):
     """Notifies Elements when a record has been requested. Returns True on
     success, False otherwise.
 
@@ -81,10 +81,17 @@ def wrap_elements_api_call(sender, username):
         logger.warning('Tried to issue Elements API call without password')
         raise ImproperlyConfigured
 
+    try:
+        assert 'username' in kwargs
+        assert 'instance' in kwargs
+    except AssertionError:
+        logger.exception('email_sent did not provide expected args')
+        raise
+
     # Construct XML. (This is the same for all records in the email.)
     xml = ElementsAPICall.make_xml(
-        username=username,
-        author_name=sender.record_set.first().author.last_name)
+        username=kwargs['username'],
+        author_name=kwargs['instance'].record_set.first().author.last_name)
 
     for record in sender.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
