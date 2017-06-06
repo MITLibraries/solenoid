@@ -44,10 +44,14 @@ def _issue_elements_api_call(call):
     response data. Does not return anything.
     """
 
+    logger.info('Entering _issue_elements_api_call for call #{pk}'.format(
+        pk=call.pk))
+
     try:
         response = call.issue()
     except requests.TooManyRedirects:
-        logger.exception("Call %d raised too many redirects" % call.pk)
+        logger.exception("Call #{pk} raised too many redirects".format(
+            pk=call.pk))
         return
 
     # Handle timeouts.
@@ -58,12 +62,12 @@ def _issue_elements_api_call(call):
     call.update(response)
 
     if call.should_retry:
-        logger.warning("Call %d must be retried" % call.pk)
+        logger.warning("Call #{pk} must be retried".format(pk=call.pk))
         call.retry()
 
 
 @receiver(email_sent)
-def wrap_elements_api_call(sender):
+def wrap_elements_api_call(sender, username):
     """Notifies Elements when a record has been requested. Returns True on
     success, False otherwise.
 
@@ -78,12 +82,17 @@ def wrap_elements_api_call(sender):
         raise ImproperlyConfigured
 
     # Construct XML. (This is the same for all records in the email.)
-    xml = ElementsAPICall.make_xml()
+    xml = ElementsAPICall.make_xml(
+        username=username,
+        author_name=sender.record_set.first().author.last_name)
 
     for record in sender.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
                       'publication/records/{source}/{id}'.format(
                           source=record.source, id=record.elements_id))
+
+        logger.info('Constructing ElementsAPICall for record #{pk}'.format(
+            pk=record.pk))
 
         # Construct call
         call = ElementsAPICall.objects.create(

@@ -91,7 +91,7 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         # thrown an error and we won't reach this line.
         # If it doesn't exist, users will see a 500, which is also reasonable.
         email = EmailMessage.objects.get(pk=self.kwargs['pk'])
-        email.send()
+        email.send(self.request.user.username)
         messages.success(self.request, "Email message updated and sent.")
         return self._finish_handle()
 
@@ -176,7 +176,8 @@ class EmailSend(LoginRequiredMixin, View):
         pk_list = request.POST.getlist('emails')
         statuses = []
         for pk in pk_list:
-            sent = EmailMessage.objects.get(pk=pk).send()
+            sent = EmailMessage.objects.get(pk=pk).send(
+                self.request.user.username)
             statuses.append(sent)
 
         if False in statuses:

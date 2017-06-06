@@ -183,7 +183,7 @@ class EmailMessage(models.Model):
 
         return True
 
-    def send(self):
+    def send(self, username):
         """
         Validates and sends an EmailMessage with the given pk. Upon send,
         updates sending-related metadata. Returns True if successful; False
@@ -198,7 +198,7 @@ class EmailMessage(models.Model):
             return False
 
         self._update_after_sending()
-        email_sent.send(sender=self)
+        email_sent.send(sender=self, username=username)
 
         return True
 

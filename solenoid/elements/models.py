@@ -1,3 +1,5 @@
+from datetime import date
+import logging
 import requests
 import time
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -5,6 +7,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from django.conf import settings
 from django.db import models
 
+logger = logging.getLogger(__name__)
 HEADERS = {'Content-Type': 'application/xml'}
 
 
@@ -34,7 +37,9 @@ class ElementsAPICall(models.Model):
     STATUS_RETRY = [409, 500, 504]
 
     @classmethod
-    def make_xml(cls):
+    def make_xml(cls, username, author_name):
+        logger.info('Making XML')
+
         top = Element('update-record')
         top.set('xmlns', 'http://www.symplectic.co.uk/publications/api')
         fields = SubElement(top, 'fields')
@@ -51,7 +56,11 @@ class ElementsAPICall(models.Model):
         container_field.set('name', 'c-reqnote')
         container_field.set('operation', 'set')
         text_field = SubElement(container_field, 'text')
-        text_field.text = 'Email sent by solenoid'
+        text_field.text = '{username}-{author_name} {today}'.format(
+            username=username,
+            author_name=author_name,
+            today=date.today().strftime('%-d %B %Y')
+            )
 
         return top
 
@@ -59,13 +68,16 @@ class ElementsAPICall(models.Model):
         """If Elements redirected the call, follow the redirect up to five
         steps, and then return the response (if not a redirect) or raise an
         exception."""
+        logger.info('Following redirects for call #{pk}'.format(pk=self.pk))
         tries = 5
         while tries > 0:
+            logger.info('Following redirect; {num} tries remain'.format(tries))
             response = requests.Session.send(response.next)
             if response.status_code != 303:
                 return response
             tries -= 1
 
+        logger.warning('Max number of redirects exceeded')
         raise requests.TooManyRedirects
 
     def issue(self):
@@ -74,6 +86,9 @@ class ElementsAPICall(models.Model):
 
         This function follows redirects; the returned response will have a
         non-redirect status code."""
+
+        logger.info('Issuing ElementsAPICall #{pk}'.format(pk=self.pk))
+
         # Send request
         response = requests.patch(self.request_url,
             data=tostring(self.request_data).decode('utf-8'),
@@ -85,16 +100,22 @@ class ElementsAPICall(models.Model):
         if response.status_code == 303:
             response = self._follow_redirects(response)
 
+        logger.info('Returning response for call #{pk}'.format(pk=self.pk))
         return response
 
     def retry(self):
         """Retry a call, using exponential backoff. Creates new call objects
-        ForeignKeyed back to self. Does not return.
+        ForeignKeyed back to self. Does not return anything.
         """
+        logger.info('Retrying ElementsAPICall #{pk}'.format(pk=self.pk))
+
         tries = 4
         delay = 2
 
         while tries > 0:
+            logger.info('Retry {num} for call {pk}'.format(
+                num=tries, pk=self.pk))
+
             new_call = ElementsAPICall.objects.create(
                 request_data=self.request_data,
                 request_url=self.request_url,
@@ -104,6 +125,8 @@ class ElementsAPICall(models.Model):
             new_call.update(response)
 
             if not new_call.should_retry:
+                logger.info('Not retrying #{pk} because should_retry is '
+                    'False'.format(pk=new_call.pk))
                 return
 
             time.sleep(delay)
@@ -112,6 +135,7 @@ class ElementsAPICall(models.Model):
 
     def update(self, response):
         """Update an existing ElementsAPICall with response data."""
+        logger.info('Updating ElementsAPICall #{pk}'.format(pk=self.pk))
         self.response_content = response.content
         self.response_status = response.status
         self.save()
