@@ -180,7 +180,7 @@ class EmailMessage(models.Model):
 
     def _update_after_sending(self):
         """Set the metadata that should be set after sending an email."""
-        logger.info('Updating date_sent for  email {pk}'.format(pk=self.pk))
+        logger.info('Updating date_sent for email {pk}'.format(pk=self.pk))
         self.date_sent = date.today()
         self._liaison = self.liaison
         self.save()
@@ -228,6 +228,7 @@ class EmailMessage(models.Model):
             return False
 
         self._update_after_sending()
+        logger.info('Sending email_sent signal')
         email_sent.send(sender=self, username=username)
 
         logger.info('Email {pk} sent'.format(pk=self.pk))
