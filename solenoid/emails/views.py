@@ -37,7 +37,7 @@ class EmailCreate(LoginRequiredMixin, View):
         pk_list = request.POST.getlist('records')
         email_pks = _get_or_create_emails(pk_list)
         try:
-            logger.info('Creating emails for {pks}.'format(pks=email_pks))
+            logger.info('Creating emails for {pks}.'.format(pks=email_pks))
             first_pk = email_pks.pop(0)
             request.session["email_pks"] = email_pks
             request.session["total_email"] = len(email_pks) + 1
