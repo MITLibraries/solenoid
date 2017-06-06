@@ -60,6 +60,8 @@ LOGGING = {
     }
 }
 
+# Will be emailed by the management command about API usage.
+ADMINS = [('Andromeda Yelton', 'm31@mit.edu')]
 
 # OAUTH CONFIGURATION
 # -----------------------------------------------------------------------------
