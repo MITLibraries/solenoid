@@ -191,6 +191,8 @@ LOGGING = {
 # EMAIL CONFIGURATION
 # -----------------------------------------------------------------------------
 
+ADMINS = []
+
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'outgoing.mit.edu'
 EMAIL_PORT = 587
