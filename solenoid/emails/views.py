@@ -100,6 +100,9 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         return self._finish_handle()
 
     def _update_session(self):
+        if not len(self.request.session['email_pks']):
+            return None
+
         try:
             logger.info('Updating email pks in session')
             next_pk = self.request.session['email_pks'].pop(0)
