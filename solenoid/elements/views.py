@@ -88,12 +88,14 @@ def wrap_elements_api_call(sender, **kwargs):
         logger.exception('email_sent did not provide expected args')
         raise
 
+    instance = kwargs['instance']
+
     # Construct XML. (This is the same for all records in the email.)
     xml = ElementsAPICall.make_xml(
         username=kwargs['username'],
-        author_name=kwargs['instance'].record_set.first().author.last_name)
+        author_name=instance.record_set.first().author.last_name)
 
-    for record in sender.record_set.all():
+    for record in instance.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
                       'publication/records/{source}/{id}'.format(
                           source=record.source, id=record.elements_id))
