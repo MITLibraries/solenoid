@@ -27,14 +27,13 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
-* `heroku buildpacks:set heroku/python`
-* `heroku buildpacks:add --index 1 heroku/nodejs`
-  * This is needed to run the grunt task that compiles and compresses assets.
 * `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
   * Can be anything; a 50-character random string is reasonable.
 * `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
 * `heroku config:set DJANGO_SMTP_PASSWORD=<the MIT libsys password>`
   * This is in the Lastpass DLAD shared notes folder.
+  * Make sure to read the part about escaping special characters.
+* `heroku config:set WEB_CONCURRENCY=3`
 * For OAuth2:
   * `heroku config:set DJANGO_MITOAUTH2_KEY=<your MIT OAuth key>`
   * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`
@@ -50,8 +49,7 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * If you want it to be True, `heroku config:set DJANGO_DEBUG=True`
 * `git push heroku master`
 * Required on the first deploy only: `heroku run python manage.py syncdb`
-* `heroku run python manage.py migrate`
-  * Technically this is only needed if you have changed the database schema, but it won't hurt to run it regardless, so you may as well do it every time
+  * `heroku run python manage.py migrate` is run every time via a post-compile hook and a `bin/` script, so you don't need to do this, even if you have made database schema changes.
 
 ### OAuth and sensitive data
 
@@ -113,7 +111,11 @@ Following https://support.symplectic.co.uk/support/solutions/articles/6000049962
 ### In solenoid
 
 * Set an environment variable, `DJANGO_ELEMENTS_ENDPOINT`, matching the API URL you noted earlier.
-  * If the endpoint is the dev instance https://pubdata-dev.mit.edu:8091/secure-api/v5.5, you can skip this step.
+  * If the endpoint is the dev instance https://pubdata-dev.mit.edu:8091/secure-api/v5.5/, you can skip this step.
 * Set an environment variable, `DJANGO_ELEMENTS_PASSWORD`, with the API user password you noted earlier.
 * Set an environment variable `DJANGO_ELEMENTS_USER` with the username of your API user.
   * If the username is 'solenoid', you can skip this step.
+
+### With Sympletic customer service
+
+Notwithstanding the fact that you are using basic auth and you have whitelisted your IP(s), have customer service make a hole in the server's firewall for your IP(s) - you'll need all 3 to authenticate.
