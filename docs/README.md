@@ -27,6 +27,13 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
+* Provision the following apps:
+  * Postgres
+  * Quotaguard Static
+  * Newrelic
+    * This is optional - you can live on the edge if you don't like logging - but if you don't have it, you need to edit the Procfile to take out the newrelic run-program parts
+  * Papertrail
+    * Also optional if you are from the YOLO school of devops
 * `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
   * Can be anything; a 50-character random string is reasonable.
 * `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
@@ -34,6 +41,10 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * This is in the Lastpass DLAD shared notes folder.
   * Make sure to read the part about escaping special characters.
 * `heroku config:set WEB_CONCURRENCY=3`
+* `heroku config:set DJANGO_EMAIL_TESTING_MODE=False`
+  * If you want to send email to real liaisons and the scholcomm moira list, set this
+  * If it is anything else, or unset, emails will be sent to settings.ADMINS only
+  * This allows for testing email in a production-like environment without spamming people
 * For OAuth2:
   * `heroku config:set DJANGO_MITOAUTH2_KEY=<your MIT OAuth key>`
   * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`

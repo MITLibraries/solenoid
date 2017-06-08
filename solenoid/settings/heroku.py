@@ -79,4 +79,6 @@ else:
 # SYMPLECTIC ELEMENTS CONFIGURATION
 # -----------------------------------------------------------------------------
 
-USE_ELEMENTS = True
+# If the QUOTAGUARD_URL is unset, we can't use Elements, so check that in
+# addition to the user-supplied Boolean.
+USE_ELEMENTS = True and bool(QUOTAGUARD_URL)

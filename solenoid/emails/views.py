@@ -161,7 +161,7 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         self.object = self.get_object()
 
         if self.object.date_sent:
-            messages.warning(request, 'This email has already been sent; no '
+            messages.warning(request, 'This email has been sent; no '
                 'further changes can be made.')
             return HttpResponseRedirect(reverse('emails:evaluate',
                 args=(self.kwargs['pk'])))

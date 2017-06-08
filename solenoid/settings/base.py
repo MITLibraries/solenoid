@@ -215,7 +215,13 @@ SCHOLCOMM_MOIRA_LIST = 'sccs-fta@mit.edu'
 
 # If True, will only send email to admins. If False, will send email to
 # liaisons and the moira list.
-EMAIL_TESTING_MODE = os.environ.get('DJANGO_EMAIL_TESTING_MODE', True)
+testmode = os.environ.get('DJANGO_EMAIL_TESTING_MODE', None)
+
+if testmode == 'False':
+    EMAIL_TESTING_MODE = False
+else:
+    EMAIL_TESTING_MODE = True
+
 
 # -----------------------------------------------------------------------------
 # -----------------> third-party and solenoid configurations <-----------------
@@ -299,6 +305,11 @@ CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquer
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
 # headaches.
+
+
+# QUOTAGUARD CONFIGURATION
+
+QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 
 
 # SYMPLECTIC ELEMENTS CONFIGURATION

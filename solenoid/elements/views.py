@@ -74,7 +74,10 @@ def wrap_elements_api_call(sender, **kwargs):
     Note that this wants to be a *signal receiver* and not anything that could
     conceivably block a view, since the latency on the response may be high
     (it may even time out)."""
+    logger.info('email_sent signal received')
+
     if not settings.USE_ELEMENTS:
+        logger.info('USE_ELEMENTS is False; not sending API call')
         return False
 
     if not settings.ELEMENTS_PASSWORD:

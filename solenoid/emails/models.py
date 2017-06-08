@@ -207,7 +207,10 @@ class EmailMessage(models.Model):
                 fail_silently=False,
             )
         except SMTPException:
-            logger.exception('Could not send email')
+            logger.exception('Could not send email; SMTP exception')
+            return False
+        except:
+            logger.exception('Could not send email; unanticipated exception')
             return False
 
         logger.info('Done sending email')
