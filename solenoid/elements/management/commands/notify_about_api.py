@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 timeout=call_count_timeout
             )
 
-            last_month = date.today - timedelta(days=30)
+            last_month = date.today() - timedelta(days=30)
             monthly_calls = ElementsAPICall.objects.filter(
                 timestamp__gte=last_month).count()
 
@@ -64,4 +64,3 @@ class Command(BaseCommand):
             except SMTPException:
                 logger.exception('Mail could not be sent')
                 raise CommandError
-
