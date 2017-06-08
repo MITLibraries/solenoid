@@ -1,10 +1,11 @@
-from datetime import date, timedelta
+from datetime import timedelta
 import logging
 from smtplib import SMTPException
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 from solenoid.elements.models import ElementsAPICall
 
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     help = 'Sends admins an email about API usage for monitoring purposes'
 
     def handle(self, *args, **options):
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         calls = ElementsAPICall.objects.filter(timestamp__gte=yesterday)
         call_count = calls.count()
 
@@ -28,23 +29,23 @@ class Command(BaseCommand):
             "Probable timeouts: {timeout}\n"
         )
 
-
         if call_count:
             call_count_fail = calls.filter(
-                response_status__in=ElementsAPICall.STATUS_FAIL)
+                response_status__in=ElementsAPICall.STATUS_FAIL).count()
             call_count_retry = calls.filter(
-                response_status__in=ElementsAPICall.STATUS_RETRY)
-            call_count_timeout = calls.filter(response_status__isnull=True)
+                response_status__in=ElementsAPICall.STATUS_RETRY).count()
+            call_count_timeout = calls.filter(
+                response_status__isnull=True).count()
 
             message = message_base.format(
-                date=date.today().strftime('%-d %B %Y'),
+                date=timezone.now().strftime('%-d %B %Y'),
                 count=call_count,
                 fail=call_count_fail,
                 retry=call_count_retry,
                 timeout=call_count_timeout
             )
 
-            last_month = date.today() - timedelta(days=30)
+            last_month = timezone.now() - timedelta(days=30)
             monthly_calls = ElementsAPICall.objects.filter(
                 timestamp__gte=last_month).count()
 

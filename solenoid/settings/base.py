@@ -100,6 +100,8 @@ WSGI_APPLICATION = 'solenoid.wsgi.application'
 
 SITE_ID = 1
 
+USE_TZ = True
+
 
 # INTERNATIONALIZATION CONFIGURATION
 # -----------------------------------------------------------------------------
