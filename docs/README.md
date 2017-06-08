@@ -55,6 +55,10 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
   * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
     * If you used 'solenoid' as your username you can skip this step.
+  * If you want to get emails with API monitoring information:
+    * `heroku addons:create scheduler:standard`
+    * `heroku addons:open scheduler`
+    * Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
   * See below for more on Elements; you'll need to have configured it on the Symplectic side.
 * `DEBUG` defaults to False, as it should on production
   * If you want it to be True, `heroku config:set DJANGO_DEBUG=True`
