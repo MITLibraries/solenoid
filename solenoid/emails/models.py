@@ -191,9 +191,12 @@ class EmailMessage(models.Model):
         logger.info('Sending email {pk}'.format(pk=self.pk))
 
         try:
-            recipients = [self.liaison.email_address]
-            if settings.SCHOLCOMM_MOIRA_LIST:
-                recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
+            if settings.EMAIL_TESTING_MODE:
+                recipients = [admin[1] for admin in settings.ADMINS]
+            else:
+                recipients = [self.liaison.email_address]
+                if settings.SCHOLCOMM_MOIRA_LIST:
+                    recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
 
             send_mail(
                 self.subject,

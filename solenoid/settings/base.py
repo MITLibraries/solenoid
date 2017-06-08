@@ -211,7 +211,11 @@ if not EMAIL_HOST_PASSWORD:
 
 # Expects a string, which is an email address, or None. Any emails sent by the
 # system will be cc:ed to this email address.
-SCHOLCOMM_MOIRA_LIST = None
+SCHOLCOMM_MOIRA_LIST = 'sccs-fta@mit.edu'
+
+# If True, will only send email to admins. If False, will send email to
+# liaisons and the moira list.
+EMAIL_TESTING_MODE = os.environ.get('DJANGO_EMAIL_TESTING_MODE', True)
 
 # -----------------------------------------------------------------------------
 # -----------------> third-party and solenoid configurations <-----------------
