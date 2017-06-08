@@ -16,6 +16,7 @@ PROXIES = {
 
 
 class ElementsAPICall(models.Model):
+
     """Stores records of requests made to the Elements API and responses
     received. This will allow us to retry failed calls and monitor for
     problems with the integration."""
@@ -39,6 +40,9 @@ class ElementsAPICall(models.Model):
     # https://support.symplectic.co.uk/support/solutions/articles/6000170776-api-v5-5-requests-and-responses .
     STATUS_FAIL = [400, 401, 403, 404, 410]
     STATUS_RETRY = [409, 500, 504]
+
+    def __str__(self):
+        return "API call #{self.pk} ({self.timestamp})"
 
     @classmethod
     def make_xml(cls, username, author_name):
