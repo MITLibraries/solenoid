@@ -364,3 +364,15 @@ INSTALLED_APPS += (
 CRISPY_TEMPLATE_PACK = 'mitlib_crispy'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('mitlib_crispy',)
+
+
+# DJANGO-DEBUG-TOOLBAR CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += (
+    'debug_toolbar',
+)
+
+MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+
+INTERNAL_IPS = ['127.0.0.1']

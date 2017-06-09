@@ -3,6 +3,7 @@ bs4==0.0.1
 certifi==2017.4.17
 chardet==3.0.2
 defusedxml==0.5.0
+django_debug_toolbar==1.8
 Django==1.8.18
 django-appconf==1.0.2
 django-ckeditor==5.2.2
