@@ -2,6 +2,7 @@ import logging
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db import close_old_connections, connection
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import View, DetailView
 from django.views.generic.edit import UpdateView
@@ -27,6 +28,12 @@ def _get_or_create_emails(pk_list):
         records = Record.objects.filter(pk__in=pk_list, author=author)
         email_pks.append(EmailMessage.get_or_create_for_records(records).pk)
 
+    # Because this is outside the request/response cycle, the connections
+    # opened here don't close at the end of the function. They may be cleaned
+    # when the cycle finishes, but by that time we may have exceeded the number
+    # of open connections we're allowed to have on a hobby tier database,
+    # resulting in user-visible application failures....so let's close them!
+    connection.close()
     return list(set(email_pks))  # remove duplicates, if any
 
 
@@ -205,7 +212,11 @@ class EmailSend(LoginRequiredMixin, View):
 
 
 class EmailListPending(LoginRequiredMixin, ListView):
-    queryset = EmailMessage.objects.filter(date_sent__isnull=True)
+
+    def get_queryset(self):
+        qs = EmailMessage.objects.filter(
+            date_sent__isnull=True).prefetch_related('author')
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super(EmailListPending, self).get_context_data(**kwargs)
@@ -229,4 +240,8 @@ class EmailLiaison(LoginRequiredMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+
+        # Not sure that connection closing is getting triggered properly by the
+        # ajax call to here; this can't hurt.
+        close_old_connections()
         return HttpResponse(self.object.liaison)

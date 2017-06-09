@@ -32,7 +32,9 @@ class UnsentList(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        return Record.objects.exclude(email__date_sent__isnull=False)
+        return Record.objects.exclude(
+            email__date_sent__isnull=False).prefetch_related(
+                'author', 'author__dlc')
 
 
 class Import(LoginRequiredMixin, FormView):
