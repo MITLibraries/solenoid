@@ -40,6 +40,7 @@ class EmailMessage(models.Model):
     # downstream functions that depend on the liaison's existence are
     # responsible for handling exceptions.
     _liaison = models.ForeignKey(Liaison, blank=True, null=True)
+    author = models.ForeignKey(Author)
 
     def save(self, *args, **kwargs):
         # One might have a display_text property that showed latest_text if
@@ -146,7 +147,7 @@ class EmailMessage(models.Model):
             email = emails[0]
         else:
             email = cls(original_text=cls.create_original_text(records),
-                _liaison=author.dlc.liaison)
+                _liaison=author.dlc.liaison, author=author)
             email.save()
 
         # Make sure to create the ForeignKey relation from those records to
@@ -250,13 +251,6 @@ class EmailMessage(models.Model):
         logger.info('Reverting changes for {pk}'.format(pk=self.pk))
         self.latest_text = self.original_text
         self.save()
-
-    @property
-    def author(self):
-        try:
-            return self.record_set.first().author
-        except:
-            return None
 
     @property
     def dlc(self):
