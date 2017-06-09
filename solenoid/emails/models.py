@@ -255,7 +255,7 @@ class EmailMessage(models.Model):
     @property
     def dlc(self):
         try:
-            return self.record_set.first().author.dlc
+            return self.author.dlc
         except:
             return None
 
