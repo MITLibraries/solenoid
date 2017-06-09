@@ -81,6 +81,15 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
             except:
                 pass
 
+        obj = self.get_object()
+        if any([record.citation not in obj.latest_text
+                for record in obj.record_set.all()]):
+                    messages.warning(self.request, 'It looks like you have '
+                        'changed the citations in this email. If you have '
+                        'added or removed any citations, you will need to '
+                        'manually update their `requested` status in '
+                        'Elements.')
+
         return HttpResponseRedirect(self.get_success_url())
 
     def _handle_cancel(self):
