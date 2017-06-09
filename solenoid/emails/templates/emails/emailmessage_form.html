@@ -13,12 +13,12 @@
       To:<b>
       {% if form.instance.liaison %}
         <span id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <span class="is-hidden" id="liaison-none"><a href="{% url 'people:liaison_list' %}" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
+        <span class="is-hidden" id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open">Assign liaison</a> for {{ form.instance.dlc }}</span>
       {% else %}
         <span class="is-hidden" id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <span id="liaison-none"><a href="{% url 'people:liaison_list' %}" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
+        <span id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
       {% endif %}</b><br />
-      In re: <b>{{ form.instance.author }}</b>
+      Subject: <b>OA outreach message to forward: {{ form.instance.author }}</b>
       {{ form.media }}
       {{ form | crispy }}
       <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />

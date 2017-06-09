@@ -10,3 +10,7 @@ class EmailMessageForm(forms.ModelForm):
         model = EmailMessage
         fields = ['latest_text']
         widgets = {'latest_text': CKEditorWidget()}
+
+    def __init__(self, *args, **kwargs):
+        super(EmailMessageForm, self).__init__(*args, **kwargs)
+        self.fields['latest_text'].label = ''

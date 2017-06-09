@@ -42,6 +42,38 @@ img.img-logo {
   }
 }
 
+// jQuery modal
+@media (min-width: $bp-screen-md) {
+  .modal {
+      max-width: none !important;
+      width: 50% !important;
+  }
+}
+
+@media (max-width: $bp-screen-md - 1) {
+  .modal {
+      max-width: none !important;
+      width: 100% !important;
+      overflow: scroll;
+  }
+
+  .jquery-modal.blocker.current {
+    padding: 0 !important;
+  }
+}
+
+.modal .wrap-outer-header {
+  display: none;
+}
+
+.modal .wrap-outer-breadcrumb {
+  display: none;
+}
+
+.modal .wrap-outer-footer-institute {
+  display: none;
+}
+
 // Other solenoid overrides
 h2, h3, h4 {
   color: $black;
