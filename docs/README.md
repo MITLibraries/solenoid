@@ -10,7 +10,9 @@
   * `requirements/heroku.txt` is for things required only on Heroku
   * At minimum, the `certifi` dependency should be regularly updated.
 * `python manage.py test` to run the tests
-  * If you `pip install coverage`, you can `coverage run --source='.' manage.py test` to get a coverage report along with running your test
+  * If you `pip install coverage`, you can `coverage run manage.py test` to get a coverage report along with running your test
+  * There is a `.coveragerc` file which provides sensible defaults
+  * `coverage html` will generate a nicely HTML-formatted report at `htmlcov/index.html`
 * Static assets
   * If you have DEBUG=True:
     * `python manage.py collectstatic`
