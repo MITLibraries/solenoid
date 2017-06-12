@@ -7,7 +7,7 @@
       <tr>
         <td>
           <span class="copy-lead">{{ email.author }}</span><br />
-          {% with email.record_set|length as count %}
+          {% with email.record_set.all|length as count %}
             {{ count }} citation{{ count|pluralize}}
           {% endwith %}
         </td>
