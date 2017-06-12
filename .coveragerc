@@ -2,4 +2,7 @@
 branch = True
 omit =
     */migrations/*
+    */admin.py
+    solenoid/settings/heroku.py
+    solenoid/settings/wsgi.py
 source = ./solenoid/
