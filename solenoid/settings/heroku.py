@@ -20,7 +20,8 @@ SECRET_KEY = bool(os.environ.get('DJANGO_SECRET_KEY'))
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['mitlibraries-solenoid.herokuapp.com',
+                 'mitlibraries-solenoid-staging.herokuapp.com']
 
 
 # STATIC FILE CONFIGURATION

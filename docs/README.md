@@ -28,6 +28,7 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
+* Add its URL to `ALLOWED_HOSTS` in `settings/heroku.py`
 * Provision the following apps:
   * Postgres
   * Quotaguard Static
