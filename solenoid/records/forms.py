@@ -33,7 +33,7 @@ def _validate_encoding(csv_file):
 def _validate_filetype(csv_file):
     try:
         csv.Sniffer().sniff(csv_file)
-    except csv.Error:
+    except (csv.Error, TypeError):
         logger.warning('Invalid CSV file {name} uploaded'.format(
             name=csv_file.name))
         raise ValidationError("This file doesn't appear to be CSV format.")

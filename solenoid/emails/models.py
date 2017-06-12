@@ -207,6 +207,7 @@ class EmailMessage(models.Model):
                 html_message=self.latest_text,
                 fail_silently=False,
             )
+
         except SMTPException:
             logger.exception('Could not send email; SMTP exception')
             return False
@@ -235,6 +236,7 @@ class EmailMessage(models.Model):
 
         self._update_after_sending()
         logger.info('Sending email_sent signal')
+
         email_sent.send(sender=self.__class__,
                         instance=self,
                         username=username)

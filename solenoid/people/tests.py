@@ -168,9 +168,7 @@ class LiaisonModelTests(TestCase):
 
     def test_deleting_liaison_with_emails_sets_to_inactive(self):
         l1 = Liaison.objects.get(pk=1)  # This one has an EmailMessage
-
-        with self.assertRaises(IntegrityError):
-            l1.delete()
+        l1.delete()
         self.assertFalse(l1.active)
 
     def test_deleting_liaison_without_emails_behaves_normally(self):

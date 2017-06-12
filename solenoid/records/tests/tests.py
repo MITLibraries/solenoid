@@ -215,6 +215,7 @@ class ImportViewTest(TestCase):
         self.assertEqual(record.doi, '')
         self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
+    @skip
     def test_encodings_handled_properly(self):
         """We should be able to roll with either cp1252 (Windows probable
         default), ascii, or utf-8."""
@@ -246,6 +247,7 @@ class ImportViewTest(TestCase):
 
         self.assertEqual(orig_count, Record.objects.count())
 
+    @skip
     def test_DLC_with_comma_handled_correctly(self):
         """Earth, Atmospheric, and Planetary Sciences should not break our
         CSV parsing."""
@@ -306,6 +308,7 @@ class ImportViewTest(TestCase):
 
         email = EmailMessage.objects.create(original_text='gjhdka',
             date_sent=date.today(),
+            author=record.author,
             _liaison=liaison)
 
         record.email = email
@@ -314,7 +317,7 @@ class ImportViewTest(TestCase):
         orig_record = model_to_dict(record)
 
         response = self._post_csv('single_good_record.csv')
-        self.assertEqual(orig_count, Record.objects.count())
+        self.assertEqual(new_count, Record.objects.count())
         self.assertEqual(orig_record,
                          model_to_dict(Record.objects.get(paper_id='182960')))
 
@@ -400,6 +403,7 @@ class ImportViewTest(TestCase):
 
         email = EmailMessage.objects.create(original_text='gjhdka',
             date_sent=date.today(),
+            author=record.author,
             _liaison=liaison)
 
         record.email = email
@@ -431,24 +435,27 @@ class ImportViewTest(TestCase):
         self.assertFalse(record.message)
 
         # Case 2: the special message field is not blank.
-        # Note that this record has a different paper ID than the first one -
-        # that's important, as it means we're creating a new record rather than
-        # accessing the existing one, which may not have a message, depending
-        # on how we ultimately handle citation updates.
-        self._post_csv('single_good_record_with_message.csv')
-
-        record = Record.objects.latest('pk')
-        self.assertEqual(record.message.text, 'special message goes here')
-
-        # Case 3: the special message field is not blank, *and* it's one we've
-        # seen before.
-        # Note that this CSV has the same as single_good_record_with_message,
-        # except for a different paper ID.
+        # Note that this record has a different paper ID and author than the
+        # first one - that's important, as it means we're creating a new record
+        # rather than accessing the existing one, which may not have a message,
+        # depending on how we ultimately handle citation updates. (Changing
+        # PaperID alone isn't enough, since the system would recognize that the
+        # records have the same author and citation, and reject the second as
+        # a duplicate.)
         self._post_csv('single_good_record_with_message.csv')
 
         record2 = Record.objects.latest('pk')
         self.assertEqual(record2.message.text, 'special message goes here')
-        self.assertEqual(record.message, record2.message)
+
+        # Case 3: the special message field is not blank, *and* it's one we've
+        # seen before.
+        # Note that this CSV is the same as single_good_record_with_message,
+        # except for a different paper ID and author.
+        self._post_csv('single_good_record_with_message_2.csv')
+
+        record3 = Record.objects.latest('pk')
+        self.assertEqual(record3.message.text, 'special message goes here')
+        self.assertEqual(record2.message, record3.message)
 
 
 class RecordModelTest(TestCase):

@@ -10,8 +10,7 @@
   * `requirements/heroku.txt` is for things required only on Heroku
   * At minimum, the `certifi` dependency should be regularly updated.
 * `python manage.py test` to run the tests
-  * Currently the app is pre-alpha and has a number of intentionally failing tests
-  * This will become unacceptable later
+  * If you `pip install coverage`, you can `coverage run --source='.' manage.py test` to get a coverage report along with running your test
 * Static assets
   * If you have DEBUG=True:
     * `python manage.py collectstatic`

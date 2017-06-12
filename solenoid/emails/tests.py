@@ -1,16 +1,17 @@
 from datetime import date
 from unittest.mock import patch, call
 
+from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client, override_settings, RequestFactory
 
 from solenoid.people.models import Author, Liaison
 from solenoid.records.models import Record, Message
 
 from .models import EmailMessage
-from .views import _get_or_create_emails
+from .views import _get_or_create_emails, EmailSend
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -76,7 +77,14 @@ class EmailEvaluateTestCase(TestCase):
         self.assertContains(response, 'krug@example.com')
 
     def test_users_can_save_changes_to_emails(self):
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
         new_text = 'This is what we change the email to'
+
         self.client.post(self.url, {
             'submit_save': 'save & next',
             'latest_text': new_text
@@ -334,21 +342,11 @@ class EmailMessageModelTestCase(TestCase):
         email = EmailMessage.objects.get(pk=1)
         self.assertEqual(email.dlc.pk, 1)
 
-    def test_dlc_property_2(self):
-        """The DLC property returns None when the email has no records."""
-        email = EmailMessage.objects.get(pk=2)
-        self.assertEqual(email.dlc, None)
-
     def test_author_property_1(self):
         """The DLC property returns the author of the records associated with
         the email, when those exist."""
         email = EmailMessage.objects.get(pk=1)
         self.assertEqual(email.author.pk, 1)
-
-    def test_author_property_2(self):
-        """The DLC property returns None when the email has no records."""
-        email = EmailMessage.objects.get(pk=2)
-        self.assertEqual(email.author, None)
 
     def test_plaintext_property(self):
         """We have only the html message but we need to generate a text
@@ -430,7 +428,11 @@ class EmailMessageModelTestCase(TestCase):
             EmailMessage.get_or_create_for_records(records)
 
 
-@override_settings(LOGIN_REQUIRED=False)
+# Make sure there's at least one admin, or email won't send because there's
+# nobody to send it to in EMAIL_TESTING_MODE.
+@override_settings(LOGIN_REQUIRED=False,
+                   ADMINS=(('fake admin', 'fake@example.com'),),
+                   EMAIL_TESTING_MODE=False)
 class EmailSendTestCase(TestCase):
     fixtures = ['testdata.yaml']
 
@@ -438,23 +440,25 @@ class EmailSendTestCase(TestCase):
         self.url = reverse('emails:send')
         self.client = Client()
 
+    @override_settings()
     def test_email_send_function_sends(self):
         email = EmailMessage.objects.get(pk=1)
         self.assertFalse(email.date_sent)
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 1)
 
+    @override_settings(ADMINS=(('fake admin', 'fake@example.com'),))
     def test_email_send_function_does_not_resend(self):
         email = EmailMessage.objects.get(pk=1)
         email.date_sent = date.today()
         email.save()
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 0)
 
     def test_email_send_function_sets_datestamp(self):
         email = EmailMessage.objects.get(pk=1)
         self.assertFalse(email.date_sent)
-        email.send()
+        email.send('username')
         email.refresh_from_db()
         self.assertTrue(email.date_sent)
         # Conceivably this test will fail if run near midnight UTC.
@@ -465,15 +469,16 @@ class EmailSendTestCase(TestCase):
         liaison = email.liaison
         assert not email.date_sent
 
-        email.send()
+        email.send('username')
         email.refresh_from_db()
         assert email.date_sent
 
         self.assertEqual(email._liaison, liaison)
 
+    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
     def test_email_is_sent_to_liaison(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
             mail.outbox[0].to)
@@ -481,7 +486,7 @@ class EmailSendTestCase(TestCase):
     @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
     def test_email_is_sent_to_scholcomm_moira_list(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn('scholcomm@example.com', mail.outbox[0].to)
 
@@ -490,31 +495,44 @@ class EmailSendTestCase(TestCase):
         """If no scholcomm list has been set, the email function should not
         break."""
         email = EmailMessage.objects.get(pk=1)
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 1)
 
     # autospec=True ensures that 'self' is passed into the mock, allowing us to
     # examine the call args as desired:
     # https://docs.python.org/3.3/library/unittest.mock-examples.html#mocking-unbound-methods
     @patch('solenoid.emails.models.EmailMessage.send', autospec=True)
-    def test_email_send_view_calls_function(self, mock_send):
-        self.client.post(self.url, data={'emails': [1, 2]})
+    # Middleware isn't available for RequestFactory, so we need to mock out the
+    # messages call so it doesn't trigger an error.
+    @patch('solenoid.emails.views.messages')
+    def test_email_send_view_calls_function(self, mock_messages, mock_send):
+        # We need to use the RequestFactory and not Client because request.user
+        # needs to exist, so that the username is available for calling
+        # EmailMessage.send().
+        factory = RequestFactory()
+        request = factory.post(self.url, data={'emails': [1, 2]})
+        request.user = User.objects.create_user(
+            username='wbrogers',
+            email='wbrogers@mit.edu',
+            password='top_secret')
+        EmailSend.as_view()(request)
+
         email1 = EmailMessage.objects.get(pk=1)
         email2 = EmailMessage.objects.get(pk=2)
-        expected = [call(email1), call(email2)]
+        expected = [call(email1, 'wbrogers'), call(email2, 'wbrogers')]
         mock_send.assert_has_calls(expected, any_order=True)
 
     def test_subject_is_something_logical(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send()
+        email.send('username')
         self.assertEqual(len(mail.outbox), 1)
         expected = 'OA outreach message to forward: {author}'.format(
             author=email.author.last_name)
         self.assertEqual(mail.outbox[0].subject, expected)
 
     def test_email_not_sent_when_missing_liaison(self):
-        email = EmailMessage.objects.get(pk=3)
+        email = EmailMessage.objects.get(pk=5)
         assert not email.liaison  # check assumption: no liaison
         assert not email.date_sent  # check assumption: unsent
-        self.assertFalse(email.send())
+        self.assertFalse(email.send('username'))
         self.assertEqual(len(mail.outbox), 0)

@@ -154,20 +154,20 @@ class Record(models.Model):
 
             if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED':
                 assert bool(row[Headers.DOI])
+
             return True
         except AssertionError:
             return False
 
     @staticmethod
     def is_row_superfluous(row, author):
-        """Return True if we have already requested this paper from another
-        author, False otherwise."""
+        """Return True if we have already requested this paper (possibly from
+        another author), False otherwise."""
 
-        # Find records of the same paper with different authors, if any.
+        # Find records of the same paper (whether under the same or  different
+        # authors), if any.
         records = Record.objects.filter(
             paper_id=row[Headers.PAPER_ID]
-        ).exclude(
-            author=author
         )
 
         # Return True if we've already sent an email for any of those papers;

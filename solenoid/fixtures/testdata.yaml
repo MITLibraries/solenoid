@@ -41,6 +41,11 @@
     name: Electrical Engineering and Computer Science Department
     liaison: 3
 
+- model: people.DLC
+  pk: 4
+  fields:
+    name: Meteorology
+
 - model: people.Author
   pk: 1
   fields:
@@ -68,9 +73,19 @@
     last_name: Liskov
     _mit_id_hash: 3
 
+- model: people.Author
+  pk: 4
+  fields:
+    dlc: 4
+    email: dynamics@example.com
+    first_name: Carl-Gustaf
+    last_name: Rossby
+    _mit_id_hash: 4
+
 - model: emails.EmailMessage
   pk: 1
   fields:
+    author: 1
     original_text: "Original text of email 1"
     latest_text: "Most recent text of email 1"
 
@@ -79,6 +94,7 @@
   fields:
     original_text: "Original text of email 2"
     latest_text: "Original text of email 2"
+    author: 1
     _liaison: 1
 
 - model: emails.EmailMessage
@@ -86,12 +102,21 @@
   fields:
     original_text: "Original text of email 3"
     latest_text: "<b>Most recent text<b> of email 3"
+    author: 3
 
 - model: emails.EmailMessage
   pk: 4
   fields:
     original_text: "Original text of email 3"
     latest_text: "<b>Most recent text<b> of email 3"
+    author: 3
+
+- model: emails.EmailMessage
+  pk: 5
+  fields:
+    original_text: "Something about mathematical modeling of the atmosphere"
+    latest_text: "Something about mathematical modeling of the atmosphere"
+    author: 4
 
 - model: records.Record
   pk: 1

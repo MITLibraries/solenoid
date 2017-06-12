@@ -46,7 +46,7 @@ class Import(LoginRequiredMixin, FormView):
         if successes:
             if successes == 1:
                 messages.success(self.request, '1 publication has been '
-                    'successfully imported. You can now email its author'
+                    'successfully imported. You can now email its author '
                     'about it.')
             else:
                 messages.success(self.request, '{x} publications have '
@@ -127,12 +127,12 @@ class Import(LoginRequiredMixin, FormView):
             if Record.is_row_superfluous(row, author):
                 logger.info('Record is superfluous')
                 messages.info(self.request, 'Publication #{id} by {author} '
-                    'has already been requested from another author, so this '
-                    'record will not be imported. Please add this citation '
-                    'manually to an email, and manually mark it as requested '
-                    'in Sympletic, if you would like to request it from this '
-                    'author also'.format(id=row[Headers.PAPER_ID],
-                                         author=row[Headers.LAST_NAME]))
+                    'has already been requested (possiby from another author, '
+                    'so this record will not be imported. Please add this '
+                    'citation manually to an email, and manually mark it as '
+                    'requested in Symplectic, if you would like to request it '
+                    'from this author also'.format(id=row[Headers.PAPER_ID],
+                        author=row[Headers.LAST_NAME]))
                 failures += 1
                 continue
 
