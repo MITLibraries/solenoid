@@ -182,6 +182,12 @@ class Record(models.Model):
         Record; False otherwise."""
         return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
 
+    @staticmethod
+    def is_acq_method_known(row):
+        """Returns True if this row of CSV has a recognized method of
+        acquisition; False otherwise."""
+        return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @property

@@ -115,6 +115,15 @@ class Import(LoginRequiredMixin, FormView):
                 failures += 1
                 continue
 
+            if not Record.is_acq_method_known(row):
+                logger.warning('Invalid acquisition method')
+                messages.warning(self.request, 'Publication #{id} by {author} '
+                    'has an unrecognized acquisition method, so this citation '
+                    'will not be imported.'.format(id=row[Headers.PAPER_ID],
+                                       author=row[Headers.LAST_NAME]))
+                failures += 1
+                continue
+
             author = self._get_author(row)
             logger.info('author was %s' % author)
 
@@ -129,7 +138,7 @@ class Import(LoginRequiredMixin, FormView):
             if Record.is_row_superfluous(row, author):
                 logger.info('Record is superfluous')
                 messages.info(self.request, 'Publication #{id} by {author} '
-                    'has already been requested (possiby from another author, '
+                    'has already been requested (possibly from another author, '
                     'so this record will not be imported. Please add this '
                     'citation manually to an email, and manually mark it as '
                     'requested in Symplectic, if you would like to request it '
