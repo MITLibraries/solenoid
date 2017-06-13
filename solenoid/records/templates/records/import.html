@@ -5,9 +5,14 @@
 
 {% block content %}
   <h2>Import CSV</h2>
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form | crispy }}
     <input type="submit" name="import" value="import csv" class="button button-primary">
   </form>
+
+  <p>
+    <i><a href="{% url 'records:instructions' %}">Instructions</a> for generating CSV files, if needed</i>    
+  </p>
 {% endblock %}

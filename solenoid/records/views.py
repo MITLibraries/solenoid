@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from solenoid.people.models import Author, DLC
 from solenoid.userauth.mixins import LoginRequiredMixin
@@ -179,6 +181,15 @@ class Import(LoginRequiredMixin, FormView):
         self._add_messages(successes, updates)
 
         return super(Import, self).form_valid(form)
+
+    def form_invalid(self, form):
+        msg = format_html('The <a href="{}">instructions</a> for '
+            'generating CSV files may help; some Excel export options '
+            "don't produce good data, especially if you're using a Mac.",
+            mark_safe(reverse_lazy('records:instructions')))
+
+        messages.warning(self.request, msg)
+        return super(Import, self).form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super(Import, self).get_context_data(**kwargs)
