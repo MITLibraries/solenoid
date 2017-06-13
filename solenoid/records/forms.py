@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 # While other encodings may work, since we aren't testing them, we won't
 # accept them. This should cover anything users are reasonably likely to end up
 # with after exporting from Excel, though.
-ENCODING_OPTS = ['utf-8', 'utf-16', 'windows-1252', 'ascii', 'utf-8-sig']
+# (windows-1254, oddly, is what Numbers on Mac will produce if you export
+# something containing emoji.)
+ENCODING_OPTS = ['utf-8', 'utf-16', 'windows-1252', 'windows-1254', 'ascii',
+                 'utf-8-sig']
 
 
 def _validate_encoding(csv_file):
@@ -27,7 +30,8 @@ def _validate_encoding(csv_file):
             enc=encoding, name=csv_file.name))
         raise ValidationError("File encoding not recognized. Please "
             "make sure you have exported from Excel to CSV with UTF-8 "
-            "encoding.")
+            "encoding (Windows) or used Numbers (Mac); see instructions "
+            "above.")
 
 
 def _validate_filetype(csv_file):

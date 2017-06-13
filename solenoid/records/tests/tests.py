@@ -247,11 +247,14 @@ class ImportViewTest(TestCase):
 
         self.assertEqual(orig_count, Record.objects.count())
 
-    @skip
     def test_DLC_with_comma_handled_correctly(self):
         """Earth, Atmospheric, and Planetary Sciences should not break our
         CSV parsing."""
-        assert False
+        # This should not throw an error.
+        self._post_csv('eaps.csv')
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.author.dlc.name,
+            "Earth, Atmospheric, and Planetary Sciences")
 
     def test_emoji_handled_correctly(self):
         """I definitely promise someone will use emoji in their paper titles
@@ -264,7 +267,46 @@ class ImportViewTest(TestCase):
         self.assertEqual(orig_count + 1, Record.objects.count())
 
         record = Record.objects.latest('pk')
-        self.assertIn('💖', record.citation)
+        self.assertIn('❤️', record.citation)
+
+    def test_diacritics_handled_correctly(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('diacritics.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+
+        record = Record.objects.latest('pk')
+        assert 'Díânne Ç' == record.author.first_name
+        assert 'Newmån' == record.author.last_name
+
+    def test_nonroman_characters_handled_correctly(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('nonroman_characters.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+
+        record = Record.objects.latest('pk')
+        assert '平仮名' == record.author.last_name
+        assert '훈민정음' == record.author.first_name
+        # This is from a Chinese lipsum generator, so not only do I not know
+        # what it means, it probably doesn't mean anything.
+        assert '医父逃心需者決応術紙女特周保形四困' == record.citation
+
+    def test_math_handled_correctly(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('math_symbols.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+
+        record = Record.objects.latest('pk')
+        self.assertIn('∫', record.citation)
+        self.assertIn('π', record.citation)
+        self.assertIn('ℵ', record.citation)
+        # This test is keepin' it real.
+        self.assertIn('ℝ', record.citation)
 
     @skip
     def test_paper_id_respected_case_1(self):
