@@ -25,17 +25,23 @@
 The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs credentials. It's connected to the MITLibraries github and has Heroku pipelines set up, so it will automatically:
 * create review apps for all pull requests
 * put the latest master on mitlibraries-solenoid-staging
+  * You can (and should) set it to only deploy if tests pass
+
+You can then one-click promote staging to production through the Dashboard, if desired.
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
 * Add its URL to `ALLOWED_HOSTS` in `settings/heroku.py`
-* Provision the following apps:
+* Provision the following apps (the free tier is fine):
   * Postgres
   * Quotaguard Static
+  * Heroku Scheduler
+    * Optional on staging
   * Newrelic
     * This is optional - you can live on the edge if you don't like logging - but if you don't have it, you need to edit the Procfile to take out the newrelic run-program parts
   * Papertrail
-    * Also optional if you are from the YOLO school of devops
+  * Rollbar
+    * Papertrail and Rollbar are also optional if you are from the YOLO school of devops
 * `heroku config:set DJANGO_SECRET_KEY=<a secret key>`
   * Can be anything; a 50-character random string is reasonable.
 * `heroku config:set DJANGO_SETTINGS_MODULE=solenoid.settings.heroku`
@@ -47,6 +53,9 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * If you want to send email to real liaisons and the scholcomm moira list, set this
   * If it is anything else, or unset, emails will be sent to settings.ADMINS only
   * This allows for testing email in a production-like environment without spamming people
+* `heroku pg:backups:schedule DATABASE_URL --at "02:00" --app mitlibraries-solenoid`
+  * Or whatever time/app/database color name is relevant to you
+  * The Heroku docs say `--at "{time} {timezone}"` but that doesn't seem to work
 * For OAuth2:
   * `heroku config:set DJANGO_MITOAUTH2_KEY=<your MIT OAuth key>`
   * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`
