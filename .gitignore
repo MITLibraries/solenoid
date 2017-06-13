@@ -5,7 +5,6 @@ wireframes/
 node_modules
 build/*.js
 .sass-cache/
-public/
 
 # Created by https://www.gitignore.io/api/osx,linux,django,python
 
