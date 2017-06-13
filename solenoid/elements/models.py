@@ -79,7 +79,8 @@ class ElementsAPICall(models.Model):
         logger.info('Following redirects for call #{pk}'.format(pk=self.pk))
         tries = 5
         while tries > 0:
-            logger.info('Following redirect; {num} tries remain'.format(tries))
+            logger.info('Following redirect; {tries} tries remain'.format(
+                tries=tries))
             response = requests.Session.send(response.next)
             if response.status_code != 303:
                 return response
