@@ -1,3 +1,4 @@
+from datetime import date
 import requests
 from unittest import skip
 from unittest.mock import patch, MagicMock
@@ -20,12 +21,14 @@ GOOD_XML = """
         </field>
         <field name="c-reqnote" operation="set">
             <text>
-                {username}-{author_name} 13 June 2017
+                {username}-{author_name} {date}
             </text>
         </field>
     </fields>
 </update-record>
-        """.format(username=USERNAME, author_name=AUTHOR_NAME
+        """.format(username=USERNAME,
+                   author_name=AUTHOR_NAME,
+                   date=date.today().strftime('%-d %B %Y')
                    # Yes, that's a DOUBLE space in the replace. We don't want
                    # to replace the single space between field names and
                    # attributes, just to strip the whitespace that's there for
