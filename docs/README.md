@@ -80,6 +80,7 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
 * `git push heroku master`
 * Required on the first deploy only: `heroku run python manage.py syncdb`
   * `heroku run python manage.py migrate` is run every time via a post-compile hook and a `bin/` script, so you don't need to do this, even if you have made database schema changes.
+  * Pipeline apps don't need this - they run it via a postdeploy script in app.json.
 
 You don't need to set up S3 - Heroku suffices for serving static on an app this low-traffic.
 
