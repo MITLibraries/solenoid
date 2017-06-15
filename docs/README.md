@@ -28,6 +28,10 @@ The app deploys to mitlibraries-solenoid.herokuapp.com, with the libdev-cs crede
   * You can (and should) set it to only deploy if tests pass
 
 You can then one-click promote staging to production through the Dashboard, if desired.
+* This does _not_ run post-compile hooks, but it _does_ run [release tasks defined in the Procfile](https://devcenter.heroku.com/articles/release-phase)
+* Therefore database migrations are called in the Procfile, not in a post-compile hook
+* Release tasks run as part of both app build and pipeline promotion, so we get this on both staging and production
+* We don't need to set a collectstatic release task because Heroku does that automatically during app build (and this is then copied over from staging during promotion)
 
 If for some reason you wanted to set it up from scratch, you'd need to do the following:
 * Set up a Heroku instance associated with your repository (https://devcenter.heroku.com/articles/deploying-python)
