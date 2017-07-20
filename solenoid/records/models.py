@@ -74,19 +74,6 @@ class Record(models.Model):
         try:
             record = Record.objects.get(paper_id=row[Headers.PAPER_ID],
                                         author=author)
-            """
-            if not all([record.author == author,
-                        record.publisher_name == row[Headers.PUBLISHER_NAME],
-                        record.acq_method == row[Headers.ACQ_METHOD],
-                        record.citation == row[Headers.CITATION],
-                        record.doi == row[Headers.DOI]]):
-                record.update(author=author,
-                              publisher_name=row[Headers.PUBLISHER_NAME],
-                              acq_method=row[Headers.ACQ_METHOD],
-                              citation=row[Headers.CITATION],
-                              doi=row[Headers.DOI]
-                              )
-            """
             logger.info('Got an existing record')
             return record, False
         except Record.DoesNotExist:
@@ -187,6 +174,26 @@ class Record(models.Model):
         """Returns True if this row of CSV has a recognized method of
         acquisition; False otherwise."""
         return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    def update_if_needed(self, row, author):
+        """Checks a CSV data row to see if there are any discrepancies with the
+        existing record. If so, updates it and returns True. If not, returns
+        False."""
+        if not all([self.author == author,
+                    self.publisher_name == row[Headers.PUBLISHER_NAME],
+                    self.acq_method == row[Headers.ACQ_METHOD],
+                    self.citation == row[Headers.CITATION],
+                    self.doi == row[Headers.DOI]]):
+            self.author = author
+            self.publisher_name = row[Headers.PUBLISHER_NAME]
+            self.acq_method = row[Headers.ACQ_METHOD]
+            self.citation = row[Headers.CITATION]
+            self.doi = row[Headers.DOI]
+            self.save()
+            return True
+        return False
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

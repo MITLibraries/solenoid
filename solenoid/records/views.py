@@ -44,14 +44,14 @@ class Import(LoginRequiredMixin, FormView):
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')
 
-    def _add_messages(self, successes, updates):
+    def _add_messages(self, successes, updates, unchanged):
         if successes:
             if successes == 1:
-                messages.success(self.request, '1 publication has been '
+                messages.success(self.request, '1 new publication has been '
                     'successfully imported. You can now email its author '
                     'about it.')
             else:
-                messages.success(self.request, '{x} publications have '
+                messages.success(self.request, '{x} new publications have '
                     'been successfully imported. You can now generate '
                     'emails to authors about them.'.format(x=successes))
 
@@ -60,11 +60,22 @@ class Import(LoginRequiredMixin, FormView):
 
         if updates:
             if updates == 1:
-                messages.info(self.request, '1 existing publication record '
-                    'has been successfully updated.')
+                messages.info(self.request, '1 publication record '
+                    'has been successfully updated with new data from the '
+                    'imported csv.')
             else:
-                messages.info(self.request, '{x} existing publication records '
-                    'have been successfully updated.'.format(x=updates))
+                messages.info(self.request, '{x} publication records '
+                    'have been successfully updated with new data from the '
+                    'imported csv.'.format(x=updates))
+
+        if unchanged:
+            if unchanged == 1:
+                messages.info(self.request, '1 publication record '
+                    'duplicates already-known data and has been ignored.')
+            else:
+                messages.info(self.request, '{x} publication records duplicate'
+                    'already-known data and have been ignored.'.format(
+                        x=unchanged))
 
         logger.info('messages added')
 
@@ -103,6 +114,7 @@ class Import(LoginRequiredMixin, FormView):
         successes = 0
         failures = 0
         updates = 0
+        unchanged = 0
 
         for row in reader:
             logger.info('this row is %s' % row)
@@ -168,6 +180,9 @@ class Import(LoginRequiredMixin, FormView):
                 continue
 
             record, created = self._get_record(row, author)
+            if record and not created:
+                updated = record.update_if_needed(row, author)
+
             logger.info('record was %s' % record)
             logger.info('created was %s' % created)
 
@@ -185,9 +200,12 @@ class Import(LoginRequiredMixin, FormView):
             if created:
                 successes += 1
             else:
-                updates += 1
+                if updated:
+                    updates += 1
+                else:
+                    unchanged += 1
 
-        self._add_messages(successes, updates)
+        self._add_messages(successes, updates, unchanged)
 
         return super(Import, self).form_valid(form)
 
