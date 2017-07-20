@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('publisher_name', models.CharField(max_length=50)),
-                ('acq_method', models.CharField(choices=[('RECRUIT_FROM_AUTHOR_MANUSCRIPT', 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'), ('RECRUIT_FROM_AUTHOR_FPV_ACCEPTED', 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED')], max_length=32)),
+                ('acq_method', models.CharField(choices=[('RECRUIT_FROM_AUTHOR_MANUSCRIPT', 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'), ('RECRUIT_FROM_AUTHOR_FPV', 'RECRUIT_FROM_AUTHOR_FPV')], max_length=32)),
                 ('citation', models.TextField()),
                 ('status', models.CharField(choices=[('Unsent', 'Unsent'), ('Sent', 'Sent'), ('Invalid', 'Invalid')], default='Unsent', max_length=7)),
                 ('status_timestamp', models.DateField(default=datetime.date.today)),

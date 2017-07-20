@@ -552,10 +552,10 @@ class RecordModelTest(TestCase):
         }
         assert not Record.is_record_creatable(data)
 
-        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED requires a DOI.
+        # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
         data = {
             Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'nonempty',
             Headers.DOI: ''
         }
@@ -563,7 +563,7 @@ class RecordModelTest(TestCase):
 
         data = {
             Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'nonempty',
             Headers.DOI: '4217896'
         }
@@ -577,13 +577,13 @@ class RecordModelTest(TestCase):
         # acq_method not in ACQ_METHODS_LIST: invalid
         assert not record.is_valid
 
-        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED and no DOI: invalid
-        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        # RECRUIT_FROM_AUTHOR_FPV and no DOI: invalid
+        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
         record.doi = ''
         record.save()
         assert not record.is_valid
 
-        # RECRUIT_FROM_AUTHOR_FPV_ACCEPTED and yes DOI: valid
+        # RECRUIT_FROM_AUTHOR_FPV and yes DOI: valid
         record.doi = '53297853'
         record.save()
         assert record.is_valid
@@ -625,7 +625,7 @@ class RecordModelTest(TestCase):
 
         fake_doi = 'fake_doi'
         publisher_name = 'fake_publisher'
-        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
         record.doi = fake_doi
         record.publisher_name = publisher_name
         record.save()
@@ -649,7 +649,7 @@ class RecordModelTest(TestCase):
 
         row = {
             Headers.PUBLISHER_NAME: 'publisher_name',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'citation',
             Headers.DOI: 'doi',
             Headers.PAPER_ID: 'paper_id',
@@ -660,7 +660,7 @@ class RecordModelTest(TestCase):
         record, created = Record.get_or_create_from_csv(author, row)
         assert created
         assert record.publisher_name == 'publisher_name'
-        assert record.acq_method == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED'
+        assert record.acq_method == 'RECRUIT_FROM_AUTHOR_FPV'
         assert record.citation == 'citation'
         assert record.doi == 'doi'
         assert record.paper_id == 'paper_id'
@@ -672,7 +672,7 @@ class RecordModelTest(TestCase):
 
         row = {
             Headers.PUBLISHER_NAME: 'publisher_name',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'citation',
             Headers.DOI: 'doi',
             Headers.PAPER_ID: 'paper_id',
@@ -689,7 +689,7 @@ class RecordModelTest(TestCase):
 
         row = {
             Headers.PUBLISHER_NAME: 'Wiley',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',
             Headers.DOI: '10.1412/4678156',
             Headers.PAPER_ID: 'paper_id',
@@ -724,7 +724,7 @@ class RecordModelTest(TestCase):
         # This is a duplicate of record #2, except for the paper ID.
         row = {
             Headers.PUBLISHER_NAME: 'Nature',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',
             Headers.DOI: '10.1240.2/4914241',
             Headers.PAPER_ID: '24618',

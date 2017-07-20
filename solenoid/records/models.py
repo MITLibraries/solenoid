@@ -39,7 +39,7 @@ class Record(models.Model):
         unique_together = (('author', 'paper_id'))
 
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
-    ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV_ACCEPTED"
+    ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV"
     ACQ_METHODS = (
         (ACQ_MANUSCRIPT, ACQ_MANUSCRIPT),
         (ACQ_FPV, ACQ_FPV),
@@ -139,7 +139,7 @@ class Record(models.Model):
                           Headers.CITATION]
             assert all([bool(row[x]) for x in desiderata])
 
-            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV_ACCEPTED':
+            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
                 assert bool(row[Headers.DOI])
 
             return True
