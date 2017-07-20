@@ -306,11 +306,10 @@ class ImportViewTest(TestCase):
         # This test is keepin' it real.
         self.assertIn('ℝ', record.citation)
 
-    @skip
     def test_paper_id_respected_case_1(self):
         """
-        If we re-import an UNSENT record with a known ID, we should edit the
-        existing record, not create a new one."""
+        If we re-import an UNSENT record with a known ID, we should leave the
+        existing record alone and not create a new one."""
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(paper_id='182960')
 
@@ -319,13 +318,34 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
 
         self.assertEqual(record.paper_id, '182960')  # check assumptions
-        self.assertEqual(record.status, Record.UNSENT)
         orig_record = model_to_dict(record)
 
         self._post_csv('single_good_record.csv')
         self.assertEqual(orig_count, Record.objects.count())
         self.assertEqual(orig_record,
                          model_to_dict(Record.objects.get(paper_id='182960')))
+
+    def test_paper_id_respected_case_1a(self):
+        """
+        If we re-import an UNSENT record with a known ID and altered data, we
+        should update the existing record and not create a new one."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')  # check assumptions
+        orig_record = model_to_dict(record)
+        orig_doi = orig_record.pop('doi')
+
+        self._post_csv('single_good_record_new_doi.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        new_record = model_to_dict(Record.objects.get(paper_id='182960'))
+        new_doi = new_record.pop('doi')
+        self.assertEqual(orig_record, new_record)
+        self.assertNotEqual(new_doi, orig_doi)
 
     def test_paper_id_respected_case_2(self):
         """
