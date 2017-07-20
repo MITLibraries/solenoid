@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # (windows-1254, oddly, is what Numbers on Mac will produce if you export
 # something containing emoji.)
 ENCODING_OPTS = ['utf-8', 'utf-16', 'windows-1252', 'windows-1254', 'ascii',
-                 'utf-8-sig']
+                 'utf-8-sig', 'iso-8859-1']
 
 
 def _validate_encoding(csv_file):
