@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import copy
 from datetime import date
 import os
 from string import Template
-from unittest import skip
 
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse, resolve
@@ -348,7 +348,7 @@ class ImportViewTest(TestCase):
         self.assertEqual(orig_record,
                          model_to_dict(Record.objects.get(paper_id='182960')))
 
-    def test_paper_id_respected_case_1a(self):
+    def test_paper_id_respected_case_2(self):
         """
         If we re-import an UNSENT record with a known ID and altered data, we
         should update the existing record and not create a new one."""
@@ -370,7 +370,7 @@ class ImportViewTest(TestCase):
         self.assertEqual(orig_record, new_record)
         self.assertNotEqual(new_doi, orig_doi)
 
-    def test_paper_id_respected_case_2(self):
+    def test_paper_id_respected_case_3(self):
         """
         If we re-import an already sent record with a known ID & author, we
         should raise a warning and leave the existing record alone, not create
@@ -407,7 +407,7 @@ class ImportViewTest(TestCase):
         self.assertIn('info',
                       [m.level_tag for m in response.context['messages']])
 
-    def test_paper_id_respected_case_5(self):
+    def test_paper_id_respected_case_4(self):
         """
         If we re-import an already sent record with a known ID and a new
         author, we should raise a warning and not create a new record."""
@@ -442,7 +442,6 @@ class ImportViewTest(TestCase):
         self.assertEqual(new_count, Record.objects.count())
         self.assertEqual(orig_record,
                          model_to_dict(Record.objects.get(paper_id='182960')))
-
         self.assertIn('info',
                       [m.level_tag for m in response.context['messages']])
 
@@ -485,6 +484,44 @@ class ImportViewTest(TestCase):
 
 class RecordModelTest(TestCase):
     fixtures = ['testdata.yaml']
+
+    def setUp(self):
+        # A dict containing all the EXPECTED_HEADERS.
+        self.csv_row = {
+            Headers.EMAIL: 'test@example.com',
+            Headers.DOI: '10.5137/527va',
+            Headers.FIRST_NAME: 'William Barton',
+            Headers.LAST_NAME: 'Rogers',
+            Headers.MIT_ID: '1',
+            Headers.PUBLISHER_NAME: 'Haus of Books',
+            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Headers.DLC: "President's Office",
+            Headers.PAPER_ID: '895327',
+            Headers.MESSAGE: '',
+            Headers.SOURCE: 'A source',
+            Headers.RECORD_ID: '98573'
+        }
+
+    def test_is_row_valid_yes_citation_no_citation_data(self):
+        row = copy.copy(self.csv_row)
+        row[Headers.CITATION] = 'This is a citation'
+        row[Headers.TITLE] = None
+        row[Headers.JOURNAL] = None
+        assert Record.is_row_valid(row)
+
+    def test_is_row_valid_no_citation_yes_citation_data(self):
+        row = copy.copy(self.csv_row)
+        row[Headers.CITATION] = None
+        row[Headers.TITLE] = 'This is a paper title'
+        row[Headers.JOURNAL] = 'Journal of Awesomeness'
+        assert Record.is_row_valid(row)
+
+    def test_is_row_valid_no_citation_no_citation_data(self):
+        row = copy.copy(self.csv_row)
+        row[Headers.CITATION] = None
+        row[Headers.TITLE] = None
+        row[Headers.JOURNAL] = None
+        assert not Record.is_row_valid(row)
 
     def test_is_record_creatable(self):
         # Data includes the basics? Good!
@@ -534,7 +571,7 @@ class RecordModelTest(TestCase):
         }
         assert Record.is_record_creatable(data)
 
-    def test_is_valid(self):
+    def test_is_valid_unknown_acq(self):
         record = Record.objects.get(pk=1)
         record.acq_method = 'NOT_A_METHOD'
         record.save()
@@ -542,27 +579,47 @@ class RecordModelTest(TestCase):
         # acq_method not in ACQ_METHODS_LIST: invalid
         assert not record.is_valid
 
+    def test_is_valid_fpv_but_no_doi(self):
+        record = Record.objects.get(pk=1)
         # RECRUIT_FROM_AUTHOR_FPV and no DOI: invalid
         record.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
         record.doi = ''
         record.save()
         assert not record.is_valid
 
+    def test_is_valid_fpv_but_has_doi(self):
+        record = Record.objects.get(pk=1)
         # RECRUIT_FROM_AUTHOR_FPV and yes DOI: valid
         record.doi = '53297853'
         record.save()
         assert record.is_valid
 
+    def test_is_valid_not_fpv_and_no_doi(self):
+        record = Record.objects.get(pk=1)
         # RECRUIT_FROM_AUTHOR_MANUSCRIPT and no DOI: valid
         record.acq_method = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
         record.doi = ''
         record.save()
         assert record.is_valid
 
+    def test_is_valid_not_fpv_and_not_doi(self):
+        record = Record.objects.get(pk=1)
         # RECRUIT_FROM_AUTHOR_MANUSCRIPT and yes DOI: valid
         record.doi = '53297853'
         record.save()
         assert record.is_valid
+
+    def test_is_valid_no_citation(self):
+        record = Record.objects.get(pk=1)
+        record.citation = None
+        with self.assertRaises(ValidationError):
+            record.save()
+
+    def test_is_valid_blank_citation(self):
+        record = Record.objects.get(pk=1)
+        record.citation = ''
+        with self.assertRaises(ValidationError):
+            record.save()
 
     def test_is_sent(self):
         # Record with an email that hasn't been sent
@@ -704,3 +761,6 @@ class RecordModelTest(TestCase):
         dupes = Record.get_duplicates(author, row)
         assert dupes.count() == 1
         assert int(dupes[0].paper_id) == 123141
+
+    def test_create_citation_case_1(self):
+        pass

@@ -1,6 +1,8 @@
 import logging
+import re
 from string import Template
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from solenoid.emails.models import EmailMessage
@@ -61,7 +63,62 @@ class Record(models.Model):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
             self=self)
 
+    def save(self, *args, **kwargs):
+        # blank=False by default in TextFields, but this applies only to *form*
+        # validation, not to *instance* validation - django will happily save
+        # blank strings to the database, and we don't want it to.
+        if not self.citation:
+            raise ValidationError('Citation cannot be blank')
+        return super(Record, self).save(*args, **kwargs)
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ STATIC METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    @staticmethod
+    def create_citation(row):
+        """Create text suitable for the citation field.
+
+        Some CSV records fill in the citation field, but some leave it blank;
+        in those cases we need to build our own citation text. Stakeholders
+        have indicated that it doesn't matter what citation format we use or
+        whether the citation is complete (as long as it includes author, title,
+        and journal title).
+
+        This method assumes that the CSV row has already been validated; it
+        does not perform any validation.
+
+        APA format is:
+            Author, F.M. (Publication year). Article Title. Journal Title,
+            Volume(Issue), pp.-pp. doi:XX.XXXXX.
+        We don't appear to get page number information, so we'll skip that.
+        """
+        citation = '{last}, {first_init}. '.format(
+            last=row[Headers.LAST_NAME],
+            first_init=row[Headers.FIRST_NAME][0])
+
+        if row[Headers.PUBDATE]:
+            # We expect that the pubdate is a yyyymmdd string. If it isn't,
+            # don't guess, and don't add a publication year.
+            try:
+                assert re.compile("^\d{8}$").match(row[Headers.PUBDATE])
+                citation += '({year}). '.format(year=row[Headers.PUBDATE][0:4])
+            except AssertionError:
+                pass
+
+        citation += '{title}. {journal}'.format(
+            title=row[Headers.TITLE],
+            journal=row[Headers.JOURNAL])
+
+        if row[Headers.VOLUME] and row[Headers.ISSUE]:
+            citation += ', {volume}({issue})'.format(
+                volume=row[Headers.VOLUME],
+                issue=row[Headers.ISSUE])
+
+        citation += '.'
+
+        if row[Headers.DOI]:
+            citation += 'doi:{doi}'.format(doi=row[Headers.DOI])
+
+        return citation
 
     @staticmethod
     def get_or_create_from_csv(author, row):
@@ -95,11 +152,16 @@ class Record(models.Model):
                 logger.info('no message')
                 msg = None
 
+            if row[Headers.CITATION]:
+                citation = row[Headers.CITATION]
+            else:
+                citation = Record.create_citation(row)
+
             record = Record.objects.create(
                 author=author,
                 publisher_name=row[Headers.PUBLISHER_NAME],
                 acq_method=row[Headers.ACQ_METHOD],
-                citation=row[Headers.CITATION],
+                citation=citation,
                 doi=row[Headers.DOI],
                 paper_id=row[Headers.PAPER_ID],
                 message=msg,
@@ -166,8 +228,13 @@ class Record(models.Model):
     @staticmethod
     def is_row_valid(row):
         """Returns True if this row of CSV has the required data for making a
-        Record; False otherwise."""
-        return all([bool(row[x]) for x in Headers.REQUIRED_DATA])
+        Record; False otherwise.
+
+        For citation data, we'll accept *either* a preconstructed citation,
+        *or* enough data to construct a minimal citation ourselves."""
+        citable = bool(row[Headers.CITATION]) or \
+            all([bool(row[x]) for x in Headers.CITATION_DATA])
+        return all([bool(row[x]) for x in Headers.REQUIRED_DATA]) and citable
 
     @staticmethod
     def is_acq_method_known(row):
