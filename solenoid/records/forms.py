@@ -16,8 +16,10 @@ logger = logging.getLogger(__name__)
 # with after exporting from Excel, though.
 # (windows-1254, oddly, is what Numbers on Mac will produce if you export
 # something containing emoji.)
-ENCODING_OPTS = ['utf-8', 'utf-16', 'windows-1252', 'windows-1254', 'ascii',
-                 'utf-8-sig', 'iso-8859-1']
+# If you change this, update the corresponding test!
+# (solenoid.records.tests.tests.ImportViewTest.test_encodings_handled_properly)
+ENCODING_OPTS = ['utf-8', 'windows-1252', 'windows-1254', 'ascii', 'utf-8-sig',
+                 'iso-8859-1']
 
 
 def _validate_encoding(csv_file):
