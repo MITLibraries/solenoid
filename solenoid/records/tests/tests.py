@@ -18,20 +18,6 @@ from ..helpers import Headers
 from ..models import Record
 from ..views import UnsentList
 
-# ------ MODELS ------
-# Do I want to enforce choices on Record.dlc?
-# Error handling - what do we do when a record does not have the required data?
-# For instance, blank DLC
-
-# ------ VIEWS ------
-# People can filter it by DLC or search by author? Something useful, maybe with
-# autocomplete, if that's not too many yaks
-# But the first case should have it sorted by DLC and then author (per model default)
-# People can select desired records
-# (Also there should be a 'select entire DLC' option but that's JS I won't test here)
-# Emails getting created from records (either test that emails are autocreated
-# on import, or that they can be created manually)
-
 
 @override_settings(LOGIN_REQUIRED=False)
 class UnsentRecordsViewsTest(TestCase):
@@ -216,7 +202,7 @@ class ImportViewTest(TestCase):
     @skip
     def test_encodings_handled_properly(self):
         """We should be able to roll with either cp1252 (Windows probable
-        default), ascii, or utf-8."""
+        default), ascii, iso-8859-1, or utf-8."""
         assert False
 
     def test_blank_DLC_handled_correctly_known_author(self):
@@ -329,6 +315,28 @@ class ImportViewTest(TestCase):
         """
         If we re-import an UNSENT record with a known ID and altered data, we
         should update the existing record and not create a new one."""
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(paper_id='182960')
+
+        self._post_csv('single_good_record.csv')
+        orig_count = Record.objects.count()
+        record = Record.objects.latest('pk')
+
+        self.assertEqual(record.paper_id, '182960')  # check assumptions
+        orig_record = model_to_dict(record)
+        orig_doi = orig_record.pop('doi')
+
+        self._post_csv('single_good_record_new_doi.csv')
+        self.assertEqual(orig_count, Record.objects.count())
+        new_record = model_to_dict(Record.objects.get(paper_id='182960'))
+        new_doi = new_record.pop('doi')
+        self.assertEqual(orig_record, new_record)
+        self.assertNotEqual(new_doi, orig_doi)
+
+    def test_paper_id_respected_case_1b(self):
+        """
+        If we re-import an UNSENT record with a known ID and altered author, we
+        should create a new record."""
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(paper_id='182960')
 
@@ -690,7 +698,7 @@ class RecordModelTest(TestCase):
         row = {
             Headers.PUBLISHER_NAME: 'Wiley',
             Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',
+            Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
             Headers.DOI: '10.1412/4678156',
             Headers.PAPER_ID: 'paper_id',
             Headers.SOURCE: 'Manual',
@@ -725,7 +733,7 @@ class RecordModelTest(TestCase):
         row = {
             Headers.PUBLISHER_NAME: 'Nature',
             Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',
+            Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
             Headers.DOI: '10.1240.2/4914241',
             Headers.PAPER_ID: '24618',
             Headers.SOURCE: 'Manual',

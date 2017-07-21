@@ -175,7 +175,7 @@ class Record(models.Model):
         acquisition; False otherwise."""
         return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def update_if_needed(self, row, author):
         """Checks a CSV data row to see if there are any discrepancies with the
