@@ -10,6 +10,7 @@ build/*.js
 
 ### Django ###
 *.log
+*.log.*
 *.pot
 *.pyc
 __pycache__/
