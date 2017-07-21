@@ -199,11 +199,48 @@ class ImportViewTest(TestCase):
         self.assertEqual(record.doi, '')
         self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
-    @skip
-    def test_encodings_handled_properly(self):
-        """We should be able to roll with either cp1252 (Windows probable
-        default), ascii, iso-8859-1, or utf-8."""
-        assert False
+    # We don't need to test ASCII encoding because single_good_record.csv is
+    # ascii-encoded, so it is implicitly tested throughout this file.
+
+    def test_encodings_handled_properly_utf_8(self):
+        # The delete statement in tearDown is insufficient because it will
+        # actually just truncate; then the post may refuse to import the
+        # record because it has the same author and citation as an existing
+        # record. Let's make sure to find and delete any such records before
+        # posting.
+        Record.objects.filter(doi='10.2105/12zh1').delete()
+        self._post_csv('single_good_record_utf_8.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
+
+    def test_encodings_handled_properly_utf_8_sig(self):
+        Record.objects.filter(doi='10.2105/12zh1').delete()
+        self._post_csv('single_good_record_utf_8_sig.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
+
+    def test_encodings_handled_properly_iso_8859_1(self):
+        Record.objects.filter(doi='10.2105/12zh1').delete()
+        self._post_csv('single_good_record_iso_8859_1.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
+
+    def test_encodings_handled_properly_windows_1252(self):
+        Record.objects.filter(doi='10.2105/12zh1').delete()
+        self._post_csv('single_good_record_windows_1252.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
+
+    def test_encodings_handled_properly_windows_1254(self):
+        Record.objects.filter(doi='10.2105/12zh1').delete()
+        self._post_csv('single_good_record_windows_1254.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.2105/12zh1')
 
     def test_blank_DLC_handled_correctly_known_author(self):
         # This should cause the author and DLC to exist.
@@ -333,28 +370,6 @@ class ImportViewTest(TestCase):
         self.assertEqual(orig_record, new_record)
         self.assertNotEqual(new_doi, orig_doi)
 
-    def test_paper_id_respected_case_1b(self):
-        """
-        If we re-import an UNSENT record with a known ID and altered author, we
-        should create a new record."""
-        with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(paper_id='182960')
-
-        self._post_csv('single_good_record.csv')
-        orig_count = Record.objects.count()
-        record = Record.objects.latest('pk')
-
-        self.assertEqual(record.paper_id, '182960')  # check assumptions
-        orig_record = model_to_dict(record)
-        orig_doi = orig_record.pop('doi')
-
-        self._post_csv('single_good_record_new_doi.csv')
-        self.assertEqual(orig_count, Record.objects.count())
-        new_record = model_to_dict(Record.objects.get(paper_id='182960'))
-        new_doi = new_record.pop('doi')
-        self.assertEqual(orig_record, new_record)
-        self.assertNotEqual(new_doi, orig_doi)
-
     def test_paper_id_respected_case_2(self):
         """
         If we re-import an already sent record with a known ID & author, we
@@ -390,64 +405,6 @@ class ImportViewTest(TestCase):
                          model_to_dict(Record.objects.get(paper_id='182960')))
 
         self.assertIn('info',
-                      [m.level_tag for m in response.context['messages']])
-
-    @skip
-    def test_paper_id_respected_case_3(self):
-        """
-        If we have an INVALID record and re-import valid data with the same
-        paper ID, we should overwrite the existing record with the new
-        (hopefully better) data, not create a new record. This includes
-        updating the status to UNSENT and notifying the user."""
-        with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(paper_id='182960')
-
-        self._post_csv('single_good_record.csv')
-        orig_count = Record.objects.count()
-        record = Record.objects.latest('pk')
-
-        self.assertEqual(record.paper_id, '182960')
-        record.status = Record.INVALID
-        record.publisher_name = 'Super dodgy publisher name'
-        record.save()
-
-        expected_record = model_to_dict(record)
-        expected_record['publisher_name'] = 'Elsevier'
-        expected_record['status'] = Record.UNSENT
-
-        response = self._post_csv('single_good_record.csv')
-        self.assertEqual(orig_count, Record.objects.count())
-        self.assertEqual(expected_record,
-                         model_to_dict(Record.objects.get(paper_id='182960')))
-
-        self.assertIn('info',
-                      [m.level_tag for m in response.context['messages']])
-
-    @skip
-    def test_paper_id_respected_case_4(self):
-        """
-        If we have an INVALID record and re-import invalid data with the same
-        paper ID, we should leave the record alone and warn the user."""
-        with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(paper_id='182960')
-
-        self._post_csv('single_good_record.csv')
-        orig_count = Record.objects.count()
-        record = Record.objects.latest('pk')
-
-        self.assertEqual(record.paper_id, '182960')
-        record.status = Record.INVALID
-        record.publisher_name = 'Super dodgy publisher name'
-        record.save()
-
-        orig_record = model_to_dict(record)
-
-        response = self._post_csv('missing_publisher_name.csv')
-        self.assertEqual(orig_count, Record.objects.count())
-        self.assertEqual(orig_record,
-                         model_to_dict(Record.objects.get(paper_id='182960')))
-
-        self.assertIn('warning',
                       [m.level_tag for m in response.context['messages']])
 
     def test_paper_id_respected_case_5(self):
