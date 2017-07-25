@@ -1,14 +1,15 @@
 <div class="layout-3q1q">
   <div class="col3q">
-    <form method="POST" action="{% url 'emails:create' %}">
+    <form method="POST" action="{% url 'emails:create' %}" id="citations">
       {% csrf_token %}
       {% for record in object_list  %}
         <div class="checkbox dlc-{{ record.dlc|slugify }}">
           <label>
             <input class="input_author_{{ record.author.pk }} input_dlc_{{ record.author.dlc.pk }}" type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
-            <br>
-            {{ record.citation }}
-            <hr>
+            <span>
+              <br>
+              {{ record.citation }}
+            </span>
           </label>
         </div>
       {% endfor %}
@@ -47,14 +48,23 @@
 
   function uncheck(checkboxes) {
     for (var i = 0; i < checkboxes.length; i++) {
-       checkboxes[i].removeAttribute('checked');
+       checkboxes[i].checked = false;
+       // Remove the class on the surrounding div so that we no longer have a
+       // background color.
+       findContainingDiv(checkboxes[i]).classList.remove('checked');
     }
   }
 
   function check(checkboxes) {
     for (var i = 0; i < checkboxes.length; i++) {
-       checkboxes[i].setAttribute('checked', 'checked');
+       checkboxes[i].checked = true;
+       findContainingDiv(checkboxes[i]).classList.add('checked');
     }
+  }
+
+  function findContainingDiv (el) {
+    while ((el = el.parentNode) && el.className.indexOf('checkbox') < 0);
+    return el;
   }
 
   var toggler = function (obj, prefix) {
@@ -87,4 +97,20 @@
 
   author_toggle.addEventListener('click', author_toggler, false);
   dlc_toggle.addEventListener('click', dlc_toggler, false);
+
+  // Set the class that toggles the background color when users click the label
+  // directly.
+  var input_toggler = function () {
+    if (this.checked) {
+      findContainingDiv(this).classList.add('checked');
+    } else {
+      findContainingDiv(this).classList.remove('checked');
+    }
+  }
+
+  var inputs = document.getElementById('citations').getElementsByTagName('input');
+  for (var k = 0; k < inputs.length; k++) {
+    inputs[k].addEventListener('click', input_toggler, false);
+  }
+
 </script>

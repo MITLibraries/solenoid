@@ -110,6 +110,19 @@ input:disabled {
   }
 }
 
+form .checkbox {
+  padding: 2rem 0.5rem;
+  border-bottom: 2px solid $gray-l1;
+
+  &.checked {
+    background-color: white;
+  }
+
+  &:last-of-type {
+    margin-bottom: 2rem;
+  }
+}
+
 .field-email {
   @extend .field-text;
 }

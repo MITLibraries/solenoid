@@ -502,6 +502,7 @@ class RecordModelTest(TestCase):
             Headers.RECORD_ID: '98573'
         }
 
+    # need to actually test create_citation
     def test_is_row_valid_yes_citation_no_citation_data(self):
         row = copy.copy(self.csv_row)
         row[Headers.CITATION] = 'This is a citation'

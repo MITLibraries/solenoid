@@ -44,5 +44,5 @@ class Headers(object):
     #   from other data; alternately, we don't need the other data if we have a
     #   citation. The Record model will check for this.
     REQUIRED_DATA = list(set(EXPECTED_HEADERS) -
-                         set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION}
-                         - {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE})
+                         set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION} -
+                         {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE})
