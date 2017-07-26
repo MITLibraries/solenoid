@@ -39,6 +39,8 @@
           {% endfor %}
         </select>
       </form>
+
+      <span id="report-selected">0</span> total selected.
     </div>
   </div>
 
@@ -47,6 +49,7 @@
 <script type="text/javascript">
   var author_toggle = document.getElementById('author-toggle');
   var dlc_toggle = document.getElementById('dlc-toggle');
+  var report_selected = document.getElementById('report-selected')
 
   function uncheck(checkboxes) {
     for (var i = 0; i < checkboxes.length; i++) {
@@ -69,8 +72,14 @@
     return el;
   }
 
+  function updateSelectionCount() {
+    var total_selected = document.querySelectorAll('#citations input[type="checkbox"]:checked').length
+    report_selected.textContent = total_selected;
+  }
+
   var toggler = function (obj, prefix) {
     var options = obj.options;
+
     for (i = 0; i < options.length ; i++) {
       var option = options[i]
       var target_id = option.getAttribute('id').slice(7);
@@ -87,6 +96,8 @@
         uncheck(checkboxes);
       }
     }
+
+    updateSelectionCount();
   }
 
   var author_toggler = function () {
@@ -102,7 +113,7 @@
 
   // Set the class that toggles the background color when users click the label
   // directly.
-  var input_toggler = function () {
+  var inputToggler = function () {
     if (this.checked) {
       findContainingDiv(this).classList.add('checked');
     } else {
@@ -112,9 +123,11 @@
 
   var inputs = document.getElementById('citations').getElementsByTagName('input');
   for (var k = 0; k < inputs.length; k++) {
-    inputs[k].addEventListener('click', input_toggler, false);
+    inputs[k].addEventListener('click', inputToggler, false);
+    inputs[k].addEventListener('click', updateSelectionCount, false);
   }
 
+  /* ----------------------- Make the sidebar sticky ----------------------- */
   window.onscroll = function() { stickySidebar()};
   var sidebar = document.getElementById('sidebar');
   var breadcrumb = document.getElementsByClassName('wrap-outer-breadcrumb')[0];
