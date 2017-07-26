@@ -17,27 +17,29 @@
     </form>
   </div>
   <div class="col1q-r">
-    <h3>Select all by author</h3>
-    <form class="full-width">
-      <select multiple class="field field-select" id="author-toggle">
-        {% for author in authors %}
-          <option id="author_{{ author.pk }}">
-            {{ author.last_name }}, {{ author.first_name}}
-          </option>
-        {% endfor %}
-      </select>
-    </form>
+    <div id="sidebar">
+      <h3>Select all by author</h3>
+      <form class="full-width">
+        <select multiple class="field field-select" id="author-toggle">
+          {% for author in authors %}
+            <option id="author_{{ author.pk }}">
+              {{ author.last_name }}, {{ author.first_name}}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
 
-    <h3>Select all by DLC</h3>
-    <form>
-      <select multiple class="field field-select" id="dlc-toggle">
-        {% for dlc in dlcs %}
-          <option id="dlcdlc_{{ dlc.pk }}"> {# not a typo; 'dlcdlc' is the same length as 'author' which simplifies the javascript #}
-            {{ dlc.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </form>
+      <h3>Select all by DLC</h3>
+      <form>
+        <select multiple class="field field-select" id="dlc-toggle">
+          {% for dlc in dlcs %}
+            <option id="dlcdlc_{{ dlc.pk }}"> {# not a typo; 'dlcdlc' is the same length as 'author' which simplifies the javascript #}
+              {{ dlc.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
   </div>
 
 </div>
@@ -111,6 +113,29 @@
   var inputs = document.getElementById('citations').getElementsByTagName('input');
   for (var k = 0; k < inputs.length; k++) {
     inputs[k].addEventListener('click', input_toggler, false);
+  }
+
+  window.onscroll = function() { stickySidebar()};
+  var sidebar = document.getElementById('sidebar');
+  var breadcrumb = document.getElementsByClassName('wrap-outer-breadcrumb')[0];
+
+  function isElementInViewport (el) {
+      var rect = el.getBoundingClientRect();
+
+      return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+      );
+  }
+
+  function stickySidebar() {
+    if (!(isElementInViewport(breadcrumb))) {
+      sidebar.classList.add('sticky');
+    } else {
+      sidebar.classList.remove('sticky');
+    }
   }
 
 </script>

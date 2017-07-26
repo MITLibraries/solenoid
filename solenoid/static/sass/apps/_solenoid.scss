@@ -175,6 +175,13 @@ select, option {
   max-width: 100%;
 }
 
+@media (min-width: $bp-screen-md) {
+  .sticky {
+    position: fixed;
+    top: 30px;
+  }
+}
+
 // Useful bootstrap-esque utilities
 .clearfix {
   @include clearfix;
