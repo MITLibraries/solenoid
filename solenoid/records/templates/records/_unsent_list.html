@@ -47,9 +47,13 @@
 </div>
 
 <script type="text/javascript">
-  var author_toggle = document.getElementById('author-toggle');
-  var dlc_toggle = document.getElementById('dlc-toggle');
-  var report_selected = document.getElementById('report-selected')
+  var authorToggle = document.getElementById('author-toggle');
+  var dlcToggle = document.getElementById('dlc-toggle');
+  var authorOptions = authorToggle.options;
+  var dlcOptions = dlcToggle.options;
+  var allCheckboxes = document.querySelectorAll('#citations input[type="checkbox"]');
+
+  var reportSelected = document.getElementById('report-selected')
 
   function uncheck(checkboxes) {
     for (var i = 0; i < checkboxes.length; i++) {
@@ -73,51 +77,63 @@
   }
 
   function updateSelectionCount() {
-    var total_selected = document.querySelectorAll('#citations input[type="checkbox"]:checked').length
-    report_selected.textContent = total_selected;
+    var totalSelected = document.querySelectorAll('#citations input[type="checkbox"]:checked').length
+    reportSelected.textContent = totalSelected;
   }
 
-  var toggler = function (obj, prefix) {
-    var options = obj.options;
+  var toggler = function () {
+    var targetedCheckboxes = []
 
-    for (i = 0; i < options.length ; i++) {
-      var option = options[i]
-      var target_id = option.getAttribute('id').slice(7);
-      var checkboxes = document.getElementsByClassName('input_' + prefix + '_' + target_id);
-
-      // If option is now selected...
-      if ( option.selected ) {
-        // Check all relevant buttons
-        check(checkboxes);
-
-      // Otherwise option is unselected...
-      } else {
-        // Uncheck all relevant buttons
-        uncheck(checkboxes);
+    // Find all checkboxes corresponding to selected authors and append them to
+    // our running total.
+    for (i = 0; i < authorOptions.length ; i++) {
+      var option = authorOptions[i]
+      if (option.selected) {
+        var targetId = option.getAttribute('id').slice(7);
+        var checkboxes = document.getElementsByClassName('input_author_' + targetId);
+        targetedCheckboxes = Array.prototype.concat.apply(targetedCheckboxes, checkboxes)
       }
     }
+
+    // Find all checkboxes corresponding to selected DLCs and append them to
+    // our running total.
+    for (i = 0; i < dlcOptions.length ; i++) {
+      var option = dlcOptions[i]
+      if (option.selected) {
+        var targetId = option.getAttribute('id').slice(7);
+        var checkboxes = document.getElementsByClassName('input_dlc_' + targetId);
+        targetedCheckboxes = Array.prototype.concat.apply(targetedCheckboxes, checkboxes)
+      }
+    }
+
+    // Uniquify the list of checkboxes.
+    targetedCheckboxes = targetedCheckboxes.filter(function(value, index, self) {return self.indexOf(value) === index;})
+
+    // Blank out all checkboxes.
+    uncheck(allCheckboxes);
+
+    // Check all checkboxes corresponding to selected author/DLC options.
+    check(targetedCheckboxes);
+
+    // Recheck all manually set checkboxes.
+    var manualCheckboxes = document.querySelectorAll('#citations .manual input[type="checkbox"]')
+    check(manualCheckboxes);
 
     updateSelectionCount();
   }
 
-  var author_toggler = function () {
-    toggler(this, 'author');
-  }
-
-  var dlc_toggler = function () {
-    toggler(this, 'dlc');
-  }
-
-  author_toggle.addEventListener('click', author_toggler, false);
-  dlc_toggle.addEventListener('click', dlc_toggler, false);
+  authorToggle.addEventListener('click', toggler, false);
+  dlcToggle.addEventListener('click', toggler, false);
 
   // Set the class that toggles the background color when users click the label
   // directly.
   var inputToggler = function () {
     if (this.checked) {
       findContainingDiv(this).classList.add('checked');
+      findContainingDiv(this).classList.add('manual');
     } else {
       findContainingDiv(this).classList.remove('checked');
+      findContainingDiv(this).classList.remove('manual');
     }
   }
 

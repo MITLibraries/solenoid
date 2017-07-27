@@ -127,6 +127,10 @@ form .checkbox {
   @extend .field-text;
 }
 
+#author-toggle, #dlc-toggle {
+  height: 20rem;
+}
+
 .table-solenoid {
   border-collapse: collapse;
 
