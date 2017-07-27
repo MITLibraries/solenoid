@@ -116,7 +116,7 @@ class Record(models.Model):
         citation += '.'
 
         if row[Headers.DOI]:
-            citation += 'doi:{doi}'.format(doi=row[Headers.DOI])
+            citation += ' doi:{doi}'.format(doi=row[Headers.DOI])
 
         return citation
 

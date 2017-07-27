@@ -502,6 +502,19 @@ class RecordModelTest(TestCase):
             Headers.RECORD_ID: '98573'
         }
 
+        # MIT physics professor Frank Wilczek coauthored this paper, for which
+        # he won the Nobel prize in 2004.
+        self.citation_data = {
+            Headers.FIRST_NAME: 'Frank',
+            Headers.LAST_NAME: 'Wilczek',
+            Headers.PUBDATE: '19730625',
+            Headers.VOLUME: '30',
+            Headers.ISSUE: '26',
+            Headers.DOI: '10.1103/PhysRevLett.30.1343',
+            Headers.JOURNAL: 'Physical Review Letters',
+            Headers.TITLE: 'Ultraviolet behavior of non-abelian gauge theories'
+        }
+
     # need to actually test create_citation
     def test_is_row_valid_yes_citation_no_citation_data(self):
         row = copy.copy(self.csv_row)
@@ -764,4 +777,163 @@ class RecordModelTest(TestCase):
         assert int(dupes[0].paper_id) == 123141
 
     def test_create_citation_case_1(self):
-        pass
+        """Minimal citation plus:
+        publication date: YES
+        volume & issue: NO
+        doi: NO """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.VOLUME,
+                                   Headers.ISSUE,
+                                   Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
+
+    def test_create_citation_case_2(self):
+        """Minimal citation plus:
+        publication date: YES
+        volume & issue: YES
+        doi: NO """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26).'  # noqa
+        )
+
+    def test_create_citation_case_3(self):
+        """Minimal citation plus:
+        publication date: YES
+        volume & issue: NO
+        doi: YES """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.VOLUME,
+                                   Headers.ISSUE],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters. doi:10.1103/PhysRevLett.30.1343'  # noqa
+        )
+
+    def test_create_citation_case_4(self):
+        """Minimal citation plus:
+        publication date: YES
+        volume & issue: YES
+        doi: YES """
+        citation = Record.create_citation(self.citation_data)
+        self.assertEqual(citation,
+            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26). doi:10.1103/PhysRevLett.30.1343'  # noqa
+        )
+
+    def test_create_citation_case_5(self):
+        """Minimal citation plus:
+        publication date: NO
+        volume & issue: NO
+        doi: NO """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE,
+                                   Headers.VOLUME,
+                                   Headers.ISSUE,
+                                   Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
+
+    def test_create_citation_case_6(self):
+        """Minimal citation plus:
+        publication date: NO
+        volume & issue: YES
+        doi: NO """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE,
+                                   Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26).'  # noqa
+        )
+
+    def test_create_citation_case_7(self):
+        """Minimal citation plus:
+        publication date: NO
+        volume & issue: NO
+        doi: YES """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE,
+                                   Headers.VOLUME,
+                                   Headers.ISSUE],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters. doi:10.1103/PhysRevLett.30.1343'  # noqa
+        )
+
+    def test_create_citation_case_8(self):
+        """Minimal citation plus:
+        publication date: NO
+        volume & issue: YES
+        doi: YES """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26). doi:10.1103/PhysRevLett.30.1343'  # noqa
+        )
+
+    def test_create_citation_error_case_1(self):
+        """Minimal citation; has volume, lacks issue."""
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE,
+                                   Headers.ISSUE,
+                                   Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
+
+    def test_create_citation_error_case_2(self):
+        """Minimal citation; has issue, lacks volume."""
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.PUBDATE,
+                                   Headers.VOLUME,
+                                   Headers.DOI],
+                    None))
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
+
+    def test_create_citation_error_case_3(self):
+        """Minimal citation and pubdate, but pubdate is incorrectly formatted
+        (too few characters)."""
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.VOLUME,
+                                   Headers.ISSUE,
+                                   Headers.DOI],
+                    None))
+        data[Headers.PUBDATE] = '12341'
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
+
+    def test_create_citation_error_case_4(self):
+        """Minimal citation and pubdate, but pubdate is incorrectly formatted
+        (not all numbers)."""
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Headers.VOLUME,
+                                   Headers.ISSUE,
+                                   Headers.DOI],
+                    None))
+        data[Headers.PUBDATE] = '1234m714'
+        citation = Record.create_citation(data)
+        self.assertEqual(citation,
+            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
+        )
