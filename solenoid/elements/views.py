@@ -19,10 +19,6 @@
 #   monitor it).
 # Make sure to validate for the record ID when you ingest CSV.
 
-# Note: Christine has figured out how to include record ID (YAY), so we only
-# have to issue the patch call. However, I'm not sure how to validate the date
-# field.
-
 import logging
 import requests
 from urllib.parse import urljoin
@@ -30,6 +26,7 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import receiver
+from django.utils.http import urlquote
 
 from solenoid.emails.signals import email_sent
 
@@ -101,7 +98,8 @@ def wrap_elements_api_call(sender, **kwargs):
     for record in instance.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
                       'publication/records/{source}/{id}'.format(
-                          source=record.source, id=record.elements_id))
+                          source=urlquote(record.source),
+                          id=record.elements_id))
 
         logger.info('Constructing ElementsAPICall for record #{pk}'.format(
             pk=record.pk))
