@@ -197,12 +197,14 @@ class Record(models.Model):
         confirming that the foreign-keyed Author exists or can be created.
         """
         try:
-            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD,
-                          Headers.CITATION]
+            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD]
             assert all([bool(row[x]) for x in desiderata])
 
             if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
                 assert bool(row[Headers.DOI])
+
+            if not row[Headers.CITATION]:
+                assert all([bool(row[x]) for x in Headers.CITATION_DATA])
 
             return True
         except AssertionError:
