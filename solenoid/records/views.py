@@ -55,27 +55,13 @@ class Import(LoginRequiredMixin, FormView):
                     'been successfully imported. You can now generate '
                     'emails to authors about them.'.format(x=successes))
 
-        # Don't add a message tallying failures; we have already sent more
-        # specific, useful messages about each one.
-
         if updates:
-            if updates == 1:
-                messages.info(self.request, '1 publication record '
-                    'has been successfully updated with new data from the '
-                    'imported csv.')
-            else:
-                messages.info(self.request, '{x} publication records '
-                    'have been successfully updated with new data from the '
-                    'imported csv.'.format(x=updates))
+            messages.info(self.request, 'Record(s) updated with new data from '
+                'csv: {ids}'.format(ids=', '.join(updates)))
 
         if unchanged:
-            if unchanged == 1:
-                messages.info(self.request, '1 publication record '
-                    'duplicates already-known data and has been ignored.')
-            else:
-                messages.info(self.request, '{x} publication records duplicate'
-                    'already-known data and have been ignored.'.format(
-                        x=unchanged))
+            messages.info(self.request, 'Duplicate record(s) not changed: '
+                '{ids}'.format(ids=', '.join(unchanged)))
 
         logger.info('messages added')
 
@@ -112,9 +98,8 @@ class Import(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
         successes = 0
-        failures = 0
-        updates = 0
-        unchanged = 0
+        updates = []
+        unchanged = []
 
         for row in reader:
             logger.info('this row is %s' % row)
@@ -124,7 +109,6 @@ class Import(LoginRequiredMixin, FormView):
                     'is missing required data, so this citation will not be '
                     'imported.'.format(id=row[Headers.PAPER_ID],
                                        author=row[Headers.LAST_NAME]))
-                failures += 1
                 continue
 
             if not Record.is_acq_method_known(row):
@@ -133,7 +117,6 @@ class Import(LoginRequiredMixin, FormView):
                     'has an unrecognized acquisition method, so this citation '
                     'will not be imported.'.format(id=row[Headers.PAPER_ID],
                                        author=row[Headers.LAST_NAME]))
-                failures += 1
                 continue
 
             author = self._get_author(row)
@@ -144,7 +127,6 @@ class Import(LoginRequiredMixin, FormView):
                 messages.warning(self.request, 'The author for publication '
                     '#{id} is missing required information. This record will '
                     'not be created'.format(id=row[Headers.PAPER_ID]))
-                failures += 1
                 continue
 
             if Record.is_row_superfluous(row, author):
@@ -156,7 +138,6 @@ class Import(LoginRequiredMixin, FormView):
                     'as requested in Symplectic, if you would like to request '
                     'it from this author also'.format(id=row[Headers.PAPER_ID],
                         author=row[Headers.LAST_NAME]))
-                failures += 1
                 continue
 
             dupes = Record.get_duplicates(author, row)
@@ -175,8 +156,6 @@ class Import(LoginRequiredMixin, FormView):
                         id=row[Headers.PAPER_ID],
                         author=row[Headers.LAST_NAME],
                         dupes=dupe_list))
-
-                failures += 1
                 continue
 
             record, created = self._get_record(row, author)
@@ -194,16 +173,15 @@ class Import(LoginRequiredMixin, FormView):
                     '#{id} by {author} is missing required information and '
                     'will not be created.'.format(id=row[Headers.PAPER_ID],
                         author=row[Headers.LAST_NAME]))
-                failures += 1
                 continue
 
             if created:
                 successes += 1
             else:
                 if updated:
-                    updates += 1
+                    updates.append(record.paper_id)
                 else:
-                    unchanged += 1
+                    unchanged.append(record.paper_id)
 
         self._add_messages(successes, updates, unchanged)
 
