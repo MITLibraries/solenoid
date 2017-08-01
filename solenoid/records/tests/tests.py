@@ -499,7 +499,7 @@ class RecordModelTest(TestCase):
             Headers.PAPER_ID: '895327',
             Headers.MESSAGE: '',
             Headers.SOURCE: 'A source',
-            Headers.RECORD_ID: '98573'
+            Headers.RECORD_ID: '98573',
         }
 
         # MIT physics professor Frank Wilczek coauthored this paper, for which
@@ -547,11 +547,10 @@ class RecordModelTest(TestCase):
         assert Record.is_record_creatable(data)
 
         # Missing data for required basics? Bad!
-        data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'random',
-            Headers.CITATION: ''
-        }
+        data = copy.copy(self.csv_row)
+        data.update(self.citation_data)
+        data[Headers.CITATION] = ''
+        data[Headers.FIRST_NAME] = ''
         assert not Record.is_record_creatable(data)
 
         data = {
