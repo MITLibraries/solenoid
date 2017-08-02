@@ -56,7 +56,7 @@ class Record(models.Model):
     doi = models.CharField(max_length=30, blank=True)
     paper_id = models.CharField(max_length=10)
     message = models.ForeignKey(Message, blank=True, null=True)
-    source = models.CharField(max_length=15)
+    source = models.CharField(max_length=25)
     elements_id = models.CharField(max_length=50)
 
     def __str__(self):
