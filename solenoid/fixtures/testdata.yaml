@@ -86,36 +86,36 @@
   pk: 1
   fields:
     author: 1
-    original_text: "Original text of email 1"
-    latest_text: "Most recent text of email 1"
+    original_text: "Original text of email 1 <div class='control-citations'>citations</div>"
+    latest_text: "Most recent text of email 1 <div class='control-citations'>citations</div>"
 
 - model: emails.EmailMessage
   pk: 2
   fields:
-    original_text: "Original text of email 2"
-    latest_text: "Original text of email 2"
+    original_text: "Original text of email 2 <div class='control-citations'>citations</div>"
+    latest_text: "Original text of email 2 <div class='control-citations'>citations</div>"
     author: 1
     _liaison: 1
 
 - model: emails.EmailMessage
   pk: 3
   fields:
-    original_text: "Original text of email 3"
-    latest_text: "<b>Most recent text<b> of email 3"
+    original_text: "Original text of email 3 <div class='control-citations'>citations</div>"
+    latest_text: "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>"
     author: 3
 
 - model: emails.EmailMessage
   pk: 4
   fields:
-    original_text: "Original text of email 3"
-    latest_text: "<b>Most recent text<b> of email 3"
+    original_text: "Original text of email 3 <div class='control-citations'>citations</div>"
+    latest_text: "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>"
     author: 3
 
 - model: emails.EmailMessage
   pk: 5
   fields:
-    original_text: "Something about mathematical modeling of the atmosphere"
-    latest_text: "Something about mathematical modeling of the atmosphere"
+    original_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
+    latest_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
     author: 4
 
 - model: records.Record

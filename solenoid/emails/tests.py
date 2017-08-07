@@ -353,9 +353,9 @@ class EmailMessageModelTestCase(TestCase):
         format and update the email sending function."""
         email = EmailMessage.objects.get(pk=3)
         self.assertEqual(email.latest_text,
-                         "<b>Most recent text<b> of email 3")
+                         "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>")  # noqa
         self.assertEqual(email.plaintext,
-                         "Most recent text of email 3")
+                         "Most recent text of email 3 citations")
 
     def test_get_or_create_for_records_1(self):
         """EmailMessage.get_or_create_for_records raises an error if the given
@@ -426,6 +426,9 @@ class EmailMessageModelTestCase(TestCase):
             # failing the author validation criterion.
             records = Record.objects.filter(pk__in=[1, 7])
             EmailMessage.get_or_create_for_records(records)
+
+    def test_cite_block_empty(self):
+        pass
 
 
 # Make sure there's at least one admin, or email won't send because there's

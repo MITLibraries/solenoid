@@ -91,7 +91,6 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
 
     def _handle_save(self):
         logger.info('Saving changes to email {pk}'.format(pk=self.kwargs['pk']))
-        print(dir(self.get_form()))
         self.form_valid(self.get_form())
         messages.success(self.request, "Email message updated.")
         return self._finish_handle()

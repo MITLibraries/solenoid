@@ -112,7 +112,7 @@ class EmailMessage(models.Model):
             raise ValidationError('All records must have the same author.')
 
         author = record_list.first().author
-        citations = cls._create_citations(record_list)
+        citations = cls._create_citations(available_records)
 
         logger.info('Returning original text of email')
         return render_to_string('emails/author_email_template.html',
@@ -144,7 +144,7 @@ class EmailMessage(models.Model):
             return Author.objects.filter(record__in=records)[0]
 
     @classmethod
-    def _get_emails_for_author(cls, author):
+    def _get_email_for_author(cls, author):
         emails = cls.objects.filter(
             record__author=author, date_sent__isnull=True).distinct()
 
@@ -154,7 +154,7 @@ class EmailMessage(models.Model):
             logger.exception('Multiple unsent emails found for %s' % author)
             raise ValidationError('Multiple unsent emails found.')
 
-        return emails
+        return emails if emails else None
 
     @classmethod
     def _finalize_email(cls, email, records, author):
@@ -171,6 +171,7 @@ class EmailMessage(models.Model):
         # rather than finding existing ones.
         logger.info('Creating foreign key relationship to email for records')
         records.update(email=email)
+        return email
 
     @classmethod
     def get_or_create_for_records(cls, records):
