@@ -81,15 +81,6 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
             except:
                 pass
 
-        obj = self.get_object()
-        if any([record.citation not in obj.latest_text
-                for record in obj.record_set.all()]):
-                    messages.warning(self.request, 'It looks like you have '
-                        'changed the citations in this email. If you have '
-                        'added or removed any citations, you will need to '
-                        'manually update their `requested` status in '
-                        'Elements.')
-
         return HttpResponseRedirect(self.get_success_url())
 
     def _handle_cancel(self):
@@ -100,6 +91,7 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
 
     def _handle_save(self):
         logger.info('Saving changes to email {pk}'.format(pk=self.kwargs['pk']))
+        print(dir(self.get_form()))
         self.form_valid(self.get_form())
         messages.success(self.request, "Email message updated.")
         return self._finish_handle()
@@ -150,6 +142,12 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
                 n=self.request.session['total_email'])
         except KeyError:
             pass
+
+        if self.object.new_citations:
+            messages.error(self.request, "New citations for this author "
+                "have been imported since last time the email was edited. "
+                "They've been added to this email automatically, but please "
+                "proofread.")
 
         context['breadcrumbs'] = [
             {'url': reverse('home'), 'text': 'dashboard'},
