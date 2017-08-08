@@ -1,10 +1,10 @@
 import hashlib
 
 from django.core.urlresolvers import resolve, reverse
-from django.db import IntegrityError
 from django.test import TestCase, Client, override_settings
 
 from .models import Liaison, DLC, Author
+from .views import LiaisonList
 
 
 @override_settings(LOGIN_REQUIRED=False)
@@ -72,6 +72,42 @@ class LiaisonDeletionTests(TestCase):
         qs.delete()
         self.assertEqual(Liaison.objects.filter(pk__in=[1, 2]).count(), 0)
         self.assertEqual(Liaison.objects_all.filter(pk__in=[1, 2]).count(), 1)
+
+
+@override_settings(LOGIN_REQUIRED=False)
+class LiaisonListTests(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def test_queryset(self):
+        """Make sure inactive liaisons don't show."""
+        liaison = Liaison.objects.latest('pk')
+        liaison.active = False
+        liaison.save()
+
+        count_all = Liaison.objects_all.count()
+        count_visible = Liaison.objects.count()
+        assert count_visible < count_all
+
+        for liaison in Liaison.objects.all():
+            assert liaison in LiaisonList().queryset
+
+        for liaison in LiaisonList().queryset:
+            assert liaison in Liaison.objects.all()
+
+
+@override_settings(LOGIN_REQUIRED=False)
+class LiaisonUpdateTests(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def test_queryset(self):
+        """Make sure inactive liaisons can't be updated."""
+        liaison = Liaison.objects.latest('pk')
+        liaison.active = False
+        liaison.save()
+
+        c = Client()
+        response = c.get(reverse('people:liaison_update', args=(liaison.pk,)))
+        assert response.status_code == 404
 
 
 @override_settings(LOGIN_REQUIRED=False)

@@ -43,6 +43,7 @@ class LiaisonCreate(LoginRequiredMixin, CreateView):
 
 class LiaisonList(LoginRequiredMixin, ListView):
     model = Liaison
+    queryset = Liaison.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(LiaisonList, self).get_context_data(**kwargs)
@@ -58,6 +59,7 @@ class LiaisonList(LoginRequiredMixin, ListView):
 
 class LiaisonUpdate(LoginRequiredMixin, UpdateView):
     model = Liaison
+    queryset = Liaison.objects.all()
     form_class = LiaisonCreateForm
     success_url = reverse_lazy('people:liaison_list')
 
@@ -114,6 +116,7 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
 
 class LiaisonDelete(LoginRequiredMixin, DeleteView):
     model = Liaison
+    queryset = Liaison.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(LiaisonDelete, self).get_context_data(**kwargs)
