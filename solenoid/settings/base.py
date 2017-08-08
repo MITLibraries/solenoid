@@ -308,8 +308,21 @@ CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquer
 # uploads are not part of the use case documentation, and they add security
 # headaches.
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'removePlugins': 'stylesheetparser',
+        'allowedContent': {
+            '$1': {
+                'elements': 'div',
+                'classes': True
+            }
+        },
+    }
+}
+
 
 # QUOTAGUARD CONFIGURATION
+# -----------------------------------------------------------------------------
 
 QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 

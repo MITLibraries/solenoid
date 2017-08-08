@@ -14,3 +14,7 @@ class EmailMessageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EmailMessageForm, self).__init__(*args, **kwargs)
         self.fields['latest_text'].label = ''
+
+    def save(self, *args, **kwargs):
+        self.instance.new_citations = False
+        super(EmailMessageForm, self).save()

@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'^$', views.EmailListPending.as_view(), name='list_pending'),
     url(r'^liaison/(?P<pk>\d+)/$', views.EmailLiaison.as_view(),
         name='get_liaison'),
+    url(r'^rebuild/(?P<pk>\d+)/$', views.EmailRebuild.as_view(),
+        name='rebuild'),
 ]

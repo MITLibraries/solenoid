@@ -3,7 +3,10 @@ import logging
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db import close_old_connections, connection
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import (HttpResponseRedirect,
+                         HttpResponse,
+                         HttpResponseForbidden)
+from django.shortcuts import get_object_or_404
 from django.views.generic import View, DetailView
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
@@ -81,15 +84,6 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
             except:
                 pass
 
-        obj = self.get_object()
-        if any([record.citation not in obj.latest_text
-                for record in obj.record_set.all()]):
-                    messages.warning(self.request, 'It looks like you have '
-                        'changed the citations in this email. If you have '
-                        'added or removed any citations, you will need to '
-                        'manually update their `requested` status in '
-                        'Elements.')
-
         return HttpResponseRedirect(self.get_success_url())
 
     def _handle_cancel(self):
@@ -150,6 +144,22 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
                 n=self.request.session['total_email'])
         except KeyError:
             pass
+
+        if self.object.new_citations:
+            messages.error(self.request, "New citations for this author "
+                "have been imported since last time the email was edited. "
+                "They've been added to this email automatically, but please "
+                "proofread.")
+
+        available_records = Record.objects.filter(
+            author=self.object.author).exclude(
+                email__date_sent__isnull=False)
+        if available_records.count() > self.object.record_set.count():
+            messages.error(self.request, "New citations for this author "
+                "have been imported since last time the email was edited, but "
+                "not added to this email. Do you want to <a href='{url}'>add "
+                "them?</a>".format(
+                    url=reverse('emails:rebuild', args=(self.object.pk,))))
 
         context['breadcrumbs'] = [
             {'url': reverse('home'), 'text': 'dashboard'},
@@ -254,3 +264,27 @@ class EmailLiaison(LoginRequiredMixin, DetailView):
         # ajax call to here; this can't hurt.
         close_old_connections()
         return HttpResponse(self.object.liaison)
+
+
+class EmailRebuild(LoginRequiredMixin, View):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        email = get_object_or_404(EmailMessage, pk=kwargs['pk'])
+        if email.date_sent:
+            return HttpResponseForbidden()
+
+        email.rebuild_citations()
+        records = Record.objects.filter(
+            author=email.author).exclude(
+                email__date_sent__isnull=False)
+        records.update(email=email)
+
+        # Override usual new-citation warning, since presumably users triggered
+        # this on purpose and expect that new citations have been added.
+        email.new_citations = False
+        email.save()
+        messages.info(request, "New citations added. Please proofread.")
+
+        return HttpResponseRedirect(reverse('emails:evaluate',
+            args=(email.pk,)))

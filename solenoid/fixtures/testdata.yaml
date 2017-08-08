@@ -86,37 +86,53 @@
   pk: 1
   fields:
     author: 1
-    original_text: "Original text of email 1"
-    latest_text: "Most recent text of email 1"
+    original_text: "Original text of email 1 <div class='control-citations'>citations</div>"
+    latest_text: "Most recent text of email 1 <div class='control-citations'>citations</div>"
 
 - model: emails.EmailMessage
   pk: 2
   fields:
-    original_text: "Original text of email 2"
-    latest_text: "Original text of email 2"
+    original_text: "Original text of email 2 <div class='control-citations'>citations</div>"
+    latest_text: "Original text of email 2 <div class='control-citations'>citations</div>"
     author: 1
     _liaison: 1
 
 - model: emails.EmailMessage
   pk: 3
   fields:
-    original_text: "Original text of email 3"
-    latest_text: "<b>Most recent text<b> of email 3"
+    original_text: "Original text of email 3 <div class='control-citations'>citations</div>"
+    latest_text: "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>"
     author: 3
 
 - model: emails.EmailMessage
   pk: 4
   fields:
-    original_text: "Original text of email 3"
-    latest_text: "<b>Most recent text<b> of email 3"
+    original_text: "Original text of email 3 <div class='control-citations'>citations</div>"
+    latest_text: "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>"
     author: 3
 
 - model: emails.EmailMessage
   pk: 5
   fields:
-    original_text: "Something about mathematical modeling of the atmosphere"
-    latest_text: "Something about mathematical modeling of the atmosphere"
+    original_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
+    latest_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
     author: 4
+
+- model: emails.EmailMessage
+  pk: 6
+  fields:
+    original_text: "Fermi and stuff <div class='control-citations'>citations</div>"
+    latest_text: "Still Fermi <div class='control-citations'>citations</div>"
+    author: 1
+    date_sent: 2010-02-11
+
+- model: emails.EmailMessage
+  pk: 7
+  fields:
+    original_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
+    latest_text: "Something about mathematical modeling of the atmosphere <div class='control-citations'>citations</div>"
+    author: 4
+    date_sent: 2010-02-11
 
 - model: records.Record
   pk: 1
@@ -189,3 +205,19 @@
     citation: Fermi, Enrico. A different paper. Some journal or other. 145:5 (2016)
     doi: 10.1412/4216771
     paper_id: 657815
+
+- model: records.Record
+  pk: 8
+  fields:
+    author: 1
+    publisher_name: Wiley
+    acq_method: RECRUIT_FROM_AUTHOR_FPV
+    citation: Fermi, Enrico. Yet an additional paper. Some journal or other. 145:5 (2016)
+    doi: 10.1412/4216714
+    paper_id: 6578523
+    email: 6
+
+- model: records.Message
+  pk: 1
+  fields:
+    text: 'This is a message'

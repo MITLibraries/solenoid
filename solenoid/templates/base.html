@@ -89,7 +89,7 @@
       <div class="wrap-outer-content layout-band">
         <!-- begin messages -->
         {% for message in messages %}
-          <div class="alert alert-banner {{ message.tags }}" role="alert">{{ message }}</div>
+          <div class="alert alert-banner {{ message.tags }}" role="alert">{{ message|safe }}</div>
         {% endfor %}
         <!-- end messages -->
 

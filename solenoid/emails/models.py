@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
 from datetime import date
 import logging
+import re
 from smtplib import SMTPException
 
 from django.conf import settings
@@ -41,6 +42,10 @@ class EmailMessage(models.Model):
     # responsible for handling exceptions.
     _liaison = models.ForeignKey(Liaison, blank=True, null=True)
     author = models.ForeignKey(Author)
+    # This should be set to True when people import new citations for this
+    # email's author after starting the email, but before sending it. It should
+    # be set to False after people edit the email (save or send).
+    new_citations = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # One might have a display_text property that showed latest_text if
@@ -54,20 +59,26 @@ class EmailMessage(models.Model):
 
     @classmethod
     def _create_citations(cls, record_list):
+        """Creates a text block of citations for this record list. Does NOT
+        validate the citations - make sure you have done any needed sanitizing
+        first."""
         logger.info('Creating citations for {list}'.format(list=record_list))
         citations = ''
         for record in record_list:
-            if not record.email:
-                citations += '<p>'
-                citations += record.citation
+            citations += '<p>'
+            citations += record.citation
 
-                if record.message:
-                    citations += '<b>[{msg}]</b>'.format(msg=record.message.text)  # noqa
+            if record.message:
+                citations += '<b>[{msg}]</b>'.format(msg=record.message.text)
 
-                if record.fpv_message:
-                    citations += record.fpv_message
-                citations += '</p>'
+            if record.fpv_message:
+                citations += record.fpv_message
+            citations += '</p>'
         logger.info('Citations created')
+
+        # This is the unicode replacement character. It shows up sometimes in
+        # our imports; we should just remove it.
+        citations = re.sub(u'\ufffd', ' ', citations)
         return citations
 
     @classmethod
@@ -101,7 +112,7 @@ class EmailMessage(models.Model):
             raise ValidationError('All records must have the same author.')
 
         author = record_list.first().author
-        citations = cls._create_citations(record_list)
+        citations = cls._create_citations(available_records)
 
         logger.info('Returning original text of email')
         return render_to_string('emails/author_email_template.html',
@@ -109,14 +120,8 @@ class EmailMessage(models.Model):
                      'liaison': author.dlc.liaison,
                      'citations': citations})
 
-    @classmethod
-    def get_or_create_for_records(cls, records):
-        """Given a queryset of records, finds or creates an *unsent* email to
-        their author (there should not be more than one of these at a time).
-        Records must all be by the same author."""
-
-        logger.info('Creating unsent email for {records}'.format(
-            records=records))
+    @staticmethod
+    def _filter_records(records):
         # First, throw out all emails that have already been sent.
         records = records.filter(email__date_sent__isnull=True)
 
@@ -124,18 +129,24 @@ class EmailMessage(models.Model):
             logger.info('No records - not creating email')
             return None
 
+        return records
+
+    @staticmethod
+    def _get_author_from_records(records):
         count = Author.objects.filter(record__in=records).distinct().count()
-        if count == 0:
-            logger.warning('Records have no author - not creating email')
-            return None
-        elif count > 1:
-            logger.warning('Records have different authors - not creating email')
+        # We don't have to worry about the count being zero because Record
+        # requires Author. Don't call this with an empty record set!
+        assert records
+        if count > 1:
+            logger.warning('Records have different authors - not creating email')  # noqa
             raise ValidationError('Records do not all have the same author.')
         else:
-            author = Author.objects.filter(record__in=records)[0]
+            return Author.objects.filter(record__in=records)[0]
 
+    @classmethod
+    def _get_email_for_author(cls, author):
         emails = cls.objects.filter(
-            record__author=author, date_sent__isnull=True).distinct()
+            author=author, date_sent__isnull=True).distinct()
 
         try:
             assert len(emails) in [0, 1]
@@ -143,8 +154,13 @@ class EmailMessage(models.Model):
             logger.exception('Multiple unsent emails found for %s' % author)
             raise ValidationError('Multiple unsent emails found.')
 
-        if emails:
-            email = emails[0]
+        return emails if emails else None
+
+    @classmethod
+    def _finalize_email(cls, email, records, author):
+        if email:
+            email = email[0]
+            email.rebuild_citations()
         else:
             email = cls(original_text=cls.create_original_text(records),
                 _liaison=author.dlc.liaison, author=author)
@@ -155,6 +171,28 @@ class EmailMessage(models.Model):
         # rather than finding existing ones.
         logger.info('Creating foreign key relationship to email for records')
         records.update(email=email)
+        return email
+
+    @classmethod
+    def get_or_create_for_records(cls, records):
+        """Given a queryset of records, finds or creates an *unsent* email to
+        their author (there should not be more than one of these at a time).
+        Records must all be by the same author."""
+
+        logger.info('Creating unsent email for {records}'.format(
+            records=records))
+
+        records = cls._filter_records(records)
+        if not records:
+            return None
+
+        author = cls._get_author_from_records(records)
+        if not author:
+            return None
+
+        email = cls._get_email_for_author(author)
+        email = cls._finalize_email(email, records, author)
+
         logger.info('Retuning email')
         return email
 
@@ -242,6 +280,36 @@ class EmailMessage(models.Model):
                         username=username)
 
         logger.info('Email {pk} sent'.format(pk=self.pk))
+        return True
+
+    def rebuild_citations(self):
+        """Find all unsent citations by this email's author. If it's the same
+        as the current set of citations in this email, return False. If
+        different, update the email to reflect all current unsent citations and
+        return True."""
+        # Get all unsent records associated with this email's author. This
+        # will include the current email record_set and also unsent emails.
+        # Use this rather than filtering Record directly to avoid circular
+        # imports.
+        records = self.author.record_set.exclude(
+            email__date_sent__isnull=False)
+
+        if records.count() == self.record_set.count():
+            # Nothing to change here.
+            return False
+
+        soup = BeautifulSoup(self.latest_text, 'html.parser')
+
+        citations = EmailMessage._create_citations(records)
+        new_soup = BeautifulSoup(citations, 'html.parser')
+
+        cite_block = soup.find('div', class_='control-citations')
+        cite_block.clear()
+        cite_block.insert(1, new_soup)
+        self.latest_text = soup.prettify()
+        self.new_citations = True
+        self.save()
+
         return True
 
     def revert(self):
