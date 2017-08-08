@@ -20,6 +20,7 @@ class EmailCreatorTestCase(TestCase):
 
     @patch('solenoid.emails.views._get_or_create_emails')
     def test_posting_to_create_view_calls_creator(self, mock_create):
+        EmailMessage.objects.get(pk=2).delete()
         mock_create.return_value = [1]
         c = Client()
         c.post(reverse('emails:create'), {'records': ['1']})
@@ -30,6 +31,7 @@ class EmailCreatorTestCase(TestCase):
         mock_create.assert_called_once_with(['1', '2'])
 
     def test_posting_to_create_view_returns_email_eval(self):
+        EmailMessage.objects.get(pk=2).delete()
         c = Client()
         response = c.post(reverse('emails:create'), {'records': ['1']})
         self.assertRedirects(response, reverse('emails:evaluate', args=(1,)))
@@ -46,6 +48,9 @@ class EmailCreatorTestCase(TestCase):
     def test_get_or_create_emails_returns_correctly(self):
         """When we pass in records to _get_or_create_emails, we should get back
         one email per author in the recordset."""
+        EmailMessage.objects.get(pk=2).delete()
+        EmailMessage.objects.get(pk=4).delete()
+
         email_pks = _get_or_create_emails([1])
         self.assertEqual(len(email_pks), 1)
 
@@ -67,6 +72,9 @@ class EmailEvaluateTestCase(TestCase):
     def setUp(self):
         self.url = reverse('emails:evaluate', args=(1,))
         self.client = Client()
+
+    def tearDown(self):
+        EmailMessage.objects.all().delete()
 
     def test_latest_version_displays_on_unsent_page_if_not_blank(self):
         response = self.client.get(self.url)
@@ -237,10 +245,65 @@ class EmailEvaluateTestCase(TestCase):
         expected_url = reverse('home')
         self.assertRedirects(response, expected_url)
 
+    def test_saving_unsets_new_citations_flag(self):
+        email = EmailMessage.objects.get(pk=1)
+        email.new_citations = True
+        email.save()
+
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
+        self.client.post(self.url, {
+            'submit_save': 'save & next',
+            'latest_text': email.latest_text
+        })
+
+        email.refresh_from_db()
+
+        self.assertEqual(email.new_citations, False)
+
+    def test_sending_unsets_new_citations_flag(self):
+        email = EmailMessage.objects.get(pk=1)
+        email.new_citations = True
+        email.save()
+
+        session = self.client.session
+        session['email_pks'] = [2, 3]
+        session['total_email'] = 3
+        session['current_email'] = 1
+        session.save()
+
+        self.client.post(self.url, {
+            'submit_send': 'send & next',
+            'latest_text': email.latest_text
+        })
+
+        email.refresh_from_db()
+
+        self.assertEqual(email.new_citations, False)
+
+    def test_warning_message_shows_when_flag_set(self):
+        email = EmailMessage.objects.get(pk=1)
+        email.new_citations = True
+        email.save()
+
+        response = self.client.get(self.url)
+        expected = "New citations for this author have been imported since " \
+            "last time the email was edited. They've been added to this " \
+            "email automatically, but please proofread."
+        assert any([msg.message == expected and msg.level_tag == 'error'
+                    for msg in response.context['messages']])
+
 
 @override_settings(LOGIN_REQUIRED=False)
 class EmailMessageModelTestCase(TestCase):
     fixtures = ['testdata.yaml']
+
+    def tearDown(self):
+        EmailMessage.objects.all().delete()
 
     def test_revert(self):
         original_text = 'This is the original text'
@@ -367,15 +430,19 @@ class EmailMessageModelTestCase(TestCase):
     def test_get_or_create_for_records_2(self):
         """EmailMessage.get_or_create_for_records returns an already existing
         email where appropriate."""
-        records = Record.objects.filter(pk__in=[1])
+        records = Record.objects.filter(pk__in=[2])
         email = EmailMessage.get_or_create_for_records(records)
-        self.assertEqual(email.pk, 1)
+        self.assertEqual(email.pk, 8)
 
     def test_get_or_create_for_records_3(self):
         """EmailMessage.get_or_create_for_records makes sure all Records fed
         into it have FKs to its returned EmailMessage, regardless of whether
         they were already linked."""
         records = Record.objects.filter(pk__in=[1, 7])
+        # This email's existence will break the test as it would be the second
+        # unsent email for the author.
+        EmailMessage.objects.get(pk=2).delete()
+
         email = EmailMessage.get_or_create_for_records(records)
         self.assertEqual(email.pk, 1)
         self.assertEqual(Record.objects.get(pk=1).email.pk, 1)
@@ -427,8 +494,179 @@ class EmailMessageModelTestCase(TestCase):
             records = Record.objects.filter(pk__in=[1, 7])
             EmailMessage.get_or_create_for_records(records)
 
-    def test_cite_block_empty(self):
-        pass
+    def test_create_citations(self):
+        # First, ensure that our if conditions in the for loop below will be
+        # True at least once each.
+        r1 = Record.objects.get(pk=1)
+        r1.message = Message.objects.get(pk=1)
+        r1.save()
+
+        r2 = Record.objects.get(pk=2)
+        r2.acq_method = Record.ACQ_FPV
+        r2.save()
+
+        records = Record.objects.filter(pk__in=[1, 2, 3])
+        citations = EmailMessage._create_citations(records)
+        for record in records:
+            assert record.citation in citations
+            if record.message:
+                assert record.message.text in citations
+            if record.fpv_message:
+                assert record.fpv_message in citations
+
+    def test_filter_records_1(self):
+        """Filter removes records with emails already sent."""
+        records = Record.objects.filter(pk__in=[1, 8])
+        records = EmailMessage._filter_records(records)
+        assert [record.pk for record in records] == [1]
+
+    def test_filter_records_2(self):
+        """Filter returns None when no records remain after filtering."""
+        records = Record.objects.filter(pk__in=[8])
+        records = EmailMessage._filter_records(records)
+        assert records is None
+
+    def test_get_author_from_records_1(self):
+        """Raises ValidationError when there are multiple authors."""
+        records = Record.objects.filter(pk__in=[1, 2])
+        with self.assertRaises(ValidationError):
+            EmailMessage._get_author_from_records(records)
+
+    def test_get_author_from_records_2(self):
+        """Returns the expected author."""
+        records = Record.objects.filter(pk__in=[1])
+        author = EmailMessage._get_author_from_records(records)
+        assert author.pk == 1
+
+    def test_get_email_for_author_1(self):
+        """Raises a ValidationError if there are multiple unsent emails."""
+        author = Author.objects.get(pk=1)
+        with self.assertRaises(ValidationError):
+            EmailMessage._get_email_for_author(author)
+
+    def test_get_email_for_author_2(self):
+        """Returns the email if there is one unsent email."""
+        author = Author.objects.get(pk=4)
+        email = EmailMessage._get_email_for_author(author)
+        assert email.count() == 1
+
+    def test_get_email_for_author_3(self):
+        """Returns None if there are zero unsent emails."""
+        author = Author.objects.get(pk=2)
+        email = EmailMessage._get_email_for_author(author)
+        assert email is None
+
+    def test_finalize_email_1(self):
+        """Creates new email when none exists."""
+        author = Author.objects.get(pk=3)
+        records = Record.objects.filter(author=author, email__isnull=True)
+        email = EmailMessage._finalize_email(None, records, author)
+        assert isinstance(email, EmailMessage)
+        assert email.pk
+
+    def test_finalize_email_2(self):
+        """Updates existing email when one exists."""
+        # Use filter, not get, as _finalize_email expects a queryset.
+        emails = EmailMessage.objects.filter(pk=1)
+        author = emails[0].author
+        orig_records = emails[0].record_set.all()
+
+        # Add new record so that update is meaningful. Note that we haven't set
+        # its email yet.
+        r = Record(author=author, publisher_name='yo',
+                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
+                   citation='boo', paper_id='3567',
+                   source='Manual', elements_id='9832')
+        r.save()
+
+        records = Record.objects.filter(
+            author=author).exclude(email__date_sent__isnull=False)
+
+        assert records.count() > orig_records.count()
+
+        email = EmailMessage._finalize_email(emails, records, author)
+        assert 'boo' in email.latest_text
+
+    def test_finalize_email_3(self):
+        """Finalizing email updates associated records with the email."""
+        emails = EmailMessage.objects.filter(pk=1)
+        author = emails[0].author
+        orig_records = emails[0].record_set.all()
+
+        # Add new record so that update is meaningful. Note that we haven't set
+        # its email yet.
+        r = Record(author=author, publisher_name='yo',
+                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
+                   citation='boo', paper_id='3567',
+                   source='Manual', elements_id='9832')
+        r.save()
+
+        records = Record.objects.filter(
+            author=author).exclude(email__date_sent__isnull=False)
+
+        assert records.count() > orig_records.count()
+
+        email = EmailMessage._finalize_email(emails, records, author)
+        r.refresh_from_db()
+        assert r.email == email
+        assert email.record_set.count() == records.count()
+
+    def test_rebuild_citations_returns_false_if_no_new_citations(self):
+        email = EmailMessage.objects.get(pk=5)
+        email.rebuild_citations()
+        email.refresh_from_db()
+        assert email.new_citations is False
+
+    def test_rebuild_citations_sets_text(self):
+        email = EmailMessage.objects.get(pk=1)
+        orig_citation = 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)'  # noqa
+        new_citation = 'yo I am for sure a citation'
+
+        r = Record(email=email, author=email.author, publisher_name='yo',
+                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
+                   citation=new_citation, paper_id='3567',
+                   source='Manual', elements_id='9832')
+        r.save()
+        email.rebuild_citations()
+        email.refresh_from_db()
+        assert orig_citation in email.latest_text
+        assert new_citation in email.latest_text
+
+    def test_rebuild_citations_sets_flag(self):
+        email = EmailMessage.objects.get(pk=1)
+
+        r = Record(email=email, author=email.author, publisher_name='yo',
+                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
+                   paper_id='3567', source='Manual', elements_id='9832')
+        r.save()
+        email.rebuild_citations()
+        email.refresh_from_db()
+        assert email.new_citations is True
+
+    @patch('solenoid.emails.models.EmailMessage.rebuild_citations')
+    def test_rebuild_citations_fired_when_needed_1(self, mock_rebuild):
+        """get_or_create_for_records fires rebuild_citations when there are
+        new citations."""
+        email = EmailMessage.objects.get(pk=5)
+
+        r = Record(email=email, author=email.author, publisher_name='yo',
+                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
+                   paper_id='3567', source='Manual', elements_id='9832')
+        r.save()
+
+        records = Record.objects.filter(email=email)
+        EmailMessage.get_or_create_for_records(records)
+        mock_rebuild.assert_called_once()
+
+    @patch('solenoid.emails.models.EmailMessage.rebuild_citations')
+    def test_rebuild_citations_fired_when_needed_2(self, mock_rebuild):
+        """get_or_create_for_records does not fire rebuild_citations when there
+        are no new citations."""
+        email = EmailMessage.objects.get(pk=5)
+
+        records = Record.objects.filter(email=email)
+        EmailMessage.get_or_create_for_records(records)
+        mock_rebuild.assert_not_called()
 
 
 # Make sure there's at least one admin, or email won't send because there's

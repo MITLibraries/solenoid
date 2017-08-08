@@ -134,10 +134,10 @@ class EmailMessage(models.Model):
     @staticmethod
     def _get_author_from_records(records):
         count = Author.objects.filter(record__in=records).distinct().count()
-        if count == 0:
-            logger.warning('Records have no author - not creating email')
-            return None
-        elif count > 1:
+        # We don't have to worry about the count being zero because Record
+        # requires Author. Don't call this with an empty record set!
+        assert records
+        if count > 1:
             logger.warning('Records have different authors - not creating email')  # noqa
             raise ValidationError('Records do not all have the same author.')
         else:
@@ -146,7 +146,7 @@ class EmailMessage(models.Model):
     @classmethod
     def _get_email_for_author(cls, author):
         emails = cls.objects.filter(
-            record__author=author, date_sent__isnull=True).distinct()
+            author=author, date_sent__isnull=True).distinct()
 
         try:
             assert len(emails) in [0, 1]
@@ -294,7 +294,7 @@ class EmailMessage(models.Model):
         records = self.author.record_set.exclude(
             email__date_sent__isnull=False)
 
-        if records == self.record_set.all():
+        if records.count() == self.record_set.count():
             # Nothing to change here.
             return False
 
