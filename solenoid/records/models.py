@@ -50,7 +50,7 @@ class Record(models.Model):
 
     author = models.ForeignKey(Author)
     email = models.ForeignKey(EmailMessage, blank=True, null=True)
-    publisher_name = models.CharField(max_length=50)
+    publisher_name = models.CharField(max_length=75)
     acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
     citation = models.TextField()
     doi = models.CharField(max_length=30, blank=True)
