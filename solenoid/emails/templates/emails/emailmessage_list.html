@@ -13,7 +13,11 @@
         </td>
         <td>
           <span class="copy-lead">{{ email.dlc }}</span> <br />
-          {{ email.liaison }}
+          {% if email.liaison %}
+            {{ email.liaison }}
+          {% else %}
+            <i>(No liaison designated)</i>
+          {% endif %}
         </td>
         <td>
           <a class="button-secondary button-circle"
