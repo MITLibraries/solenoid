@@ -28,8 +28,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import receiver
 from django.utils.http import urlquote
 
-from solenoid.emails.signals import email_sent
-
 from .models import ElementsAPICall
 
 logger = logging.getLogger(__name__)
@@ -63,7 +61,6 @@ def _issue_elements_api_call(call):
         call.retry()
 
 
-@receiver(email_sent)
 def wrap_elements_api_call(sender, **kwargs):
     """Notifies Elements when a record has been requested. Returns True on
     success, False otherwise.

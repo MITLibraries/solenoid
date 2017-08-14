@@ -13,8 +13,6 @@ from django.template.loader import render_to_string
 
 from solenoid.people.models import Liaison, Author
 
-from .signals import email_sent
-
 logger = logging.getLogger(__name__)
 
 
@@ -273,12 +271,6 @@ class EmailMessage(models.Model):
             return False
 
         self._update_after_sending()
-        logger.info('Sending email_sent signal')
-
-        email_sent.send(sender=self.__class__,
-                        instance=self,
-                        username=username)
-
         logger.info('Email {pk} sent'.format(pk=self.pk))
         return True
 
