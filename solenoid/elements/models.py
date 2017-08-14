@@ -9,10 +9,10 @@ from django.db import models
 
 logger = logging.getLogger(__name__)
 HEADERS = {'Content-Type': 'application/xml'}
-PROXIES = {
-    'http': settings.QUOTAGUARD_URL,
-    'https': settings.QUOTAGUARD_URL,
-}
+#PROXIES = {
+#    'http': settings.QUOTAGUARD_URL,
+#    'https': settings.QUOTAGUARD_URL,
+#}
 
 
 class ElementsAPICall(models.Model):
@@ -102,7 +102,7 @@ class ElementsAPICall(models.Model):
         response = requests.patch(self.request_url,
             data=tostring(self.request_data).decode('utf-8'),
             headers=HEADERS,
-            proxies=PROXIES,
+            #proxies=PROXIES,
             # Passing in an auth parameter makes requests handle HTTP Basic
             # Auth transparently.
             auth=(settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD))

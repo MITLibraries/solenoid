@@ -320,12 +320,6 @@ CKEDITOR_CONFIGS = {
 }
 
 
-# QUOTAGUARD CONFIGURATION
-# -----------------------------------------------------------------------------
-
-QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
-
-
 # SYMPLECTIC ELEMENTS CONFIGURATION
 # -----------------------------------------------------------------------------
 

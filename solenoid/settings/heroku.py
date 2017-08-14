@@ -75,11 +75,3 @@ if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'False':
     LOGIN_REQUIRED = False
 else:
     LOGIN_REQUIRED = True
-
-
-# SYMPLECTIC ELEMENTS CONFIGURATION
-# -----------------------------------------------------------------------------
-
-# If the QUOTAGUARD_URL is unset, we can't use Elements, so check that in
-# addition to the user-supplied Boolean.
-USE_ELEMENTS = True and bool(QUOTAGUARD_URL)
