@@ -38,9 +38,6 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
 * Add its URL to `ALLOWED_HOSTS` in `settings/heroku.py`
 * Provision the following apps (the free tier is fine):
   * Postgres
-  * Quotaguard Static
-  * Heroku Scheduler
-    * Optional on staging
   * Newrelic
     * This is optional - you can live on the edge if you don't like logging - but if you don't have it, you need to edit the Procfile to take out the newrelic run-program parts
   * Papertrail
@@ -65,16 +62,6 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
   * `heroku config:set DJANGO_MITOAUTH2_SECRET=<your MIT OAuth secret>`
   * You can turn OAuth off with `heroku config:unset DJANGO_LOGIN_REQUIRED`, but you probably shouldn't.
   * See below for more on OAuth; you'll need to have configured it on the MIT side.
-* For Elements:
-  * `heroku config:set DJANGO_ELEMENTS_ENDPOINT=<your API endpoint>`
-  * `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
-  * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
-    * If you used 'solenoid' as your username you can skip this step.
-  * If you want to get emails with API monitoring information:
-    * `heroku addons:create scheduler:standard`
-    * `heroku addons:open scheduler`
-    * Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
-  * See below for more on Elements; you'll need to have configured it on the Symplectic side.
 * `DEBUG` defaults to False, as it should on production
   * If you want it to be True, `heroku config:set DJANGO_DEBUG=True`
 * `git push heroku master`
@@ -118,6 +105,10 @@ Defaults are fine for everything else.
 
 ## Integrating with Sympletic Elements
 
+> __This section is deprecated__ as we are not currently integrating with
+> Elements. However, it is retained to make life easier should we end up
+> integrating with Elements again in future.
+
 Solenoid issues calls to the Sympletic Elements API when it sends emails in order to mark items as requested. This requires some configuration on both the Elements system administration end and the solenoid end.
 
 Sympletic Elements API documentation is visible to authorized users only.
@@ -125,6 +116,22 @@ Sympletic Elements API documentation is visible to authorized users only.
 ### In Heroku
 
 You'll need to set up a static IP. https://devcenter.heroku.com/articles/quotaguardstatic#using-with-python-django is free for up to 250 requests/month.
+
+Also provision the following:
+* Quotaguard Static
+* Heroku Scheduler
+  * Optional on staging
+
+* For Elements:
+  * `heroku config:set DJANGO_ELEMENTS_ENDPOINT=<your API endpoint>`
+  * `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
+  * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
+    * If you used 'solenoid' as your username you can skip this step.
+  * If you want to get emails with API monitoring information:
+    * `heroku addons:create scheduler:standard`
+    * `heroku addons:open scheduler`
+    * Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
+  * See below for more on Elements; you'll need to have configured it on the Symplectic side.
 
 ### In Elements
 
