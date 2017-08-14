@@ -5,4 +5,5 @@ omit =
     */admin.py
     solenoid/settings/heroku.py
     solenoid/wsgi.py
+    solenoid/elements
 source = ./solenoid/
