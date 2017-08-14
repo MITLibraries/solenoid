@@ -312,7 +312,7 @@ CKEDITOR_CONFIGS = {
         'removePlugins': 'stylesheetparser',
         'allowedContent': {
             '$1': {
-                'elements': 'div',
+                'elements': 'div p',
                 'classes': True
             }
         },

@@ -8,23 +8,36 @@
 
 {% block content %}
   {% if progress %}<strong>{{ progress }}</strong>{% endif %}
-  <form method="post" action="">
-    {% csrf_token %}
-      To:<b>
-      {% if form.instance.liaison %}
-        <span id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <span class="is-hidden" id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open">Assign liaison</a> for {{ form.instance.dlc }}</span>
-      {% else %}
-        <span class="is-hidden" id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
-        <span id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
-      {% endif %}</b><br />
-      Subject: <b>OA outreach message to forward: {{ form.instance.author }}</b>
-      {{ form.media }}
-      {{ form | crispy }}
-      <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />
-      <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
-      <input type="submit" name="submit_send" id="submit-send" value="send &amp; next" class="button-primary" {% if not form.instance.liaison %}disabled{% endif %}/>
-  </form>
+  <div class="clearfix">
+    <div class="pull-left">
+      <form method="post" action="">
+        <div id="form-headers">
+          {% csrf_token %}
+          To:<b>
+          {% if form.instance.liaison %}
+            <span id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
+            <span class="is-hidden" id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open">Assign liaison</a> for {{ form.instance.dlc }}</span>
+          {% else %}
+            <span class="is-hidden" id="liaison-name">{{ form.instance.liaison.first_name }} {{ form.instance.liaison.last_name }} ({{ form.instance.liaison.email_address }})</span>
+            <span id="liaison-none"><a href="{% url 'people:liaison_list' %}" class="button-secondary" rel="modal:open"><b>Assign liaison</b></a> for {{ form.instance.dlc }}</span>
+          {% endif %}</b><br />
+          Subject: <b>OA outreach message to forward: {{ form.instance.author }}</b>
+        </div>
+        {{ form.media }}
+        {{ form | crispy }}
+        <input type="submit" name="submit_cancel" value="cancel &amp; next" class="button-secondary" />
+        <input type="submit" name="submit_save" value="save &amp; next" class="button-secondary" />
+        <input type="submit" name="submit_send" id="submit-send" value="send &amp; next" class="button-primary" {% if not form.instance.liaison %}disabled{% endif %}/>
+      </form>
+
+    </div>
+    <div class="pull-right is-hidden" id="warning-div">
+      <div class="alert alert-banner warning">
+        Some authors need middle initials in their dspace browse URL. Please
+        make sure the dspace.mit.edu URL in the email works (<a href="https://dspace.mit.edu/handle/1721.1/49433/browse?value={{ form.instance.author.last_name }}%2C+{{ form.instance.author.first_name }}&type=author">test it here</a>).
+      </div>
+    </div>
+  </div>
 
   {% comment %}
     Note that jquery is loaded by form.media, so we have its affordances.
@@ -96,6 +109,50 @@
     $("body").on('submit', '#liaison-delete', function(event) {
       event.preventDefault();
       $.modal.close();
+    });
+  </script>
+
+  <script type="text/javascript">
+    var warning_div = $('#warning-div');
+    function isScrolledIntoView() {
+      var iframe = document.getElementsByTagName('iframe')[0];
+      var iframe_body = iframe.contentDocument.getElementsByTagName('body')[0];
+      var dspace_url = iframe.contentDocument.getElementsByClassName('dspace-handle')[0];
+
+      var frameViewTop = iframe_body.scrollTop;
+      var frameViewBottom = frameViewTop + iframe.offsetHeight;
+
+      var elemTop = dspace_url.offsetTop;
+      var elemBottom = elemTop + dspace_url.offsetHeight;
+
+      return ((elemBottom <= frameViewBottom) && (elemTop >= frameViewTop));
+    }
+
+    function sizeWarningDiv() {
+      var main_width = $('#content-main').width();
+      var form_width = $('form').first().width();
+      var form_offset = $('#form-headers').height() + parseInt($('form').first().css('margin-top'));
+      var available_width = (main_width - form_width) * 0.9;
+
+      warning_div.css('width', available_width);
+      warning_div.css('margin-top', form_offset);
+    }
+
+    // Use CKEditor callback to avoid binding before CKEditor contents are
+    // loaded - otherwise there's nothing to bind to.
+    CKEDITOR.on('instanceReady', function() {
+      $('iframe').contents().on('scroll', function() {
+        try {
+          if (isScrolledIntoView()) {
+            warning_div.removeClass('is-hidden');
+          }
+        } catch (err) {
+          // isScrolledIntoView will throw an exception if the dspace_url is
+          // not yet visible. That's fine; do nothing.
+        }
+      });
+
+      sizeWarningDiv();
     });
   </script>
 {% endblock %}
