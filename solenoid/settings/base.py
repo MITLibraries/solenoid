@@ -62,9 +62,8 @@ MIDDLEWARE_CLASSES = (
 
 # By setting this an an environment variable, it is easy to switch debug on in
 # servers to do a quick test.
-# DEBUG will default to false if the environment variable is unset.
 # DEBUG SHOULD BE FALSE ON PRODUCTION for security reasons.
-PROTO_DEBUG = os.environ.get('DJANGO_DEBUG', False)
+PROTO_DEBUG = os.environ.get('DJANGO_DEBUG', True)
 
 if PROTO_DEBUG == 'True' or PROTO_DEBUG is True:
     DEBUG = True
@@ -122,8 +121,6 @@ USE_L10N = False
 # TEMPLATE CONFIGURATION
 # -----------------------------------------------------------------------------
 
-TEMPLATE_DEBUG = DEBUG
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -139,6 +136,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 # STATIC FILE CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -353,7 +351,7 @@ STATICFILES_FINDERS = (
 )
 
 COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True  # The default, but we're being explicit.
+COMPRESS_OFFLINE = not DEBUG  # The default, but we're being explicit.
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-sass', 'django_libsass.SassCompiler'),
