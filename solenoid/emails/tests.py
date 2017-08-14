@@ -386,8 +386,11 @@ class EmailMessageModelTestCase(TestCase):
         self.assertNotIn(msg, email)
 
     def test_liaison_property_1(self):
-        """If EmailMessage._liaison exists, email.liaison returns it."""
+        """If EmailMessage._liaison exists and the email has been sent,
+        email.liaison returns it self._liaison."""
         email = EmailMessage.objects.get(pk=2)
+        email.date_sent = date.today()
+        email.save()
         self.assertEqual(email.liaison.pk, 1)
 
     def test_liaison_property_2(self):
@@ -397,6 +400,18 @@ class EmailMessageModelTestCase(TestCase):
         # This email is associated with record #1 -> author #1 -> DLC #1 ->
         # liaison #1.
         email = EmailMessage.objects.get(pk=1)
+        self.assertEqual(email.liaison.pk, 1)
+
+    def test_liaison_property_3(self):
+        """If EmailMessage._liaison exists and the email has NOT been sent,
+        email.liaison returns the liaison of the associated DLC. email._liaison
+        should not be set for unsent emails, but in case it has been by
+        accident, the property should still reflect the current DLC emails.
+        This lets us have a single source of liaison truth, and also means that
+        liaison deletion is reflected by email messages."""
+        email = EmailMessage.objects.get(pk=2)
+        email.date_sent = None
+        email.save()
         self.assertEqual(email.liaison.pk, 1)
 
     def test_dlc_property_1(self):

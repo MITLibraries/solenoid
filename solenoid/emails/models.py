@@ -37,7 +37,7 @@ class EmailMessage(models.Model):
     # because this allows users to use certain bits of the workflow that don't
     # require knowledge of the liaison (e.g. editing email text). This means
     # downstream functions that depend on the liaison's existence are
-    # responsible for handling exceptions.
+    # responsible for handling exceptions. DO NOT SET until email send.
     _liaison = models.ForeignKey(Liaison, blank=True, null=True)
     author = models.ForeignKey(Author)
     # This should be set to True when people import new citations for this
@@ -161,7 +161,7 @@ class EmailMessage(models.Model):
             email.rebuild_citations()
         else:
             email = cls(original_text=cls.create_original_text(records),
-                _liaison=author.dlc.liaison, author=author)
+                        author=author)
             email.save()
 
         # Make sure to create the ForeignKey relation from those records to
@@ -328,7 +328,9 @@ class EmailMessage(models.Model):
         For *unsent* emails, returns the liaison to whom we expect to send the
         email. This can and should change if DLC/liaison pairings are updated.
         """
-        if self._liaison:
+        if self._liaison and self.date_sent:
+            # Don't just check for self._liaison, in case you foolishly set
+            # that before sending the email.
             return self._liaison
         else:
             try:
