@@ -27,8 +27,11 @@ ALLOWED_HOSTS = ['mitlibraries-solenoid.herokuapp.com',
 # STATIC FILE CONFIGURATION
 # -----------------------------------------------------------------------------
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+MIDDLEWARE_CLASSES += (
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+)
 
 # LOGGING CONFIGURATION
 # -----------------------------------------------------------------------------

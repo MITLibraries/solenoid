@@ -301,7 +301,7 @@ INSTALLED_APPS += (
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
 
-CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'
+CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'  # noqa
 
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
@@ -350,14 +350,15 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = not DEBUG  # The default, but we're being explicit.
+COMPRESS_ENABLED = False
+COMPRESS_OFFLINE = False  # The default, but we're being explicit.
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-sass', 'django_libsass.SassCompiler'),
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
+COMPRESS_ROOT = STATIC_ROOT
 
 # CRISPY-FORMS CONFIGURATION
 # -----------------------------------------------------------------------------
