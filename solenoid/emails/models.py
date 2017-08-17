@@ -345,7 +345,7 @@ class EmailMessage(models.Model):
         constructing a multipart alternative email (as the html stored in
         latest_text is properly the second part, not the main text)."""
         soup = BeautifulSoup(self.latest_text, "html.parser")
-        return soup.get_text().replace('\n', '\n\n')
+        return soup.get_text()
 
     @property
     def subject(self):
