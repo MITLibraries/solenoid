@@ -936,3 +936,122 @@ class RecordModelTest(TestCase):
         self.assertEqual(citation,
             'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
         )
+
+    def test_update_if_needed_case_1(self):
+        """update_if_needed alters the record when it sees a new author."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = r1.doi
+        row[Headers.CITATION] = r1.citation
+        author = Author.objects.get(pk=2)  # not the author of r1
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.author == author
+
+    def test_update_if_needed_case_2(self):
+        """update_if_needed alters the record when it sees a new publisher."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        new_publisher = r1.publisher_name + 'new'
+        row[Headers.PUBLISHER_NAME] = new_publisher
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = r1.doi
+        row[Headers.CITATION] = r1.citation
+        author = r1.author
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.publisher_name == new_publisher
+
+    def test_update_if_needed_case_3(self):
+        """update_if_needed alters the record when it sees a new acquisition
+        method."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
+        row[Headers.DOI] = r1.doi
+        row[Headers.CITATION] = r1.citation
+        author = r1.author
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.acq_method == 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
+
+    def test_update_if_needed_case_4(self):
+        """update_if_needed alters the record when it sees a new DOI."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        new_doi = r1.doi + 'new'
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = new_doi
+        row[Headers.CITATION] = r1.citation
+        author = r1.author
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.doi == new_doi
+
+    def test_update_if_needed_case_5(self):
+        """update_if_needed alters the record when it sees a new citation
+        that is not blank."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        new_citation = r1.citation + 'new'
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = r1.doi
+        row[Headers.CITATION] = new_citation
+        author = r1.author
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.citation == new_citation
+
+    def test_update_if_needed_case_6(self):
+        """update_if_needed does NOT alter the record if nothing has
+        changed."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = r1.doi
+        row[Headers.LAST_NAME] = 'Fermi'
+        row[Headers.FIRST_NAME] = 'Enrico'
+        row[Headers.PUBDATE] = '20160815'
+        row[Headers.TITLE] = 'Paper name'
+        row[Headers.JOURNAL] = 'Some journal or other'
+        row[Headers.VOLUME] = '145'
+        row[Headers.ISSUE] = '5'
+        author = r1.author
+
+        # Ensure that the citation will not have changed
+        r1.citation = Record.create_citation(row)
+        r1.save()
+        row[Headers.CITATION] = r1.citation
+
+        assert not r1.update_if_needed(row, author)
+
+    def test_update_if_needed_case_7(self):
+        """update_if_needed does alter the record if the citation is blank,
+        but other data from which we would generate a citation leads to a
+        different citation than the currently existing one."""
+        r1 = Record.objects.get(pk=1)
+        row = {}
+        row[Headers.PUBLISHER_NAME] = r1.publisher_name
+        row[Headers.ACQ_METHOD] = r1.acq_method
+        row[Headers.DOI] = r1.doi
+        row[Headers.LAST_NAME] = 'Fermi'
+        row[Headers.FIRST_NAME] = 'Enrico'
+        row[Headers.PUBDATE] = '20160815'
+        row[Headers.TITLE] = 'Paper name'
+        row[Headers.JOURNAL] = 'Some journal or other'
+        row[Headers.VOLUME] = '145'
+        row[Headers.ISSUE] = '5'
+        row[Headers.CITATION] = ''
+        author = r1.author
+
+        assert r1.citation != Record.create_citation(row)  # check assumption
+
+        assert r1.update_if_needed(row, author)
+        r1.refresh_from_db()
+        assert r1.citation == Record.create_citation(row)

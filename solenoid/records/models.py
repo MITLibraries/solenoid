@@ -250,16 +250,32 @@ class Record(models.Model):
         """Checks a CSV data row to see if there are any discrepancies with the
         existing record. If so, updates it and returns True. If not, returns
         False."""
+        changed = False
         if not all([self.author == author,
                     self.publisher_name == row[Headers.PUBLISHER_NAME],
                     self.acq_method == row[Headers.ACQ_METHOD],
-                    self.citation == row[Headers.CITATION],
                     self.doi == row[Headers.DOI]]):
             self.author = author
             self.publisher_name = row[Headers.PUBLISHER_NAME]
             self.acq_method = row[Headers.ACQ_METHOD]
-            self.citation = row[Headers.CITATION]
             self.doi = row[Headers.DOI]
+            changed = True
+
+        # Don't update records with blank citation information - that will
+        # cause ValidationErrors. Instead, update them with nonblank info, or
+        # check if updates to other info merit an update to the citation if the
+        # citation is blank.
+        if row[Headers.CITATION]:
+            if self.citation != row[Headers.CITATION]:
+                self.citation = row[Headers.CITATION]
+                changed = True
+        else:
+            new_cite = Record.create_citation(row)
+            if self.citation != new_cite:
+                self.citation = new_cite
+                changed = True
+
+        if changed:
             self.save()
             return True
         return False
