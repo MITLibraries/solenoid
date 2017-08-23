@@ -53,7 +53,7 @@ class Record(models.Model):
     publisher_name = models.CharField(max_length=75)
     acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
     citation = models.TextField()
-    doi = models.CharField(max_length=30, blank=True)
+    doi = models.CharField(max_length=45, blank=True)
     paper_id = models.CharField(max_length=10)
     message = models.ForeignKey(Message, blank=True, null=True)
     source = models.CharField(max_length=25)
