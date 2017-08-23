@@ -42,6 +42,11 @@ img.img-logo {
   }
 }
 
+.alert .wrap-content {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 // jQuery modal
 @media (min-width: $bp-screen-md) {
   .modal {
@@ -183,6 +188,14 @@ select, option {
   .sticky {
     position: fixed;
     top: 30px;
+  }
+}
+
+.alert-banner {
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 2rem;
   }
 }
 
