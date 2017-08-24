@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # If you change this, update the corresponding test!
 # (solenoid.records.tests.tests.ImportViewTest.test_encodings_handled_properly)
 ENCODING_OPTS = ['utf-8', 'windows-1252', 'windows-1254', 'ascii', 'utf-8-sig',
-                 'iso-8859-1']
+                 'iso-8859-1', 'utf-16']
 
 
 def _validate_encoding(csv_file):
@@ -35,19 +35,39 @@ def _validate_encoding(csv_file):
             "encoding (Windows) or used Numbers (Mac); see instructions "
             "above.")
 
+    return encoding
 
-def _validate_filetype(csv_file):
+
+def _unicode_dammit(csv_file, encoding):
+    # Let's ensure we're working with a known good encoding from here on
+    # out. Thank you, Leonard Richardson!
     try:
-        csv.Sniffer().sniff(csv_file)
+        dammit = UnicodeDammit(csv_file.read(), ENCODING_OPTS)
+    except UnicodeDecodeError as e:
+        if encoding == 'utf-16':
+            logger.info('Could not read file; assuming it is utf-16 with BOM')
+            csv_file = csv_file.file
+            csv_file.close()
+            with open(csv_file, 'rb', encoding='utf-16le') as f:
+                dammit = UnicodeDammit(f.read(), ['utf-16le'])
+        else:
+            logger.exception('Could not handle utf-16 file')
+            raise e
+
+    return dammit
+
+
+def _validate_filetype(csv_utf_8):
+    try:
+        csv.Sniffer().sniff(csv_utf_8)
     except (csv.Error, TypeError):
-        logger.warning('Invalid CSV file {name} uploaded'.format(
-            name=csv_file.name))
+        logger.exception('Invalid CSV file uploaded')
         raise ValidationError("This file doesn't appear to be CSV format.")
 
 
-def _validate_headers_existence(csv_file):
+def _validate_headers_existence(csv_utf_8):
     try:
-        has_headers = csv.Sniffer().has_header(csv_file)
+        has_headers = csv.Sniffer().has_header(csv_utf_8)
     except TypeError:
         logger.exception('CSV file header detection failed')
         raise ValidationError("Can't read CSV header row")
@@ -56,18 +76,20 @@ def _validate_headers_existence(csv_file):
         raise ValidationError("This file doesn't seem to have a header row.")
 
 
-def _validate_headers_content(csv_file):
-    headers = csv_file.splitlines()[0].strip().split(',')
+def _validate_headers_content(csv_utf_8):
+    dialect = csv.Sniffer().sniff(csv_utf_8)
+    headers = csv_utf_8.splitlines()[0].strip().split(dialect.delimiter)
     if not all([x in headers for x in Headers.EXPECTED_HEADERS]):
         logger.warning("CSV file is missing one or more required columns")
         raise ValidationError("The CSV file must contain all of the following "
             "columns: {cols}".format(cols=Headers.EXPECTED_HEADERS))
 
 
-def _validate_csv(csv_file):
-    _validate_filetype(csv_file)
-    _validate_headers_existence(csv_file)
-    _validate_headers_content(csv_file)
+def _validate_csv(csv_utf_8):
+    delimiter = _validate_filetype(csv_utf_8)
+    _validate_headers_existence(csv_utf_8)
+    _validate_headers_content(csv_utf_8)
+    return delimiter
 
 
 class ImportForm(forms.Form):
@@ -83,23 +105,23 @@ class ImportForm(forms.Form):
 
         # Check encodings before proceeding. Will raise exception for
         # unsupported encodings.
-        _validate_encoding(csv_file)
+        encoding = _validate_encoding(csv_file)
         logger.info('CSV file %s encoding is valid' % csv_file.name)
 
         # Reset file pointer so we get actual data on read.
         csv_file.seek(0)
 
-        # Yeah, let's ensure we're working with a known good encoding from
-        # here on out. Thank you, Leonard Richardson!
-        dammit = UnicodeDammit(csv_file.read(), ENCODING_OPTS)
+        dammit = _unicode_dammit(csv_file, encoding)
 
         # Let's also make sure that we're not getting tripped up on differences
         # among Mac, Windows, and Unix-style newlines. (Without this line,
-        # Excel saved as CSV on a Mac will break the upload.)
+        # Excel saved as CSV on a Mac will break the upload.) We also need to
+        # strip null bytes, which may be present after Tableau exports.
         csv_utf_8 = dammit.unicode_markup.replace(
-            '\r\n', '\n').replace('\r', '\n')
+            '\r\n', '\n').replace('\r', '\n').replace('\0', '')
         logger.info('CSV file %s converted to unicode' % csv_file.name)
 
         _validate_csv(csv_utf_8)
         logger.info('CSV file %s is valid' % csv_file.name)
+        csv_file.close()
         return csv_utf_8

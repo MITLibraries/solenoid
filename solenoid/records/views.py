@@ -69,7 +69,11 @@ class Import(LoginRequiredMixin, FormView):
         # This used to be a much more complicated function, when we were
         # dealing with an InMemoryUploadedFile rather than a string. See git
         # commit 0fe569e or previous for fun times.
-        return csv.DictReader(csv_file.splitlines())
+        # Now it just validates the delimiter, since usually csv is comma-
+        # delimited, but csv reports exported from Tableau are tab-delimited.
+        dialect = csv.Sniffer().sniff(csv_file)
+        return csv.DictReader(csv_file.splitlines(),
+                              delimiter=dialect.delimiter)
 
     def _get_author(self, row):
         try:
@@ -148,7 +152,7 @@ class Import(LoginRequiredMixin, FormView):
                              for id
                              in dupes.values_list('paper_id', flat=True)]
                 dupe_list = ', '.join(dupe_list)
-                logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))
+                logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))  # noqa
                 messages.warning(self.request, 'Publication #{id} by {author} '
                     'duplicates the following record(s) already in the '
                     'database: {dupes}. Please merge #{id} into an existing '

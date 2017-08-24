@@ -481,6 +481,16 @@ class ImportViewTest(TestCase):
         self.assertEqual(record3.message.text, 'special message goes here')
         self.assertEqual(record2.message, record3.message)
 
+    def test_tableau_file(self):
+        """Make sure that uploading utf-16le works, since that's what we get
+        from Tableau crosstab exports."""
+        self._post_csv('utf16le.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.doi, '10.7717/peerj.1234')
+        self.assertEqual(record.author.first_name, 'Tanja')
+        self.assertEqual(record.author.last_name, 'Bosak')
+
 
 class RecordModelTest(TestCase):
     fixtures = ['testdata.yaml']
