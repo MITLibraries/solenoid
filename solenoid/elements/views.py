@@ -23,9 +23,9 @@ import logging
 import requests
 from urllib.parse import urljoin
 
+from django import db
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.dispatch import receiver
 from django.utils.http import urlquote
 
 from .models import ElementsAPICall
@@ -69,6 +69,7 @@ def wrap_elements_api_call(sender, **kwargs):
     conceivably block a view, since the latency on the response may be high
     (it may even time out)."""
     logger.info('email_sent signal received')
+    db.close_old_connections()
 
     if not settings.USE_ELEMENTS:
         logger.info('USE_ELEMENTS is False; not sending API call')

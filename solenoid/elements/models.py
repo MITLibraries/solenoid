@@ -9,10 +9,10 @@ from django.db import models
 
 logger = logging.getLogger(__name__)
 HEADERS = {'Content-Type': 'application/xml'}
-#PROXIES = {
+# PROXIES = {
 #    'http': settings.QUOTAGUARD_URL,
 #    'https': settings.QUOTAGUARD_URL,
-#}
+# }
 
 
 class ElementsAPICall(models.Model):

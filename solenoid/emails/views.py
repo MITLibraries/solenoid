@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 def _get_or_create_emails(pk_list):
     """Takes a list of pks of Records and gets or creates associated
     EmailMessages."""
+    close_old_connections()
     email_pks = []
 
     for author in Author.objects.filter(record__pk__in=pk_list).distinct():
@@ -87,13 +88,13 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def _handle_cancel(self):
-        logger.info('Canceling changes to email {pk}'.format(pk=self.kwargs['pk']))
+        logger.info('Canceling changes to email {}'.format(self.kwargs['pk']))
         messages.info(self.request, "Any changes to the email have "
             "been discarded. You may return to the email and update it later.")
         return self._finish_handle()
 
     def _handle_save(self):
-        logger.info('Saving changes to email {pk}'.format(pk=self.kwargs['pk']))
+        logger.info('Saving changes to email {}'.format(self.kwargs['pk']))
         self.form_valid(self.get_form())
         messages.success(self.request, "Email message updated.")
         return self._finish_handle()
