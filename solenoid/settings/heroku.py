@@ -23,6 +23,12 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = ['mitlibraries-solenoid.herokuapp.com',
                  'mitlibraries-solenoid-staging.herokuapp.com']
 
+# This allows us to include review apps in ALLOWED_HOSTS even though we don't
+# know their name until runtime.
+APP_NAME = os.environ.get('HEROKU_APP_NAME')
+if APP_NAME:
+    url = '{}.herokuapp.com'.format(APP_NAME)
+    ALLOWED_HOSTS.append(url)
 
 # STATIC FILE CONFIGURATION
 # -----------------------------------------------------------------------------
