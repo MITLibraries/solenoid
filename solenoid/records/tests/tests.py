@@ -551,7 +551,14 @@ class RecordModelTest(TestCase):
         # Data includes the basics? Good!
         data = {
             Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'random',
+            Headers.ACQ_METHOD: Record.ACQ_MANUSCRIPT,
+            Headers.CITATION: 'nonempty'
+        }
+        assert Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: '',
             Headers.CITATION: 'nonempty'
         }
         assert Record.is_record_creatable(data)
@@ -564,18 +571,17 @@ class RecordModelTest(TestCase):
         assert not Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: '',
-            Headers.CITATION: 'nonempty'
-        }
-        assert not Record.is_record_creatable(data)
-
-        data = {
             Headers.PUBLISHER_NAME: '',
             Headers.ACQ_METHOD: 'random',
             Headers.CITATION: 'nonempty'
         }
         assert not Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            # No acq method column at all
+            Headers.CITATION: 'nonempty'
+        }
 
         # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
         data = {
