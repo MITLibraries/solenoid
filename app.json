@@ -3,7 +3,7 @@
   "scripts": {
     "postdeploy": "python manage.py syncdb --noinput"
   },
-  "env":
+  "env": {
     "DJANGO_DEBUG": "True"
   },
   "formation": {
