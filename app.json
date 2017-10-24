@@ -1,12 +1,17 @@
 {
   "name": "solenoid",
   "scripts": {
-    "postdeploy": "python manage.py syncdb --noinput"
+    "postdeploy": "python manage.py migrate"
   },
   "env": {
-    "DJANGO_DEBUG": "True"
-  },
-  "formation": {
+    "DJANGO_DEBUG": "True",
+    "DJANGO_SETTINGS_MODULE": "solenoid.settings.heroku",
+    "HEROKU_APP_NAME": {
+      "required": true
+    },
+    "DJANGO_SECRET_KEY": {
+      "required": true
+    }
   },
   "addons": [
     "heroku-postgresql"

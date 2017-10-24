@@ -63,7 +63,7 @@ MIDDLEWARE_CLASSES = (
 # By setting this an an environment variable, it is easy to switch debug on in
 # servers to do a quick test.
 # DEBUG SHOULD BE FALSE ON PRODUCTION for security reasons.
-PROTO_DEBUG = os.environ.get('DJANGO_DEBUG', True)
+PROTO_DEBUG = os.environ.get('DJANGO_DEBUG')
 
 if PROTO_DEBUG == 'True' or PROTO_DEBUG is True:
     DEBUG = True
