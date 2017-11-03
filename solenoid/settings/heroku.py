@@ -39,6 +39,9 @@ MIDDLEWARE_CLASSES += (
     'whitenoise.middleware.WhiteNoiseMiddleware',
 )
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+
 # LOGGING CONFIGURATION
 # -----------------------------------------------------------------------------
 
