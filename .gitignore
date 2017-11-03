@@ -1,6 +1,8 @@
 todo.md
 solenoid/records/tests/csv/original.csv
-staticfiles/
+staticfiles/*
+!staticfiles/.gitkeep
+!staticfiles/CACHE/.gitkeep
 wireframes/
 node_modules
 build/*.js
