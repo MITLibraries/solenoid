@@ -169,13 +169,6 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.')  # noqa
 
-    def test_records_without_citation_rejected(self):
-        orig_count = Record.objects.count()
-
-        self._post_csv('missing_citation.csv')
-
-        self.assertEqual(orig_count, Record.objects.count())
-
     def test_doi_set_when_present(self):
         self._post_csv('single_good_record.csv')
 
@@ -508,8 +501,6 @@ class RecordModelTest(TestCase):
             Headers.DLC: "President's Office",
             Headers.PAPER_ID: '895327',
             Headers.MESSAGE: '',
-            Headers.SOURCE: 'A source',
-            Headers.RECORD_ID: '98573',
         }
 
         # MIT physics professor Frank Wilczek coauthored this paper, for which
@@ -704,8 +695,6 @@ class RecordModelTest(TestCase):
             Headers.CITATION: 'citation',
             Headers.DOI: 'doi',
             Headers.PAPER_ID: 'paper_id',
-            Headers.SOURCE: 'Manual',
-            Headers.RECORD_ID: '841-1758293x-15',
         }
 
         record, created = Record.get_or_create_from_csv(author, row)
@@ -715,8 +704,6 @@ class RecordModelTest(TestCase):
         assert record.citation == 'citation'
         assert record.doi == 'doi'
         assert record.paper_id == 'paper_id'
-        assert record.source == 'Manual'
-        assert record.elements_id == '841-1758293x-15'
 
     def test_get_duplicates_1(self):
         """There are no duplicates: this should return None."""
@@ -727,8 +714,6 @@ class RecordModelTest(TestCase):
             Headers.CITATION: 'citation',
             Headers.DOI: 'doi',
             Headers.PAPER_ID: 'paper_id',
-            Headers.SOURCE: 'Manual',
-            Headers.RECORD_ID: '841-1758293x-15',
         }
         author = Author.objects.get(pk=1)
 
@@ -744,8 +729,6 @@ class RecordModelTest(TestCase):
             Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
             Headers.DOI: '10.1412/4678156',
             Headers.PAPER_ID: 'paper_id',
-            Headers.SOURCE: 'Manual',
-            Headers.RECORD_ID: '841-1758293x-15',
             Headers.FIRST_NAME: 'Different',
             Headers.LAST_NAME: 'Author',
             Headers.MIT_ID: 214614,
@@ -779,8 +762,6 @@ class RecordModelTest(TestCase):
             Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
             Headers.DOI: '10.1240.2/4914241',
             Headers.PAPER_ID: '24618',
-            Headers.SOURCE: 'Manual',
-            Headers.RECORD_ID: '841-1758293x-15',
             Headers.FIRST_NAME: 'Susumu',
             Headers.LAST_NAME: 'Tonegawa',
             Headers.MIT_ID: '2',

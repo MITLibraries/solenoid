@@ -10,8 +10,6 @@ class Headers(object):
     DLC = 'DLC'
     PAPER_ID = 'PaperID'
     MESSAGE = 'c-publisher-related-email-message'
-    SOURCE = 'Data Source (Publication)'
-    RECORD_ID = 'Data Source Proprietary ID (Publication)'
     # Note - this seems to be a string like '20050601' and not an actual year,
     # column title notwithstanding.
     PUBDATE = 'Year Published'
@@ -22,7 +20,7 @@ class Headers(object):
 
     EXPECTED_HEADERS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
                         PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE,
-                        SOURCE, RECORD_ID, TITLE, JOURNAL, VOLUME, ISSUE]
+                        TITLE, JOURNAL, VOLUME, ISSUE]
 
     # This is information we can get from the database if it happens to be
     # missing from a row in an Elements CSV file, if we already know about

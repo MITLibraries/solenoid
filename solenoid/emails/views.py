@@ -107,17 +107,14 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         # If it doesn't exist, users will see a 500, which is also reasonable.
         email = EmailMessage.objects.get(pk=self.kwargs['pk'])
         email.send(self.request.user.username)
-        citation_ids = [str(record.id) for record in email.record_set.all()]
         messages.success(self.request, "Email message updated and sent. "
-            "Please update all citations in Elements with library status = "
-            "requested. The email was generated for the following articles "
-            "with the following ID(s): <b>{ids}</b>. If you added or "
-            "subtracted any citations, please handle them accordingly.".format(
-                ids=', '.join(citation_ids)))
+            "Articles in Elements will be updated within an hour to reflect "
+            "their new library status.")
         return self._finish_handle()
 
     def _update_session(self):
-        if 'email_pks' not in self.request.session:
+        if ('email_pks' not in self.request.session or
+                not len(self.request.session['email_pks'])):
             return None
 
         try:

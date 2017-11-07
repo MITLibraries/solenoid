@@ -30,6 +30,7 @@ if APP_NAME:
     url = '{}.herokuapp.com'.format(APP_NAME)
     ALLOWED_HOSTS.append(url)
 
+
 # STATIC FILE CONFIGURATION
 # -----------------------------------------------------------------------------
 
@@ -41,6 +42,7 @@ MIDDLEWARE_CLASSES += (
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
+
 
 # LOGGING CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -76,6 +78,7 @@ LOGGING = {
 # Will be emailed by the management command about API usage.
 ADMINS = [('Andromeda Yelton', 'm31@mit.edu')]
 
+
 # OAUTH CONFIGURATION
 # -----------------------------------------------------------------------------
 
@@ -87,3 +90,12 @@ if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'False':
     LOGIN_REQUIRED = False
 else:
     LOGIN_REQUIRED = True
+
+
+# QUOTAGUARD CONFIGURATION
+# -----------------------------------------------------------------------------
+
+# The quotaguard docs say there will be a QUOTAGUARD_URL env variable
+# provisioned, but in the wild the observed name of this variable is
+# QUOTAGUARDSTATIC_URL.
+QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)

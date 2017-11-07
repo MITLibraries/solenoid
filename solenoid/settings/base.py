@@ -33,6 +33,7 @@ DJANGO_APPS = (
 )
 
 SOLENOID_APPS = (
+    'solenoid.elements',
     'solenoid.emails',
     'solenoid.people',
     'solenoid.records',
@@ -337,8 +338,10 @@ ELEMENTS_PASSWORD = os.environ.get('DJANGO_ELEMENTS_PASSWORD')
 # Set this to False if you don't want to issue API calls (e.g. during testing,
 # on localhost, on environments that don't know the password or don't have IPs
 # known to the Elements firewall).
-USE_ELEMENTS = False
+# It will be true -if the environment variable is set to anything at all-.
+USE_ELEMENTS = bool(os.environ.get('DJANGO_USE_ELEMENTS', False))
 
+QUOTAGUARD_URL = None
 
 # DJANGO-COMPRESSOR CONFIGURATION
 # -----------------------------------------------------------------------------

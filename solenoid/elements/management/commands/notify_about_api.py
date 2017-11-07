@@ -26,8 +26,7 @@ class Command(BaseCommand):
             "Total API calls: {count}\n"
             "Failed API calls: {fail}\n"
             "Retried API calls: {retry}\n"
-            "Probable timeouts: {timeout}\n"
-        )
+            "Probable timeouts: {timeout}\n")
 
         if call_count:
             call_count_fail = calls.filter(

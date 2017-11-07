@@ -107,7 +107,7 @@ class Author(models.Model):
     # there.
     dlc = models.ForeignKey(DLC)
     email = models.EmailField(help_text="Author email address")
-    first_name = models.CharField(max_length=20)
+    first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=40)
     _mit_id_hash = models.CharField(max_length=32, help_text="This stores the "
         "*hash* of the MIT ID, not the MIT ID itself. We want to have a "

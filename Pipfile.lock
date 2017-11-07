@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "502f7cb964987797f9bb991df8b26d4ff63e3b4476707637e625d770da759cde"
+            "sha256": "041ba0bbfb85c4b34df0df4f4681e89fa5f9890f24befec5045063d78387bb57"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -29,34 +29,6 @@
         ]
     },
     "default": {
-        "dj-database-url": {
-            "hashes": [
-                "sha256:7f4c78d2a090df8dfaf56d5d3ff7bbee17360436e4879558317e2314424864cd"
-            ],
-            "version": "==0.4.1"
-        },
-        "gunicorn": {
-            "hashes": [
-                "sha256:723234ea1fa8dff370ab69830ba8bc37469a7cba13fd66055faeef24085e6530",
-                "sha256:813f6916d18a4c8e90efde72f419308b357692f81333cb1125f80013d22fb618"
-            ],
-            "version": "==19.6.0"
-        },
-        "newrelic": {
-            "hashes": [
-                "sha256:965214625392d41b9620c6928a6b10036bf1e2a2b797cdb6682650e95e1f616e"
-            ],
-            "version": "==2.98.0.81"
-        },
-        "whitenoise": {
-            "hashes": [
-                "sha256:15f43b2e701821b95c9016cf469d29e2a546cb1c7dead584ba82c36f843995cf",
-                "sha256:9d81515f2b5b27051910996e1e860b1332e354d9e7bcf30c98f21dcb6713e0dd"
-            ],
-            "version": "==3.3.1"
-        }
-    },
-    "develop": {
         "beautifulsoup4": {
             "hashes": [
                 "sha256:7015e76bf32f1f574636c4288399a6de66ce08fb7b2457f628a8d70c0fbabb11",
@@ -148,6 +120,12 @@
             ],
             "version": "==0.5.0"
         },
+        "dj-database-url": {
+            "hashes": [
+                "sha256:7f4c78d2a090df8dfaf56d5d3ff7bbee17360436e4879558317e2314424864cd"
+            ],
+            "version": "==0.4.1"
+        },
         "django": {
             "hashes": [
                 "sha256:d8e2fd119756ab10b43a31052c3c8efbc262064b81eecb7871372de4d37b1a94",
@@ -201,6 +179,13 @@
             ],
             "version": "==0.7"
         },
+        "gunicorn": {
+            "hashes": [
+                "sha256:723234ea1fa8dff370ab69830ba8bc37469a7cba13fd66055faeef24085e6530",
+                "sha256:813f6916d18a4c8e90efde72f419308b357692f81333cb1125f80013d22fb618"
+            ],
+            "version": "==19.6.0"
+        },
         "libsass": {
             "hashes": [
                 "sha256:ff07c2c55f9d73d9f57cded30138ff99dfbb9fe7fbc71a4bbb43aa067ad2beed",
@@ -223,6 +208,12 @@
                 "sha256:236762af9c693bb72ed92d65ff4a5a77d27af9494b6174fbec7e6308416673b0"
             ],
             "version": "==0.12.3"
+        },
+        "newrelic": {
+            "hashes": [
+                "sha256:965214625392d41b9620c6928a6b10036bf1e2a2b797cdb6682650e95e1f616e"
+            ],
+            "version": "==2.98.0.81"
         },
         "oauthlib": {
             "hashes": [
@@ -375,6 +366,14 @@
                 "sha256:becd7cc7cebbdf311de8ceedfcf2bd2403297024418801947f8c953025beeff8"
             ],
             "version": "==0.2.3"
+        },
+        "whitenoise": {
+            "hashes": [
+                "sha256:15f43b2e701821b95c9016cf469d29e2a546cb1c7dead584ba82c36f843995cf",
+                "sha256:9d81515f2b5b27051910996e1e860b1332e354d9e7bcf30c98f21dcb6713e0dd"
+            ],
+            "version": "==3.3.1"
         }
-    }
+    },
+    "develop": {}
 }

@@ -43,7 +43,8 @@ class RetryListFilter(admin.SimpleListFilter):
 
 class ElementsAPICallAdmin(admin.ModelAdmin):
     list_filter = (ReturnedListFilter, RetryListFilter, 'response_status')
-    list_display = ('response_status', 'retry_of', 'timestamp')
+    list_display = ('pk', 'request_url', 'response_status', 'retry_of',
+                    'timestamp')
 
 
 admin.site.register(ElementsAPICall, ElementsAPICallAdmin)

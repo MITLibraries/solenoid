@@ -6,7 +6,7 @@ name = "pypi"
 [requires]
 python_version = "3.6"
 
-[dev-packages]
+[packages]
 
 "beautifulsoup4" = "==4.6.0"
 "bs4" = "==0.0.1"
@@ -39,7 +39,7 @@ rjsmin = "==1.0.12"
 "social-auth-core" = "==1.2.0"
 sqlparse = "==0.2.3"
 
-[packages]
+# Only needed on Heroku
 dj-database-url = "==0.4.1"
 gunicorn = "==19.6.0"
 newrelic = "*"

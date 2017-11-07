@@ -1,18 +1,18 @@
-from datetime import date
 import logging
 import requests
 import time
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
-HEADERS = {'Content-Type': 'application/xml'}
-# PROXIES = {
-#    'http': settings.QUOTAGUARD_URL,
-#    'https': settings.QUOTAGUARD_URL,
-# }
+HEADERS = {'Content-Type': 'text/xml'}
+PROXIES = {
+    'http': settings.QUOTAGUARD_URL,
+    'https': settings.QUOTAGUARD_URL,
+}
 
 
 class ElementsAPICall(models.Model):
@@ -42,33 +42,28 @@ class ElementsAPICall(models.Model):
     STATUS_RETRY = [409, 500, 504]
 
     def __str__(self):
-        return "API call #{self.pk} ({self.timestamp})"
+        return "API call #{self.pk} ({self.timestamp})".format(self=self)
 
     @classmethod
-    def make_xml(cls, username, author_name):
+    def make_xml(cls, username):
         logger.info('Making XML')
 
-        top = Element('update-record')
+        top = Element('update-object')
         top.set('xmlns', 'http://www.symplectic.co.uk/publications/api')
-        fields = SubElement(top, 'fields')
+        oa_field = SubElement(top, 'oa')
 
-        # Update c-requested field
-        container_field = SubElement(fields, 'field')
-        container_field.set('name', 'c-requested')
-        container_field.set('operation', 'set')
-        bool_field = SubElement(container_field, 'boolean')
-        bool_field.text = 'true'
-
-        # Update c-reqnote field
-        container_field = SubElement(fields, 'field')
-        container_field.set('name', 'c-reqnote')
-        container_field.set('operation', 'set')
-        text_field = SubElement(container_field, 'text')
-        text_field.text = '{username}-{author_name} {today}'.format(
-            username=username,
-            author_name=author_name,
-            today=date.today().strftime('%-d %B %Y')
-            )
+        # Update library status field
+        status_field = SubElement(oa_field, 'library-status')
+        status_field.set('status', 'full-text-requested')
+        date_field = SubElement(status_field, 'last-requested-when')
+        date_field.text = timezone.now().isoformat()
+        note_field = SubElement(status_field, 'note-field')
+        note_field.set('clear-existing-note', 'true')
+        note = SubElement(note_field, 'note')
+        note.text = "Library status changed to Full text requested on " \
+            "{date} by {username}.".format(
+                date=timezone.now().strftime('%-d %B %Y'),
+                username=username)
 
         return top
 
@@ -98,11 +93,15 @@ class ElementsAPICall(models.Model):
 
         logger.info('Issuing ElementsAPICall #{pk}'.format(pk=self.pk))
 
+        if not settings.QUOTAGUARD_URL:
+            logger.warning('No URL; not issuing call.')
+            return
+
         # Send request
         response = requests.patch(self.request_url,
-            data=tostring(self.request_data).decode('utf-8'),
+            data=self.request_data,
             headers=HEADERS,
-            #proxies=PROXIES,
+            proxies=PROXIES,
             # Passing in an auth parameter makes requests handle HTTP Basic
             # Auth transparently.
             auth=(settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD))

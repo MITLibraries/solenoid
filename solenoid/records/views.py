@@ -45,15 +45,6 @@ class Import(LoginRequiredMixin, FormView):
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')
 
-    def post(self, request, *args, **kwargs):
-        try:
-            return super(Import, self).post(request, *args, **kwargs)
-        except:
-            # If the import fails (e.g. due to a timeout error), we could have
-            # opened connections that don't end up closed.
-            db.connection.close()
-            db.close_old_connections()
-
     def _add_messages(self, successes, updates, unchanged):
         if successes:
             if successes == 1:
