@@ -120,9 +120,11 @@ class Import(LoginRequiredMixin, FormView):
             if not Record.is_row_valid(row):
                 logger.warning('Invalid record row')
                 messages.warning(self.request, 'Publication #{id} by {author} '
-                    'is missing required data, so this citation will not be '
-                    'imported.'.format(id=row[Headers.PAPER_ID],
-                                       author=row[Headers.LAST_NAME]))
+                    'is missing required data (one or more of {info}), so '
+                    'this citation will not be imported.'.format(
+                        id=row[Headers.PAPER_ID],
+                        author=row[Headers.LAST_NAME],
+                        info=', '.join(Headers.REQUIRED_DATA)))
                 continue
 
             if not Record.is_acq_method_known(row):

@@ -149,19 +149,19 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
-    def test_records_without_acq_method_rejected(self):
-        orig_count = Record.objects.count()
-
-        self._post_csv('missing_acq_method.csv')
-
-        self.assertEqual(orig_count, Record.objects.count())
-
     def test_records_with_unknown_acq_method_rejected(self):
         orig_count = Record.objects.count()
 
         self._post_csv('bad_acq_method.csv')
 
         self.assertEqual(orig_count, Record.objects.count())
+
+    def test_records_with_new_acq_methods_accepted(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('new_acq_methods2.csv')
+
+        self.assertEqual(orig_count + 2, Record.objects.count())
 
     def test_citation_set_when_present(self):
         self._post_csv('single_good_record.csv')
@@ -551,7 +551,14 @@ class RecordModelTest(TestCase):
         # Data includes the basics? Good!
         data = {
             Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'random',
+            Headers.ACQ_METHOD: Record.ACQ_MANUSCRIPT,
+            Headers.CITATION: 'nonempty'
+        }
+        assert Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            Headers.ACQ_METHOD: '',
             Headers.CITATION: 'nonempty'
         }
         assert Record.is_record_creatable(data)
@@ -564,18 +571,17 @@ class RecordModelTest(TestCase):
         assert not Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: '',
-            Headers.CITATION: 'nonempty'
-        }
-        assert not Record.is_record_creatable(data)
-
-        data = {
             Headers.PUBLISHER_NAME: '',
             Headers.ACQ_METHOD: 'random',
             Headers.CITATION: 'nonempty'
         }
         assert not Record.is_record_creatable(data)
+
+        data = {
+            Headers.PUBLISHER_NAME: 'foo',
+            # No acq method column at all
+            Headers.CITATION: 'nonempty'
+        }
 
         # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
         data = {

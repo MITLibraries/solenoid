@@ -42,16 +42,24 @@ class Record(models.Model):
 
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
     ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV"
+    ACQ_BLANK = ""
+    ACQ_INDIV = "INDIVIDUAL_DOWNLOAD"
+
     ACQ_METHODS = (
         (ACQ_MANUSCRIPT, ACQ_MANUSCRIPT),
         (ACQ_FPV, ACQ_FPV),
+        (ACQ_BLANK, ACQ_BLANK),
+        (ACQ_INDIV, ACQ_INDIV),
     )
+
     ACQ_METHODS_LIST = [tuple[0] for tuple in ACQ_METHODS]
 
     author = models.ForeignKey(Author)
     email = models.ForeignKey(EmailMessage, blank=True, null=True)
     publisher_name = models.CharField(max_length=75)
-    acq_method = models.CharField(choices=ACQ_METHODS, max_length=32)
+    acq_method = models.CharField(choices=ACQ_METHODS,
+                                  max_length=32,
+                                  blank=True)
     citation = models.TextField()
     doi = models.CharField(max_length=45, blank=True)
     paper_id = models.CharField(max_length=10)
@@ -197,8 +205,8 @@ class Record(models.Model):
         confirming that the foreign-keyed Author exists or can be created.
         """
         try:
-            desiderata = [Headers.PUBLISHER_NAME, Headers.ACQ_METHOD]
-            assert all([bool(row[x]) for x in desiderata])
+            assert bool(row[Headers.PUBLISHER_NAME])
+            assert Record.is_acq_method_known(row)
 
             if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
                 assert bool(row[Headers.DOI])
@@ -207,7 +215,7 @@ class Record(models.Model):
                 assert all([bool(row[x]) for x in Headers.CITATION_DATA])
 
             return True
-        except AssertionError:
+        except (AssertionError, KeyError):
             return False
 
     @staticmethod
