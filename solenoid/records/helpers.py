@@ -45,4 +45,6 @@ class Headers(object):
     #   citation. The Record model will check for this.
     REQUIRED_DATA = list(set(EXPECTED_HEADERS) -
                          set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION} -
-                         {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE})
+                         {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE} -
+                         # Acq method is allowed to be blank.
+                         {ACQ_METHOD})

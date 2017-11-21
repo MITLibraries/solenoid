@@ -43,11 +43,15 @@ class Record(models.Model):
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
     ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV"
     ACQ_BLANK = ""
+    ACQ_INDIV = "INDIVIDUAL_DOWNLOAD"
+
     ACQ_METHODS = (
         (ACQ_MANUSCRIPT, ACQ_MANUSCRIPT),
         (ACQ_FPV, ACQ_FPV),
         (ACQ_BLANK, ACQ_BLANK),
+        (ACQ_INDIV, ACQ_INDIV),
     )
+
     ACQ_METHODS_LIST = [tuple[0] for tuple in ACQ_METHODS]
 
     author = models.ForeignKey(Author)
