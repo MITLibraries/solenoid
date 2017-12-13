@@ -117,7 +117,7 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         return self._finish_handle()
 
     def _update_session(self):
-        if not len(self.request.session['email_pks']):
+        if 'email_pks' not in self.request.session:
             return None
 
         try:
