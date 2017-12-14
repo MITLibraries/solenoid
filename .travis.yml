@@ -2,9 +2,13 @@ language: python
 python:
   - "3.6"
 install:
-  - "pip install -r requirements.txt"
+  - "pip install pipenv"
   - "pip install coveralls"
+  - "pipenv install"
+  - "pipenv check"
 script:
-  coverage run --source=solenoid manage.py test
+  coverage run manage.py test
 after_success:
   coveralls
+services:
+  - postgresql

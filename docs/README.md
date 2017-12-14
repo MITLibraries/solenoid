@@ -3,12 +3,10 @@
 ## Development
 * Consult DLAD development guidelines at http://mitlibraries.github.io/ .
 * The github repo is https://github.com/MITLibraries/solenoid .
-* Set up a virtualenv for your project
-* `pip install -r requirements/base.txt`
-  * The requirements.txt file is there only for Heroku and installs `requirements/heroku.txt`
-  * `requirements/base.txt` should contain dependencies that are required for all environemtns
-  * `requirements/heroku.txt` is for things required only on Heroku
-  * At minimum, the `certifi` dependency should be regularly updated.
+* Make sure you have pipenv installed
+* `pipenv install`
+  * You only really need to install dev-packages.
+  * The `certifi` dependency should be regularly updated (and will be auto-updated whenever you `pipenv install`).
 * `python manage.py test` to run the tests
   * If you `pip install coverage`, you can `coverage run manage.py test` to get a coverage report along with running your test
   * There is a `.coveragerc` file which provides sensible defaults
