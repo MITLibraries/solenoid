@@ -1,0 +1,46 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[requires]
+python_version = "3.6"
+
+[dev-packages]
+
+"beautifulsoup4" = "==4.6.0"
+"bs4" = "==0.0.1"
+certifi = "*"
+chardet = "==3.0.2"
+cookies = "==2.2.1"
+coverage = "==4.4.1"
+defusedxml = "==0.5.0"
+Django = "==1.8.18"
+"django-appconf" = "==1.0.2"
+"django-ckeditor" = "==5.2.2"
+"django_compressor" = "==2.1.1"
+"django-compressor-autoprefixer" = "==0.1.0"
+"django-crispy-forms" = "==1.6.1"
+"django-debug-toolbar" = "==1.8"
+"django-libsass" = "==0.7"
+libsass = "==0.12.3"
+oauthlib = "==2.0.2"
+"psycopg2" = "*"
+PyJWT = "*"
+"python3-openid" = "==3.1.0"
+pytz = "==2017.2"
+PyYAML = "==3.12"
+rcssmin = "==1.0.6"
+requests = "==2.13.0"
+"requests-oauthlib" = "==0.8.0"
+responses = "==0.5.1"
+rjsmin = "==1.0.12"
+"social-auth-app-django" = "==1.1.0"
+"social-auth-core" = "==1.2.0"
+sqlparse = "==0.2.3"
+
+[packages]
+dj-database-url = "==0.4.1"
+gunicorn = "==19.6.0"
+newrelic = "*"
+whitenoise = "==3.3.1"
