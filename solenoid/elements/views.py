@@ -20,26 +20,33 @@
 # Make sure to validate for the record ID when you ingest CSV.
 
 import logging
-import requests
 from urllib.parse import urljoin
+from xml.etree.ElementTree import tostring
+
+import requests
 
 from django import db
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.http import urlquote
+from django.dispatch import receiver
+
+from solenoid.emails.signals import email_sent
 
 from .models import ElementsAPICall
+
 
 logger = logging.getLogger(__name__)
 
 
-def _issue_elements_api_call(call):
+# Honestly this belongs in the management command issue_unsent_calls, but it
+# started its life here and it's way easier to test here.
+def issue_elements_api_call(call):
     """Sends a patch request to Elements about a Record. Takes a call argument,
     which is an ElementsAPICall prepared with request data. Updates it with
     response data. Does not return anything.
     """
 
-    logger.info('Entering _issue_elements_api_call for call #{pk}'.format(
+    logger.info('Entering issue_elements_api_call for call #{pk}'.format(
         pk=call.pk))
 
     try:
@@ -61,13 +68,13 @@ def _issue_elements_api_call(call):
         call.retry()
 
 
+@receiver(email_sent)
 def wrap_elements_api_call(sender, **kwargs):
-    """Notifies Elements when a record has been requested. Returns True on
-    success, False otherwise.
+    """Creates an Elements API call object when an email has been sent.
 
-    Note that this wants to be a *signal receiver* and not anything that could
-    conceivably block a view, since the latency on the response may be high
-    (it may even time out)."""
+    Unsent or retryable ElementsAPICalls should be sent via management
+    command. They are not sent as part of this function because they block the
+    request/response loop, which causes Heroku to time out and crash."""
     logger.info('email_sent signal received')
     db.close_old_connections()
 
@@ -89,23 +96,18 @@ def wrap_elements_api_call(sender, **kwargs):
     instance = kwargs['instance']
 
     # Construct XML. (This is the same for all records in the email.)
-    xml = ElementsAPICall.make_xml(
-        username=kwargs['username'],
-        author_name=instance.record_set.first().author.last_name)
+    xml = ElementsAPICall.make_xml(username=kwargs['username'])
 
     for record in instance.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
-                      'publication/records/{source}/{id}'.format(
-                          source=urlquote(record.source),
-                          id=record.elements_id))
+                      'publications/{id}'.format(
+                          id=record.paper_id))
 
         logger.info('Constructing ElementsAPICall for record #{pk}'.format(
             pk=record.pk))
 
         # Construct call
-        call = ElementsAPICall.objects.create(
-            request_data=xml,
+        ElementsAPICall.objects.create(
+            request_data=tostring(xml).decode('utf-8'),
             request_url=url
         )
-
-        _issue_elements_api_call(call)

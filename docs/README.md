@@ -103,10 +103,6 @@ Defaults are fine for everything else.
 
 ## Integrating with Sympletic Elements
 
-> __This section is deprecated__ as we are not currently integrating with
-> Elements. However, it is retained to make life easier should we end up
-> integrating with Elements again in future.
-
 Solenoid issues calls to the Sympletic Elements API when it sends emails in order to mark items as requested. This requires some configuration on both the Elements system administration end and the solenoid end.
 
 Sympletic Elements API documentation is visible to authorized users only.
@@ -128,6 +124,7 @@ Also provision the following:
   * If you want to get emails with API monitoring information:
     * `heroku addons:create scheduler:standard`
     * `heroku addons:open scheduler`
+    * Add `python manage.py issue_unsent_calls` at your desired frequency
     * Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
   * See below for more on Elements; you'll need to have configured it on the Symplectic side.
 
@@ -145,6 +142,16 @@ Following https://support.symplectic.co.uk/support/solutions/articles/6000049962
   * 'solenoid' is the default username for the solenoid app, so you should probably use that unless you have a good reason not to
   * Make sure 'can modify data' is checked
   * The account does not need the other rights, so leave those unchecked
+
+#### Sympletic API versions (important troubleshooting info)
+
+Solenoid requires API version >= 5.8 to function. (The library status field wasn't exposed until 5.8, per the release notes at https://support.symplectic.co.uk/support/solutions/articles/6000183912.)
+
+However, this is listed in the API Endpoint dropdown as 5.5. Per discussions with Sympletic support, the 5.8 behavior has been added to the 5.5 release. So you should configure as if using 5.5, even though solenoid relies on 5.8.
+
+__If you find that the API integration is behaving unexpectedly__, first check to see that the version exposed by the endpoint is the version you expect, keeping in mind that the version number of the endpoint need not correspond to the version number actually in use. You may have to contact customer service to verify.
+
+__If you get 502 (Bad Gateway) errors__, check with Symplectic customer service to be sure your IPs are whitelisted in their firewall.
 
 ### In solenoid
 

@@ -14,7 +14,11 @@ from .models import EmailMessage
 from .views import _get_or_create_emails, EmailSend
 
 
-@override_settings(LOGIN_REQUIRED=False)
+@override_settings(LOGIN_REQUIRED=False,
+                   USE_ELEMENTS=False,
+                   # We need to set this or there won't be email recipients in
+                   # EMAIL_TESTING_MODE, so emails won't send.
+                   ADMINS=[('Admin', 'admin@fake.com')])
 class EmailCreatorTestCase(TestCase):
     fixtures = ['testdata.yaml']
 
@@ -65,7 +69,11 @@ class EmailCreatorTestCase(TestCase):
         self.assertEqual(len(email_pks), 3)
 
 
-@override_settings(LOGIN_REQUIRED=False)
+@override_settings(LOGIN_REQUIRED=False,
+                   USE_ELEMENTS=False,
+                   # We need to set this or there won't be email recipients in
+                   # EMAIL_TESTING_MODE, so emails won't send.
+                   ADMINS=[('Admin', 'admin@fake.com')])
 class EmailEvaluateTestCase(TestCase):
     fixtures = ['testdata.yaml']
 
@@ -298,7 +306,11 @@ class EmailEvaluateTestCase(TestCase):
                     for msg in response.context['messages']])
 
 
-@override_settings(LOGIN_REQUIRED=False)
+@override_settings(LOGIN_REQUIRED=False,
+                   USE_ELEMENTS=False,
+                   # We need to set this or there won't be email recipients in
+                   # EMAIL_TESTING_MODE, so emails won't send.
+                   ADMINS=[('Admin', 'admin@fake.com')])
 class EmailMessageModelTestCase(TestCase):
     fixtures = ['testdata.yaml']
 
@@ -590,8 +602,7 @@ class EmailMessageModelTestCase(TestCase):
         # its email yet.
         r = Record(author=author, publisher_name='yo',
                    acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation='boo', paper_id='3567',
-                   source='Manual', elements_id='9832')
+                   citation='boo', paper_id='3567')
         r.save()
 
         records = Record.objects.filter(
@@ -612,8 +623,7 @@ class EmailMessageModelTestCase(TestCase):
         # its email yet.
         r = Record(author=author, publisher_name='yo',
                    acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation='boo', paper_id='3567',
-                   source='Manual', elements_id='9832')
+                   citation='boo', paper_id='3567')
         r.save()
 
         records = Record.objects.filter(
@@ -639,8 +649,7 @@ class EmailMessageModelTestCase(TestCase):
 
         r = Record(email=email, author=email.author, publisher_name='yo',
                    acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation=new_citation, paper_id='3567',
-                   source='Manual', elements_id='9832')
+                   citation=new_citation, paper_id='3567')
         r.save()
         email.rebuild_citations()
         email.refresh_from_db()
@@ -652,7 +661,7 @@ class EmailMessageModelTestCase(TestCase):
 
         r = Record(email=email, author=email.author, publisher_name='yo',
                    acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
-                   paper_id='3567', source='Manual', elements_id='9832')
+                   paper_id='3567')
         r.save()
         email.rebuild_citations()
         email.refresh_from_db()
@@ -666,7 +675,7 @@ class EmailMessageModelTestCase(TestCase):
 
         r = Record(email=email, author=email.author, publisher_name='yo',
                    acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
-                   paper_id='3567', source='Manual', elements_id='9832')
+                   paper_id='3567')
         r.save()
 
         records = Record.objects.filter(email=email)
@@ -684,11 +693,11 @@ class EmailMessageModelTestCase(TestCase):
         mock_rebuild.assert_not_called()
 
 
-# Make sure there's at least one admin, or email won't send because there's
-# nobody to send it to in EMAIL_TESTING_MODE.
 @override_settings(LOGIN_REQUIRED=False,
-                   ADMINS=(('fake admin', 'fake@example.com'),),
-                   EMAIL_TESTING_MODE=False)
+                   USE_ELEMENTS=False,
+                   # We need to set this or there won't be email recipients in
+                   # EMAIL_TESTING_MODE, so emails won't send.
+                   ADMINS=[('Admin', 'admin@fake.com')])
 class EmailSendTestCase(TestCase):
     fixtures = ['testdata.yaml']
 
@@ -731,7 +740,8 @@ class EmailSendTestCase(TestCase):
 
         self.assertEqual(email._liaison, liaison)
 
-    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
+    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com',
+                       EMAIL_TESTING_MODE=False)
     def test_email_is_sent_to_liaison(self):
         email = EmailMessage.objects.get(pk=1)
         email.send('username')
@@ -739,7 +749,8 @@ class EmailSendTestCase(TestCase):
         self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
             mail.outbox[0].to)
 
-    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com')
+    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com',
+                       EMAIL_TESTING_MODE=False)
     def test_email_is_sent_to_scholcomm_moira_list(self):
         email = EmailMessage.objects.get(pk=1)
         email.send('username')

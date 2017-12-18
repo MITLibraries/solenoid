@@ -62,10 +62,14 @@ class Record(models.Model):
                                   blank=True)
     citation = models.TextField()
     doi = models.CharField(max_length=45, blank=True)
+    # This is the unique ID within Elements, which is NOT the same as the
+    # proprietary data source ID - those are unique IDs within Scopus, Web of
+    # Science, etc. We may have multiple records with the same paper ID
+    # because there will be one record per author (hence the unique_together
+    # constraint). The unique ID on pubdata-dev does not match that on the
+    # production server.
     paper_id = models.CharField(max_length=10)
     message = models.ForeignKey(Message, blank=True, null=True)
-    source = models.CharField(max_length=25)
-    elements_id = models.CharField(max_length=50)
 
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
@@ -172,9 +176,7 @@ class Record(models.Model):
                 citation=citation,
                 doi=row[Headers.DOI],
                 paper_id=row[Headers.PAPER_ID],
-                message=msg,
-                source=row[Headers.SOURCE],
-                elements_id=row[Headers.RECORD_ID])
+                message=msg)
             logger.info('record created')
 
             return record, True
