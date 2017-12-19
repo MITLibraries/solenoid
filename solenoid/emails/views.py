@@ -106,7 +106,8 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
         # thrown an error and we won't reach this line.
         # If it doesn't exist, users will see a 500, which is also reasonable.
         email = EmailMessage.objects.get(pk=self.kwargs['pk'])
-        email.send(self.request.user.username)
+        # Don't use username as it's usually a cryptic string.
+        email.send(self.request.user.email)
         messages.success(self.request, "Email message updated and sent. "
             "Articles in Elements will be updated within an hour to reflect "
             "their new library status.")
