@@ -107,26 +107,13 @@ Solenoid issues calls to the Sympletic Elements API when it sends emails in orde
 
 Sympletic Elements API documentation is visible to authorized users only.
 
-### In Heroku
+### In Heroku (part 1)
 
-You'll need to set up a static IP. https://devcenter.heroku.com/articles/quotaguardstatic#using-with-python-django is free for up to 250 requests/month.
-
-Also provision the following:
+Provision the following:
 * Quotaguard Static
+  * Note your IP addresses.
 * Heroku Scheduler
   * Optional on staging
-
-* For Elements:
-  * `heroku config:set DJANGO_ELEMENTS_ENDPOINT=<your API endpoint>`
-  * `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
-  * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
-    * If you used 'solenoid' as your username you can skip this step.
-  * If you want to get emails with API monitoring information:
-    * `heroku addons:create scheduler:standard`
-    * `heroku addons:open scheduler`
-    * Add `python manage.py issue_unsent_calls` at your desired frequency
-    * Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
-  * See below for more on Elements; you'll need to have configured it on the Symplectic side.
 
 ### In Elements
 
@@ -136,14 +123,34 @@ Following https://support.symplectic.co.uk/support/solutions/articles/6000049962
   * _This should be https_ because we are sending password data
   * If it isn't marked as https, edit it to use https
   * Note its URL - you'll need this later.
-* Authorize the static IP of your server(s).
+* Authorize the static IP(s) of your server(s).
 * Create an API account
   * Store the username and password in the Shared DLAD keys Lastpass folder - you'll need them later
   * 'solenoid' is the default username for the solenoid app, so you should probably use that unless you have a good reason not to
   * Make sure 'can modify data' is checked
   * The account does not need the other rights, so leave those unchecked
 
-#### Sympletic API versions (important troubleshooting info)
+### In Heroku (part 2)
+
+Set the following environment variables:
+* `heroku config:set DJANGO_ELEMENTS_ENDPOINT=<your API endpoint>`
+  * If the endpoint is the dev instance https://pubdata-dev.mit.edu:8091/secure-api/v5.5/, you can skip this step.
+* `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
+* `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
+  * If you used 'solenoid' as your username you can skip this step.
+* `heroku config:set DJANGO_USE_ELEMENTS_USER=True`
+
+If you want to get emails with API monitoring information:
+* `heroku addons:create scheduler:standard`
+* `heroku addons:open scheduler`
+* Add `python manage.py issue_unsent_calls` at your desired frequency
+* Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
+
+### With Sympletic customer service
+
+Notwithstanding the fact that you are using basic auth and you have whitelisted your IP(s), have customer service make a hole in the server's firewall for your IP(s) - you'll need all 3 to authenticate.
+
+#### Sympletic API versions & other troubleshooting info
 
 Solenoid requires API version >= 5.8 to function. (The library status field wasn't exposed until 5.8, per the release notes at https://support.symplectic.co.uk/support/solutions/articles/6000183912.)
 
@@ -152,15 +159,3 @@ However, this is listed in the API Endpoint dropdown as 5.5. Per discussions wit
 __If you find that the API integration is behaving unexpectedly__, first check to see that the version exposed by the endpoint is the version you expect, keeping in mind that the version number of the endpoint need not correspond to the version number actually in use. You may have to contact customer service to verify.
 
 __If you get 502 (Bad Gateway) errors__, check with Symplectic customer service to be sure your IPs are whitelisted in their firewall.
-
-### In solenoid
-
-* Set an environment variable, `DJANGO_ELEMENTS_ENDPOINT`, matching the API URL you noted earlier.
-  * If the endpoint is the dev instance https://pubdata-dev.mit.edu:8091/secure-api/v5.5/, you can skip this step.
-* Set an environment variable, `DJANGO_ELEMENTS_PASSWORD`, with the API user password you noted earlier.
-* Set an environment variable `DJANGO_ELEMENTS_USER` with the username of your API user.
-  * If the username is 'solenoid', you can skip this step.
-
-### With Sympletic customer service
-
-Notwithstanding the fact that you are using basic auth and you have whitelisted your IP(s), have customer service make a hole in the server's firewall for your IP(s) - you'll need all 3 to authenticate.
