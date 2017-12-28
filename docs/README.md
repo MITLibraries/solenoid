@@ -135,6 +135,7 @@ Following https://support.symplectic.co.uk/support/solutions/articles/6000049962
 Set the following environment variables:
 * `heroku config:set DJANGO_ELEMENTS_ENDPOINT=<your API endpoint>`
   * If the endpoint is the dev instance https://pubdata-dev.mit.edu:8091/secure-api/v5.5/, you can skip this step.
+  * The trailing slash is important.
 * `heroku config:set DJANGO_ELEMENTS_PASSWORD=<your API user password>`
 * `heroku config:set DJANGO_ELEMENTS_USER=<your API user name>`
   * If you used 'solenoid' as your username you can skip this step.
@@ -159,3 +160,5 @@ However, this is listed in the API Endpoint dropdown as 5.5. Per discussions wit
 __If you find that the API integration is behaving unexpectedly__, first check to see that the version exposed by the endpoint is the version you expect, keeping in mind that the version number of the endpoint need not correspond to the version number actually in use. You may have to contact customer service to verify.
 
 __If you get 502 (Bad Gateway) errors__, check with Symplectic customer service to be sure your IPs are whitelisted in their firewall.
+
+__If every call times out__, check the URLs to which they are issued; if it's missing the last part of the endpoint, make sure your env variable includes the trailing slash.
