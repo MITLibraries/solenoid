@@ -212,11 +212,15 @@ class EmailEvaluateTestCase(TestCase):
         expected_url = reverse('home')
         self.assertRedirects(response, expected_url)
 
-    def test_email_evaluate_workflow_3(self):
+    @patch('django.contrib.auth.models.AnonymousUser')
+    def test_email_evaluate_workflow_3(self, mock_user):
         """
         Make sure that EmailEvaluate walks through the expected set of emails
         when users are hitting 'send & next'.
         """
+        # request.user.email needs to exist or this test will fail.
+        mock_user.email = 'fake@example.com'
+
         # Set up a path that should take us through the evaluate view 3 times.
         # Implicitly, we entered the email evaluation workflow with the pks =
         # [1, 2, 3], but 1 has already been popped by EmailCreate.
@@ -273,7 +277,11 @@ class EmailEvaluateTestCase(TestCase):
 
         self.assertEqual(email.new_citations, False)
 
-    def test_sending_unsets_new_citations_flag(self):
+    @patch('django.contrib.auth.models.AnonymousUser')
+    def test_sending_unsets_new_citations_flag(self, mock_user):
+        # request.user.email needs to exist or this test will fail.
+        mock_user.email = 'fake@example.com'
+
         email = EmailMessage.objects.get(pk=1)
         email.new_citations = True
         email.save()
