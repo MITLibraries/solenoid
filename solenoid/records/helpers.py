@@ -6,15 +6,15 @@ class Headers(object):
     MIT_ID = 'MIT ID'
     CITATION = 'Citation'
     PUBLISHER_NAME = 'Publisher-name'
-    ACQ_METHOD = 'Method-of-Acquisition-calculated'
+    ACQ_METHOD = 'C-Method-Of-Acquisition'
     DLC = 'DLC'
     PAPER_ID = 'PaperID'
-    MESSAGE = 'c-publisher-related-email-message'
+    MESSAGE = 'C-Publisher-Related-Email-Message'
     # Note - this seems to be a string like '20050601' and not an actual year,
     # column title notwithstanding.
     PUBDATE = 'Year Published'
     TITLE = 'Title1'
-    JOURNAL = 'Journal'
+    JOURNAL = 'Journal-name'
     VOLUME = 'Volume'
     ISSUE = 'Issue'
 
