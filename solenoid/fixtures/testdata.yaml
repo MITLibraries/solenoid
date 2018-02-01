@@ -181,7 +181,7 @@
     author: 3
     publisher_name: Scholastic
     acq_method: RECRUIT_FROM_AUTHOR_FPV
-    citation: For some reason this is garbage data and we shouldn't email about it.
+    citation: For some reason this is garbage data and we should not email about it.
     doi: 10.1820/417852
     paper_id: 36271
 

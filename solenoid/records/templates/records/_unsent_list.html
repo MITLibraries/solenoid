@@ -8,7 +8,7 @@
             <input class="input_author_{{ record.author.pk }} input_dlc_{{ record.author.dlc.pk }}" type="checkbox" name="records" value={{ record.pk }}> <strong>{{ record.author.dlc }} / {{ record.author.last_name}}</strong>
             <span>
               <br>
-              {{ record.citation }}
+              {{ record.citation | safe }}
             </span>
           </label>
         </div>
