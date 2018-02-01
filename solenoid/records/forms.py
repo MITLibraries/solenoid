@@ -79,6 +79,12 @@ def _validate_headers_existence(csv_utf_8):
 def _validate_headers_content(csv_utf_8):
     dialect = csv.Sniffer().sniff(csv_utf_8)
     headers = csv_utf_8.splitlines()[0].strip().split(dialect.delimiter)
+    print(headers)
+    for x in Headers.EXPECTED_HEADERS:
+        if x in headers:
+            print(x + 'is in the headers')
+        else:
+            print(x + 'is not in the headers NOPE NOPE NOPE')
     if not all([x in headers for x in Headers.EXPECTED_HEADERS]):
         logger.warning("CSV file is missing one or more required columns")
         raise ValidationError("The CSV file must contain all of the following "
