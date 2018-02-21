@@ -136,10 +136,17 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.publisher_name, 'Elsevier')
 
-    def test_records_without_publishers_rejected(self):
+    def test_records_without_publishers_accepted_if_not_fpv(self):
         orig_count = Record.objects.count()
 
-        self._post_csv('missing_publisher_name.csv')
+        self._post_csv('missing_publisher_name_non_fpv.csv')
+
+        self.assertEqual(orig_count + 1, Record.objects.count())
+
+    def test_records_without_publishers_rejected_if_fpv(self):
+        orig_count = Record.objects.count()
+
+        self._post_csv('missing_publisher_name_fpv.csv')
 
         self.assertEqual(orig_count, Record.objects.count())
 

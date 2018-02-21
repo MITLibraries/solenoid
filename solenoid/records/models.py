@@ -207,11 +207,11 @@ class Record(models.Model):
         confirming that the foreign-keyed Author exists or can be created.
         """
         try:
-            assert bool(row[Headers.PUBLISHER_NAME])
             assert Record.is_acq_method_known(row)
 
             if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
                 assert bool(row[Headers.DOI])
+                assert bool(row[Headers.PUBLISHER_NAME])
 
             if not row[Headers.CITATION]:
                 assert all([bool(row[x]) for x in Headers.CITATION_DATA])
