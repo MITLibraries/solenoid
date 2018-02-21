@@ -45,4 +45,8 @@ class Headers(object):
                          set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION} -
                          {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE} -
                          # Acq method is allowed to be blank.
-                         {ACQ_METHOD})
+                         {ACQ_METHOD} -
+                         # We don't need publisher name unless the method of
+                         # acquisition is FPV (in which case the publisher name
+                         # is interpolated into the email text).
+                         {PUBLISHER_NAME})
