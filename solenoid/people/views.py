@@ -7,7 +7,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
 from solenoid.emails.models import EmailMessage
-from solenoid.userauth.mixins import LoginRequiredMixin
+from solenoid.userauth.mixins import ConditionalLoginRequiredMixin
 
 from .forms import LiaisonCreateForm
 from .models import Liaison, DLC
@@ -16,7 +16,7 @@ from .signals import update_emails_with_dlcs
 logger = logging.getLogger(__name__)
 
 
-class LiaisonCreate(LoginRequiredMixin, CreateView):
+class LiaisonCreate(ConditionalLoginRequiredMixin, CreateView):
     model = Liaison
     form_class = LiaisonCreateForm
     success_url = reverse_lazy('people:liaison_list')
@@ -41,7 +41,7 @@ class LiaisonCreate(LoginRequiredMixin, CreateView):
         return HttpResponseRedirect(self.success_url)
 
 
-class LiaisonList(LoginRequiredMixin, ListView):
+class LiaisonList(ConditionalLoginRequiredMixin, ListView):
     model = Liaison
     queryset = Liaison.objects.all()
 
@@ -57,7 +57,7 @@ class LiaisonList(LoginRequiredMixin, ListView):
         return context
 
 
-class LiaisonUpdate(LoginRequiredMixin, UpdateView):
+class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
     model = Liaison
     queryset = Liaison.objects.all()
     form_class = LiaisonCreateForm
@@ -114,7 +114,7 @@ class LiaisonUpdate(LoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
 
-class LiaisonDelete(LoginRequiredMixin, DeleteView):
+class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):
     model = Liaison
     queryset = Liaison.objects.all()
 
