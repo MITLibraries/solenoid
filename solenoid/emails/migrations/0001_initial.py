@@ -18,8 +18,8 @@ class Migration(migrations.Migration):
                 ('original_text', models.TextField()),
                 ('latest_text', models.TextField(blank=True, null=True)),
                 ('date_sent', models.DateField(blank=True, null=True)),
-                ('author', models.ForeignKey(to='people.Author')),
-                ('liaison', models.ForeignKey(to='people.Liaison')),
+                ('author', models.ForeignKey(to='people.Author', on_delete=models.CASCADE)),
+                ('liaison', models.ForeignKey(to='people.Liaison', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Emails',

@@ -21,6 +21,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='record',
             name='message',
-            field=models.ForeignKey(blank=True, null=True, to='records.Message'),
+            field=models.ForeignKey(blank=True, null=True, to='records.Message', on_delete=models.CASCADE),
         ),
     ]

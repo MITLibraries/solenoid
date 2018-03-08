@@ -13,7 +13,7 @@ from django.views.generic.list import ListView
 
 from solenoid.people.models import Author
 from solenoid.records.models import Record
-from solenoid.userauth.mixins import LoginRequiredMixin
+from solenoid.userauth.mixins import ConditionalLoginRequiredMixin
 
 from .forms import EmailMessageForm
 from .models import EmailMessage
@@ -41,7 +41,7 @@ def _get_or_create_emails(pk_list):
     return list(set(email_pks))  # remove duplicates, if any
 
 
-class EmailCreate(LoginRequiredMixin, View):
+class EmailCreate(ConditionalLoginRequiredMixin, View):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
@@ -61,7 +61,7 @@ class EmailCreate(LoginRequiredMixin, View):
             return HttpResponseRedirect(reverse('home'))
 
 
-class EmailEvaluate(LoginRequiredMixin, UpdateView):
+class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
     """EmailEvaluate lets the user see, edit, and send a single email.
     Because workflows may involve queuing up multiple unsent emails (e.g. after
     importing a large number of citations), get_success_url will decide where
@@ -209,7 +209,7 @@ class EmailEvaluate(LoginRequiredMixin, UpdateView):
             return self.form_invalid(self.get_form())
 
 
-class EmailSend(LoginRequiredMixin, View):
+class EmailSend(ConditionalLoginRequiredMixin, View):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
@@ -235,7 +235,7 @@ class EmailSend(LoginRequiredMixin, View):
         return HttpResponseRedirect(reverse('home'))
 
 
-class EmailListPending(LoginRequiredMixin, ListView):
+class EmailListPending(ConditionalLoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = EmailMessage.objects.filter(
@@ -252,7 +252,7 @@ class EmailListPending(LoginRequiredMixin, ListView):
         return context
 
 
-class EmailLiaison(LoginRequiredMixin, DetailView):
+class EmailLiaison(ConditionalLoginRequiredMixin, DetailView):
     """
     A simple API to let the front end ask the back end who the liaison for an
     email is.
@@ -271,7 +271,7 @@ class EmailLiaison(LoginRequiredMixin, DetailView):
         return HttpResponse(self.object.liaison)
 
 
-class EmailRebuild(LoginRequiredMixin, View):
+class EmailRebuild(ConditionalLoginRequiredMixin, View):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):

@@ -40,8 +40,14 @@ class EmailMessage(models.Model):
     # require knowledge of the liaison (e.g. editing email text). This means
     # downstream functions that depend on the liaison's existence are
     # responsible for handling exceptions. DO NOT SET until email send.
-    _liaison = models.ForeignKey(Liaison, blank=True, null=True)
-    author = models.ForeignKey(Author)
+    _liaison = models.ForeignKey(
+        Liaison,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE)
     # This should be set to True when people import new citations for this
     # email's author after starting the email, but before sending it. It should
     # be set to False after people edit the email (save or send).

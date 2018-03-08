@@ -10,7 +10,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from solenoid.people.models import Author, DLC
-from solenoid.userauth.mixins import LoginRequiredMixin
+from solenoid.userauth.mixins import ConditionalLoginRequiredMixin
 
 from .forms import ImportForm
 from .helpers import Headers
@@ -19,7 +19,7 @@ from .models import Record
 logger = logging.getLogger(__name__)
 
 
-class UnsentList(LoginRequiredMixin, ListView):
+class UnsentList(ConditionalLoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(UnsentList, self).get_context_data(**kwargs)
         context['title'] = 'Unsent citations'
@@ -40,7 +40,7 @@ class UnsentList(LoginRequiredMixin, ListView):
                 'author', 'author__dlc')
 
 
-class Import(LoginRequiredMixin, FormView):
+class Import(ConditionalLoginRequiredMixin, FormView):
     template_name = 'records/import.html'
     form_class = ImportForm
     success_url = reverse_lazy('records:unsent_list')

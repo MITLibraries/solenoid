@@ -20,7 +20,7 @@ from django.contrib.auth import views as auth_views
 from .views import HomeView
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^records/', include('solenoid.records.urls', namespace='records')),
     url(r'^emails/', include('solenoid.emails.urls', namespace='emails')),

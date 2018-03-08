@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = 'people'
+
 urlpatterns = [
     url(r'^new$', views.LiaisonCreate.as_view(), name='liaison_create'),
     url(r'^$', views.LiaisonList.as_view(), name='liaison_list'),

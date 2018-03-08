@@ -89,7 +89,11 @@ class DLC(models.Model):
     name = models.CharField(max_length=100, unique=True)
     # DLCs are created as needed during the CSV import process, and we don't
     # have liaison information available at that time.
-    liaison = models.ForeignKey(Liaison, blank=True, null=True)
+    liaison = models.ForeignKey(
+        Liaison,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE)
 
 
 class Author(models.Model):
@@ -105,7 +109,7 @@ class Author(models.Model):
     # Authors may have blank DLCs in the CSV, but if that happens we're going
     # to push it back to the Sympletic layer and request that the user fix it
     # there.
-    dlc = models.ForeignKey(DLC)
+    dlc = models.ForeignKey(DLC, on_delete=models.CASCADE)
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=40)

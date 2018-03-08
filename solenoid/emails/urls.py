@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = 'emails'
+
 urlpatterns = [
     url(r'^create/$', views.EmailCreate.as_view(), name='create'),
     url(r'^(?P<pk>\d+)/$', views.EmailEvaluate.as_view(), name='evaluate'),
