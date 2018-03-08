@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='emailmessage',
             name='liaison',
-            field=models.ForeignKey(blank=True, null=True, to='people.Liaison'),
+            field=models.ForeignKey(blank=True, null=True, to='people.Liaison', on_delete=models.CASCADE),
         ),
     ]

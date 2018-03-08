@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='emailmessage',
             name='author',
-            field=models.ForeignKey(blank=True, null=True, to='people.Author'),
+            field=models.ForeignKey(blank=True, null=True, to='people.Author', on_delete=models.CASCADE),
         ),
     ]

@@ -23,22 +23,22 @@ BASE_DIR = os.path.dirname(
 # APP CONFIGURATION
 # -----------------------------------------------------------------------------
 
-DJANGO_APPS = (
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-)
+]
 
-SOLENOID_APPS = (
+SOLENOID_APPS = [
     'solenoid.elements',
     'solenoid.emails',
     'solenoid.people',
     'solenoid.records',
     'solenoid.userauth',
-)
+]
 
 INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 
@@ -46,7 +46,7 @@ INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 # MIDDLEWARE CONFIGURATION
 # -----------------------------------------------------------------------------
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,7 +55,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-)
+]
 
 
 # DEBUG
@@ -148,9 +148,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
 # Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'solenoid', 'static'),
-)
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'solenoid', 'static')]
 
 FIXTURE_DIRS = [os.path.join(BASE_DIR, 'solenoid', 'fixtures')]
 
@@ -232,9 +230,7 @@ else:
 # OAUTH CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += (
-    'social_django',
-)
+INSTALLED_APPS += ['social_django']
 
 # These are the people who should be allowed to log in. This should be a list
 # of strings representing MIT usernames; they will be correctly formatted in
@@ -245,7 +241,7 @@ WHITELIST = ['m31', 'cjrobles', 'cquirion', 'lhanscom', 'khdunn',
 SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS = ['%s@mit.edu' % kerb
                                             for kerb in WHITELIST]
 
-SOCIAL_AUTH_PIPELINE = (
+SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
@@ -254,7 +250,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
-)
+]
 
 # Default to not requiring login for ease of local development, but allow it
 # to be set with an environment variable to facilitate testing. You will need
@@ -271,19 +267,19 @@ if LOGIN_REQUIRED:
     # are casual about casing.
     LOGIN_URL = reverse_lazy('social:begin', args=('mitoauth2',))
 
-    AUTHENTICATION_BACKENDS = (
+    AUTHENTICATION_BACKENDS = [
         'solenoid.userauth.backends.MITOAuth2',
         # Required for user/pass authentication - this is useful for the admin
         # site.
         'django.contrib.auth.backends.ModelBackend',
-    )
+    ]
 
     SOCIAL_AUTH_MITOAUTH2_KEY = os.environ.get('DJANGO_MITOAUTH2_KEY')
     SOCIAL_AUTH_MITOAUTH2_SECRET = os.environ.get('DJANGO_MITOAUTH2_SECRET')
 
-    MIDDLEWARE_CLASSES += (
+    MIDDLEWARE_CLASSES += [
         'social_django.middleware.SocialAuthExceptionMiddleware',
-    )
+    ]
 
     TEMPLATES[0]['OPTIONS']['context_processors'].extend(
         ['social_django.context_processors.backends',
@@ -293,9 +289,8 @@ if LOGIN_REQUIRED:
 # CKEDITOR CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += (
-    'ckeditor',
-)
+INSTALLED_APPS += ['ckeditor']
+
 
 # This is the same version of jquery that is commented out in the base
 # template.
@@ -346,44 +341,40 @@ QUOTAGUARD_URL = None
 # DJANGO-COMPRESSOR CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += ('compressor',)
+INSTALLED_APPS += ['compressor']
 
-STATICFILES_FINDERS = (
+STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
-)
+]
 
 COMPRESS_ENABLED = False
 COMPRESS_OFFLINE = False  # The default, but we're being explicit.
 
-COMPRESS_PRECOMPILERS = (
+COMPRESS_PRECOMPILERS = [
     ('text/x-sass', 'django_libsass.SassCompiler'),
     ('text/x-scss', 'django_libsass.SassCompiler'),
-)
+]
 
 COMPRESS_ROOT = STATIC_ROOT
 
 # CRISPY-FORMS CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += (
-    'crispy_forms',
-)
+INSTALLED_APPS += ['crispy_forms']
 
 # See http://django-crispy-forms.readthedocs.io/en/latest/template_packs.html .
 CRISPY_TEMPLATE_PACK = 'mitlib_crispy'
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = ('mitlib_crispy',)
+CRISPY_ALLOWED_TEMPLATE_PACKS = ['mitlib_crispy']
 
 
 # DJANGO-DEBUG-TOOLBAR CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += (
-    'debug_toolbar',
-)
+INSTALLED_APPS += ['debug_toolbar']
 
-MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+MIDDLEWARE_CLASSES += ['debug_toolbar.middleware.DebugToolbarMiddleware']
 
 INTERNAL_IPS = ['127.0.0.1']

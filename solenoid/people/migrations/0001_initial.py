@@ -51,11 +51,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dlc',
             name='liaison',
-            field=models.ForeignKey(to='people.Liaison'),
+            field=models.ForeignKey(to='people.Liaison', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='author',
             name='dlc',
-            field=models.ForeignKey(to='people.DLC'),
+            field=models.ForeignKey(to='people.DLC', on_delete=models.CASCADE),
         ),
     ]

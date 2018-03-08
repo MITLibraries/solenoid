@@ -54,12 +54,19 @@ class Record(models.Model):
 
     ACQ_METHODS_LIST = [tuple[0] for tuple in ACQ_METHODS]
 
-    author = models.ForeignKey(Author)
-    email = models.ForeignKey(EmailMessage, blank=True, null=True)
+    author = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE)
+    email = models.ForeignKey(
+        EmailMessage,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE)
     publisher_name = models.CharField(max_length=75)
-    acq_method = models.CharField(choices=ACQ_METHODS,
-                                  max_length=32,
-                                  blank=True)
+    acq_method = models.CharField(
+        choices=ACQ_METHODS,
+        max_length=32,
+        blank=True)
     citation = models.TextField()
     doi = models.CharField(max_length=45, blank=True)
     # This is the unique ID within Elements, which is NOT the same as the
@@ -69,7 +76,11 @@ class Record(models.Model):
     # constraint). The unique ID on pubdata-dev does not match that on the
     # production server.
     paper_id = models.CharField(max_length=10)
-    message = models.ForeignKey(Message, blank=True, null=True)
+    message = models.ForeignKey(
+        Message,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa

@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('Unsent', 'Unsent'), ('Sent', 'Sent'), ('Invalid', 'Invalid')], default='Unsent', max_length=7)),
                 ('status_timestamp', models.DateField(default=datetime.date.today)),
                 ('paper_id', models.CharField(help_text='This is the Publication ID field from Elements; it is supposed to be unique but we will not be relying on it as a primary key here.', max_length=10)),
-                ('author', models.ForeignKey(to='people.Author')),
+                ('author', models.ForeignKey(to='people.Author', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['author__dlc', 'author__last_name'],
