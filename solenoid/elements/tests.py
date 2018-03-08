@@ -222,7 +222,7 @@ class ElementsAPICallTest(TestCase):
         req = requests.Request('PATCH', 'http://10.0.0.2').prepare()
         response = requests.Response()
         response.status_code = 303
-        response.next = req
+        response._next = req
         resp = self.call._follow_redirects(response)
         assert resp.status_code == 400
 
@@ -232,7 +232,7 @@ class ElementsAPICallTest(TestCase):
         req = requests.Request('PATCH', 'http://10.0.0.2').prepare()
         response = requests.Response()
         response.status_code = 303
-        response.next = req
+        response._next = req
         with self.assertRaises(requests.TooManyRedirects):
             self.call._follow_redirects(response)
 

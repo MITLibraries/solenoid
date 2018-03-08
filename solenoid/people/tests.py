@@ -1,6 +1,6 @@
 import hashlib
 
-from django.core.urlresolvers import resolve, reverse
+from django.urls import resolve, reverse
 from django.test import TestCase, Client, override_settings
 
 from .models import Liaison, DLC, Author

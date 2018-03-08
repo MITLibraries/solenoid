@@ -5,7 +5,7 @@ import os
 from string import Template
 
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse, resolve
+from django.urls import reverse, resolve
 from django.forms.models import model_to_dict
 from django.template.defaultfilters import escape
 from django.test import TestCase, Client, override_settings

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
 
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,7 +46,7 @@ INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 # MIDDLEWARE CONFIGURATION
 # -----------------------------------------------------------------------------
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -277,7 +277,7 @@ if LOGIN_REQUIRED:
     SOCIAL_AUTH_MITOAUTH2_KEY = os.environ.get('DJANGO_MITOAUTH2_KEY')
     SOCIAL_AUTH_MITOAUTH2_SECRET = os.environ.get('DJANGO_MITOAUTH2_SECRET')
 
-    MIDDLEWARE_CLASSES += [
+    MIDDLEWARE += [
         'social_django.middleware.SocialAuthExceptionMiddleware',
     ]
 
@@ -375,6 +375,6 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ['mitlib_crispy']
 
 INSTALLED_APPS += ['debug_toolbar']
 
-MIDDLEWARE_CLASSES += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
 
 INTERNAL_IPS = ['127.0.0.1']
