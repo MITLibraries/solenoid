@@ -56,21 +56,23 @@
           <div class="local-identity">
             <h2 class="title title-site">
               <a href="/" class="logo">
-              <img src="{% static "i/solenoid_logo.svg" %}" alt="logo" class="img-logo">
-              Solenoid
+              <img src="{% static "i/solenoid_logo.svg" %}" alt="logo" class="img-logo">Solenoid
               </a>
-              {% ifnotequal request.path '/logout/' %}
-                <nav class="nav-user">
-                  <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
-                </nav>
-              {% endifnotequal %}
             </h2>
           </div>
           <div class="wrap-local-nav">
             <div class="wrap-bar">
               <nav class="local-nav">
-                {# no content needed here, but it needs to exist for styling purposes #}
+                <a href="{% url 'records:import' %}" class="button-secondary">Import</a>
+                <a href="{% url 'people:liaison_list' %}" class="button-secondary">Manage Liaisons</a>
+                <a href="{% url 'records:unsent_list' %}" class="button-secondary">View citations</a>
+                <a href="{% url 'emails:list_pending' %}" class="button-secondary">View emails</a>
               </nav>
+              {% ifnotequal request.path '/logout/' %}
+                <nav class="nav-user">
+                  <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+                </nav>
+              {% endifnotequal %}
             </div>
           </div>
         </div>
