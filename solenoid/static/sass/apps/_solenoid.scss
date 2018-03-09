@@ -31,15 +31,17 @@
   }
 }
 
-.modal .wrap-outer-header {
-  display: none;
+.modal {
+  .wrap-outer-header,
+  .wrap-header-local,
+  .wrap-outer-breadcrumb,
+  .wrap-outer-footer,
+  .wrap-footer-institute {
+    display: none;
+  }
 }
 
-.modal .wrap-outer-breadcrumb {
-  display: none;
-}
-
-.modal .wrap-outer-footer {
+.modal  {
   display: none;
 }
 
