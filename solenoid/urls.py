@@ -15,7 +15,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LogoutView
 
 from .views import HomeView
 
@@ -26,8 +26,8 @@ urlpatterns = [
     url(r'^emails/', include('solenoid.emails.urls', namespace='emails')),
     url(r'^people/', include('solenoid.people.urls', namespace='people')),
     url(r'^oauth2/', include('social_django.urls', namespace='social')),
-    url(r'^logout/$', auth_views.logout,
-        {'template_name': 'userauth/logout.html'}, name='logout'),
+    url(r'^logout/$', LogoutView.as_view(template_name='userauth/logout.html'),
+        name='logout'),
 ]
 
 
