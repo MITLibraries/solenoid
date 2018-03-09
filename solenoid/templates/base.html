@@ -59,6 +59,11 @@
               <img src="{% static "i/solenoid_logo.svg" %}" alt="logo" class="img-logo">
               Solenoid
               </a>
+              {% ifnotequal request.path '/logout/' %}
+                <nav class="nav-user">
+                  <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+                </nav>
+              {% endifnotequal %}
             </h2>
           </div>
           <div class="wrap-local-nav">
@@ -66,11 +71,6 @@
               <nav class="local-nav">
                 {# no content needed here, but it needs to exist for styling purposes #}
               </nav>
-              {% ifnotequal request.path '/logout/' %}
-                <nav class="nav-user">
-                  <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
-                </nav>
-              {% endifnotequal %}
             </div>
           </div>
         </div>
