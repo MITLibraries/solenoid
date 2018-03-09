@@ -4,7 +4,7 @@ from unittest.mock import patch, call
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase, Client, override_settings, RequestFactory
 
 from solenoid.people.models import Author, Liaison
@@ -333,7 +333,7 @@ class EmailMessageModelTestCase(TestCase):
             original_text=original_text,
             latest_text=latest_text,
             author=Author.objects.latest('pk'),
-            liaison=Liaison.objects.latest('pk'),
+            _liaison=Liaison.objects.latest('pk'),
         )
 
         email.revert()
@@ -346,7 +346,7 @@ class EmailMessageModelTestCase(TestCase):
             original_text=original_text,
             # Note that latest_text is not set here, hence defaults blank.
             author=Author.objects.latest('pk'),
-            liaison=Liaison.objects.latest('pk'),
+            _liaison=Liaison.objects.latest('pk'),
         )
 
         self.assertEqual(email.latest_text, original_text)

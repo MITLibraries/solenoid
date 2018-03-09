@@ -36,7 +36,7 @@ if APP_NAME:
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MIDDLEWARE_CLASSES += ['whitenoise.middleware.WhiteNoiseMiddleware']
+MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True

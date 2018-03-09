@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import close_old_connections, connection
 from django.http import (HttpResponseRedirect,
                          HttpResponse,

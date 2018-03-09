@@ -3,7 +3,7 @@ import logging
 
 from django import db
 from django.contrib import messages
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.utils.html import format_html

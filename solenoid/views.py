@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.views.generic.base import TemplateView
 
 from solenoid.people.models import Liaison
