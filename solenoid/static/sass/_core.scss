@@ -5,7 +5,6 @@
 // ====================
 @import 'global/unsets';
 @import 'global/variables';
-@import 'apps/variables_solenoid';
 @import 'global/helpers';
 
 // +Starter
@@ -28,4 +27,5 @@
 
 // +Utility
 // ====================
+@import 'global/vendor-overrides'; // overrides to vendor-provided styling
 @import 'global/shame';     // used for any bad-form/orphaned scss

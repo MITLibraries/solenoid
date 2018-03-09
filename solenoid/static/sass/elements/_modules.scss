@@ -1,5 +1,11 @@
 // modules and other reusable bits
 
+.box-content {
+  border: 1px solid $gray-l3;
+  background-color: $white-t;
+  padding: 3%;
+}
+
 .bit {
   margin: 0 0 3rem 0;
   border-top: 3px solid $gray-l2;
@@ -14,6 +20,8 @@
     @extend .list-unbulleted;
   }
 }
+
+// global app style alerts and notices 
 
 .alert {
 
@@ -39,14 +47,12 @@
   }
 }
 
-/* global app style alerts and notices */
-
 .wrap-notices {
   background-color: $gray-d1;
   color: $white;
   font-size: $fs-xsmall;
 
-  .link {
+  a {
     color: $brand-primary2;
   }
 
@@ -94,7 +100,6 @@
   }
 }
 
-
 .inline-action {
 
   @media (min-width: $bp-screen-md) {
@@ -121,30 +126,41 @@
   padding: 2rem 2.5rem;
 }
 
-// ruby pagination nav
-.pagination {
-  margin: 1rem;
+.panel {
+  margin: 1.5rem 0;
+  border: 1px solid $gray-l2;
+  background-color: $white;
+  border-top: 4px solid $brand-primary;
 
-  .page {
-    display: inline-block;
-    min-width: 3rem;
-    text-align: center;
+  .panel-heading {
+    @extend .copy-lead;
+    margin: 1.5rem 2rem .5rem 2rem;
   }
 
-  a {
-    @extend .button-subtle;
+  .panel-body {
+    margin: .5rem 2rem 1.5rem 2rem;
   }
 
-  .gap {
-
+  .panel-footer {
+    font-size: $fs-small;
+    border-top: 1px solid $gray-l2;
+    background-color: $wisp;
+    padding: 1rem 2rem;
   }
 
-  .next {
-
+  &.panel-info {
+    border-top: 4px solid $brand-primary;
   }
 
-  .last {
-    
+  &.panel-success {
+    border-top: 4px solid $success;
+  }
+
+  &.panel-warning {
+    border-top: 4px solid $warning;
+  }
+
+  &.panel-danger {
+    border-top: 4px solid $error;
   }
 }
-
