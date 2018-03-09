@@ -1,47 +1,3 @@
-// Make the subheader pretty
-img.img-logo {
-  height: 5.25rem;
-  margin-left: -15px;
-  max-width: inherit;
-  margin-right: -5px;
-  margin-bottom: 7px;
-}
-
-.layout-band-solenoid {
-  background-color: $blue-muted;
-
-  a.logo {
-    color: $white;
-    text-decoration: none;
-  }
-
-  h1 {
-    color: $white;
-    margin-bottom: 0;
-    font-size: $fs-xxxlarge;
-    font-weight: $fw-light;
-    margin-bottom: -7px;
-  }
-
-  .button-secondary {
-    margin-top: 8px;
-    background-color: $gray;
-    color: $white;
-
-    &:hover,
-    &:focus {
-      background-color: $blue-muted;
-      border-color: $blue-muted;
-      border: 1px solid $white;
-    }
-  }
-
-  .wrap-content {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
-
 .alert .wrap-content {
   padding-top: 0;
   padding-bottom: 0;
@@ -75,7 +31,7 @@ img.img-logo {
   display: none;
 }
 
-.modal .wrap-outer-footer-institute {
+.modal .wrap-outer-footer {
   display: none;
 }
 
