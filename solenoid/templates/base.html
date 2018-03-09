@@ -63,6 +63,9 @@
           </div>
           <div class="wrap-local-nav">
             <div class="wrap-bar">
+              <nav class="local-nav">
+                {# no content needed here, but it needs to exist for styling purposes #}
+              </nav>
               {% ifnotequal request.path '/logout/' %}
                 <nav class="nav-user">
                   <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
