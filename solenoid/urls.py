@@ -16,6 +16,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
+from django.views.defaults import server_error
 
 from .views import HomeView
 
@@ -28,6 +29,7 @@ urlpatterns = [
     url(r'^oauth2/', include('social_django.urls', namespace='social')),
     url(r'^logout/$', LogoutView.as_view(template_name='userauth/logout.html'),
         name='logout'),
+    url(r'^500/$', server_error),
 ]
 
 
