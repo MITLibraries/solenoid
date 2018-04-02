@@ -1,5 +1,6 @@
 import requests
 from social_core.backends.oauth import BaseOAuth2
+from social_core.actions import do_disconnect
 from social_core.utils import url_add_parameters
 
 
@@ -45,3 +46,6 @@ class MITOAuth2(BaseOAuth2):
 
     def get_redirect_uri(self, state=None):
         return self.redirect_uri
+
+    def revoke(self, user, *args, **kwargs):
+        do_disconnect(self, user)

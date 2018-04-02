@@ -51,7 +51,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -248,6 +247,24 @@ SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
+]
+
+# This is actually a token revocation pipeline, not a disconnection pipeline.
+# We need to revoke the tokens, because if we don't logout appears to fail;
+# it flushes users from the session, but then it checks with the social auth
+# URLs, finds a token, and re-adds the user to the session, which appears to
+# the user to be broken.
+# It would be better to just call revoke_tokens, but this function isn't
+# written to run independently of the pipeline, and it's hard to figure out
+# how to hook into it.
+# If we ever need to *actually* disconnect users - sever local users from
+# their MIT OAuth IDs - we'll have to rework this.
+SOCIAL_AUTH_DISCONNECT_PIPELINE = [
+    # Collects the social associations to disconnect.
+    'social_core.pipeline.disconnect.get_entries',
+
+    # Revoke any access_token when possible.
+    'social_core.pipeline.disconnect.revoke_tokens',
 ]
 
 # Default to not requiring login for ease of local development, but allow it
