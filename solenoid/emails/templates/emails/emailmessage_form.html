@@ -4,6 +4,8 @@
 
 {% block extra_headers %}
   <link rel="stylesheet" href="{% static 'css/jquery.modal.css' %}" type="text/css" media="screen" />
+  {# see e.g. https://github.com/django-ckeditor/django-ckeditor/issues/346 #}
+  <script>window.CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/';</script>
 {% endblock %}
 
 {% block content %}
