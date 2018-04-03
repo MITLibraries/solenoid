@@ -365,7 +365,7 @@ STATICFILES_FINDERS = [
 ]
 
 COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True  # The default, but we're being explicit.
+COMPRESS_OFFLINE = False  # The default, but we're being explicit.
 
 COMPRESS_PRECOMPILERS = [
     ('text/x-sass', 'django_libsass.SassCompiler'),
