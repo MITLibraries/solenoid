@@ -101,6 +101,8 @@ Register an OAuth client at https://oidc.mit.edu with the following parameters:
 
 Defaults are fine for everything else.
 
+The credentials for the production and staging OAuth providers are stored in a Solenoid note in DLE Lastpass.
+
 ## Integrating with Sympletic Elements
 
 Solenoid issues calls to the Sympletic Elements API when it sends emails in order to mark items as requested. This requires some configuration on both the Elements system administration end and the solenoid end.
