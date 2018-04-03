@@ -9,12 +9,17 @@ name = "pypi"
 
 python_version = "3.6"
 
+
 [dev-packages]
+
 coverage = "==4.5.1"
+
 
 [packages]
 
-beautifulsoup4 = "==4.6.0"
+# Only needed for Heroku
+dj-database-url = "*"
+"beautifulsoup4" = "==4.6.0"
 certifi = "*"
 chardet = "==3.0.4"
 django = "==1.11.11"
@@ -27,13 +32,12 @@ pyyaml = "==3.12"
 requests = "==2.18.4"
 requests-oauthlib = "==0.8.0"
 social-auth-app-django = "==2.1.0"
-
-# Only needed for Heroku
-dj-database-url = "*"
 gunicorn = "*"
-psycopg2 = "*"
+"psycopg2" = "*"
 newrelic = "*"
 whitenoise = "*"
+pillow = "*"
+
 
 [pipenv]
 
