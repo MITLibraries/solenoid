@@ -36,7 +36,7 @@ gunicorn = "*"
 "psycopg2" = "*"
 newrelic = "*"
 whitenoise = "*"
-pillow = "*"
+Pillow = "*"
 
 
 [pipenv]
