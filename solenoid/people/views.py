@@ -28,7 +28,7 @@ class LiaisonCreate(ConditionalLoginRequiredMixin, CreateView):
             {'url': reverse_lazy('home'), 'text': 'dashboard'},
             {'url': reverse_lazy('people:liaison_list'),
                 'text': 'manage liaisons'},
-            {'url': '#', 'text': 'edit liaison'}
+            {'url': '#', 'text': 'create liaison'}
         ]
         context['form_id'] = 'liaison-create'
         return context
