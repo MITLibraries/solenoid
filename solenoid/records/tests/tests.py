@@ -950,7 +950,7 @@ class RecordModelTest(TestCase):
         row[Headers.DOI] = r1.doi
         row[Headers.CITATION] = r1.citation
         author = Author.objects.get(pk=2)  # not the author of r1
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.author == author
 
@@ -964,7 +964,7 @@ class RecordModelTest(TestCase):
         row[Headers.DOI] = r1.doi
         row[Headers.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.publisher_name == new_publisher
 
@@ -978,7 +978,7 @@ class RecordModelTest(TestCase):
         row[Headers.DOI] = r1.doi
         row[Headers.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.acq_method == 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
 
@@ -992,7 +992,7 @@ class RecordModelTest(TestCase):
         row[Headers.DOI] = new_doi
         row[Headers.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.doi == new_doi
 
@@ -1007,7 +1007,7 @@ class RecordModelTest(TestCase):
         row[Headers.DOI] = r1.doi
         row[Headers.CITATION] = new_citation
         author = r1.author
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.citation == new_citation
 
@@ -1033,7 +1033,7 @@ class RecordModelTest(TestCase):
         r1.save()
         row[Headers.CITATION] = r1.citation
 
-        assert not r1.update_if_needed(row, author)
+        assert not r1.update_if_needed(author, row)
 
     def test_update_if_needed_case_7(self):
         """update_if_needed does alter the record if the citation is blank,
@@ -1056,6 +1056,6 @@ class RecordModelTest(TestCase):
 
         assert r1.citation != Record.create_citation(row)  # check assumption
 
-        assert r1.update_if_needed(row, author)
+        assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
         assert r1.citation == Record.create_citation(row)

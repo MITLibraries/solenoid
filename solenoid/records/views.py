@@ -108,7 +108,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         return True
 
     def _check_row_superfluity(self, author, row):
-        if Record.is_row_superfluous(row, author):
+        if Record.is_row_superfluous(author, row):
             logger.info('Record is superfluous')
             messages.info(self.request, 'Publication #{id} by {author} '
                 'has already been requested (possibly from another '
@@ -206,7 +206,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             if created:
                 successes += 1
             else:
-                updated = record.update_if_needed(row, author)
+                updated = record.update_if_needed(author, row)
                 if updated:
                     updates.append(record.paper_id)
                 else:

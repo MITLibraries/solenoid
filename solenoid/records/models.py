@@ -255,7 +255,7 @@ class Record(models.Model):
             return False
 
     @staticmethod
-    def is_row_superfluous(row, author):
+    def is_row_superfluous(author, row):
         """Return True if we have already requested this paper (possibly from
         another author), False otherwise."""
 
@@ -284,7 +284,7 @@ class Record(models.Model):
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def update_if_needed(self, row, author):
+    def update_if_needed(self, author, row):
         """Checks a CSV data row to see if there are any discrepancies with the
         existing record. If so, updates it and returns True. If not, returns
         False."""
