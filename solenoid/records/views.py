@@ -1,7 +1,6 @@
 import csv
 import logging
 
-from django import db
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
@@ -66,6 +65,61 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
         logger.info('messages added')
 
+    def _check_acq_method(self, row):
+        if not Record.is_acq_method_known(row):
+            logger.warning('Invalid acquisition method')
+            messages.warning(self.request, 'Publication #{id} by {author} '
+                'has an unrecognized acquisition method, so this citation '
+                'will not be imported.'.format(id=row[Headers.PAPER_ID],
+                                   author=row[Headers.LAST_NAME]))
+            return False
+        return True
+
+    def _check_for_duplicates(self, author, row):
+        dupes = Record.get_duplicates(author, row)
+        logger.info('dupes {dupes}'.format(dupes=dupes))
+
+        if dupes:
+            dupe_list = [id
+                         for id
+                         in dupes.values_list('paper_id', flat=True)]
+            dupe_list = ', '.join(dupe_list)
+            logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))  # noqa
+            messages.warning(self.request, 'Publication #{id} by {author} '
+                'duplicates the following record(s) already in the '
+                'database: {dupes}. Please merge #{id} into an existing '
+                'record in Elements. It will not be imported.'.format(
+                    id=row[Headers.PAPER_ID],
+                    author=row[Headers.LAST_NAME],
+                    dupes=dupe_list))
+            return False
+        return True
+
+    def _check_row_validity(self, row):
+        if not Record.is_row_valid(row):
+            logger.warning('Invalid record row')
+            messages.warning(self.request, 'Publication #{id} by {author} '
+                'is missing required data (one or more of {info}), so '
+                'this citation will not be imported.'.format(
+                    id=row[Headers.PAPER_ID],
+                    author=row[Headers.LAST_NAME],
+                    info=', '.join(Headers.REQUIRED_DATA)))
+            return False
+        return True
+
+    def _check_row_superfluity(self, author, row):
+        if Record.is_row_superfluous(author, row):
+            logger.info('Record is superfluous')
+            messages.info(self.request, 'Publication #{id} by {author} '
+                'has already been requested (possibly from another '
+                'author), so this record will not be imported. Please add '
+                'this citation manually to an email, and manually mark it '
+                'as requested in Symplectic, if you would like to request '
+                'it from this author also'.format(id=row[Headers.PAPER_ID],
+                    author=row[Headers.LAST_NAME]))
+            return False
+        return True
+
     def _get_csv_reader(self, csv_file):
         # This used to be a much more complicated function, when we were
         # dealing with an InMemoryUploadedFile rather than a string. See git
@@ -91,14 +145,32 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                 )
             else:
                 author = None
+                logger.warning('No author can be found for record')
+                messages.warning(self.request, 'The author for publication '
+                    '#{id} is missing required information. This record will '
+                    'not be created'.format(id=row[Headers.PAPER_ID]))
+        logger.info('author was %s' % author)
         return author
 
     def _get_record(self, row, author):
         if Record.is_record_creatable(row):
             logger.info('record was creatable')
-            return Record.get_or_create_from_csv(author, row)
+            record, created = Record.get_or_create_from_csv(author, row)
         else:
-            return None, None
+            logger.warning('Cannot create record for publication {id} '
+                'with author {author}'.format(id=row[Headers.PAPER_ID],
+                    author=row[Headers.LAST_NAME]))
+            messages.warning(self.request, 'The record for publication '
+                '#{id} by {author} is missing required information and '
+                'will not be created.'.format(id=row[Headers.PAPER_ID],
+                    author=row[Headers.LAST_NAME]))
+            record = None
+            created = None
+
+        logger.info('record was %s' % record)
+        logger.info('created was %s' % created)
+
+        return record, created
 
     def form_valid(self, form):
         reader = self._get_csv_reader(form.cleaned_data['csv_file'])
@@ -108,83 +180,33 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
         for row in reader:
             logger.info('this row is %s' % row)
-            if not Record.is_row_valid(row):
-                logger.warning('Invalid record row')
-                messages.warning(self.request, 'Publication #{id} by {author} '
-                    'is missing required data (one or more of {info}), so '
-                    'this citation will not be imported.'.format(
-                        id=row[Headers.PAPER_ID],
-                        author=row[Headers.LAST_NAME],
-                        info=', '.join(Headers.REQUIRED_DATA)))
+
+            if not self._check_row_validity(row):
                 continue
 
-            if not Record.is_acq_method_known(row):
-                logger.warning('Invalid acquisition method')
-                messages.warning(self.request, 'Publication #{id} by {author} '
-                    'has an unrecognized acquisition method, so this citation '
-                    'will not be imported.'.format(id=row[Headers.PAPER_ID],
-                                       author=row[Headers.LAST_NAME]))
+            if not self._check_acq_method(row):
                 continue
 
             author = self._get_author(row)
-            logger.info('author was %s' % author)
 
             if not author:
-                logger.warning('No author can be found for record')
-                messages.warning(self.request, 'The author for publication '
-                    '#{id} is missing required information. This record will '
-                    'not be created'.format(id=row[Headers.PAPER_ID]))
                 continue
 
-            if Record.is_row_superfluous(row, author):
-                logger.info('Record is superfluous')
-                messages.info(self.request, 'Publication #{id} by {author} '
-                    'has already been requested (possibly from another '
-                    'author), so this record will not be imported. Please add '
-                    'this citation manually to an email, and manually mark it '
-                    'as requested in Symplectic, if you would like to request '
-                    'it from this author also'.format(id=row[Headers.PAPER_ID],
-                        author=row[Headers.LAST_NAME]))
+            if not self._check_row_superfluity(author, row):
                 continue
 
-            dupes = Record.get_duplicates(author, row)
-            logger.info('dupes {dupes}'.format(dupes=dupes))
-
-            if dupes:
-                dupe_list = [id
-                             for id
-                             in dupes.values_list('paper_id', flat=True)]
-                dupe_list = ', '.join(dupe_list)
-                logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))  # noqa
-                messages.warning(self.request, 'Publication #{id} by {author} '
-                    'duplicates the following record(s) already in the '
-                    'database: {dupes}. Please merge #{id} into an existing '
-                    'record in Elements. It will not be imported.'.format(
-                        id=row[Headers.PAPER_ID],
-                        author=row[Headers.LAST_NAME],
-                        dupes=dupe_list))
+            if not self._check_for_duplicates(author, row):
                 continue
 
             record, created = self._get_record(row, author)
-            if record and not created:
-                updated = record.update_if_needed(row, author)
-
-            logger.info('record was %s' % record)
-            logger.info('created was %s' % created)
 
             if not record:
-                logger.warning('Cannot create record for publication {id} '
-                    'with author {author}'.format(id=row[Headers.PAPER_ID],
-                        author=row[Headers.LAST_NAME]))
-                messages.warning(self.request, 'The record for publication '
-                    '#{id} by {author} is missing required information and '
-                    'will not be created.'.format(id=row[Headers.PAPER_ID],
-                        author=row[Headers.LAST_NAME]))
                 continue
 
             if created:
                 successes += 1
             else:
+                updated = record.update_if_needed(author, row)
                 if updated:
                     updates.append(record.paper_id)
                 else:

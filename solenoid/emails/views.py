@@ -75,6 +75,25 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
     form_class = EmailMessageForm
     model = EmailMessage
 
+    def _check_citation_validity(self):
+        if self.object.new_citations:
+            messages.error(self.request, "New citations for this author "
+                "have been imported since last time the email was edited. "
+                "They've been added to this email automatically, but please "
+                "proofread.")
+
+    def _check_record_count(self):
+        available_records = Record.objects.filter(
+            author=self.object.author).exclude(
+                email__date_sent__isnull=False)
+
+        if available_records.count() > self.object.record_set.count():
+            messages.error(self.request, "New citations for this author "
+                "have been imported since last time the email was edited, but "
+                "not added to this email. Do you want to <a href='{url}'>add "
+                "them?</a>".format(
+                    url=reverse('emails:rebuild', args=(self.object.pk,))))
+
     def _finish_handle(self):
         next_pk = self._update_session()
         if next_pk:
@@ -113,6 +132,12 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
             "their new library status.")
         return self._finish_handle()
 
+    def _get_title(self):
+        if self.object.date_sent:
+            return 'View sent email'
+        else:
+            return 'Send email'
+
     def _update_session(self):
         if ('email_pks' not in self.request.session or
                 not len(self.request.session['email_pks'])):
@@ -138,10 +163,7 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(EmailEvaluate, self).get_context_data(**kwargs)
-        if self.object.date_sent:
-            context['title'] = 'View sent email'
-        else:
-            context['title'] = 'Send email'
+        context['title'] = self._get_title()
 
         try:
             context['progress'] = '#{k} of {n}'.format(
@@ -150,28 +172,16 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
         except KeyError:
             pass
 
-        if self.object.new_citations:
-            messages.error(self.request, "New citations for this author "
-                "have been imported since last time the email was edited. "
-                "They've been added to this email automatically, but please "
-                "proofread.")
-
-        available_records = Record.objects.filter(
-            author=self.object.author).exclude(
-                email__date_sent__isnull=False)
-        if available_records.count() > self.object.record_set.count():
-            messages.error(self.request, "New citations for this author "
-                "have been imported since last time the email was edited, but "
-                "not added to this email. Do you want to <a href='{url}'>add "
-                "them?</a>".format(
-                    url=reverse('emails:rebuild', args=(self.object.pk,))))
-
         context['breadcrumbs'] = [
             {'url': reverse('home'), 'text': 'dashboard'},
             {'url': reverse('emails:list_pending'),
                 'text': 'view pending emails'},
             {'url': '#', 'text': 'send email'}
         ]
+
+        self._check_citation_validity()
+        self._check_record_count()
+
         return context
 
     def get_success_url(self):
