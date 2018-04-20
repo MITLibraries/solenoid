@@ -144,6 +144,41 @@ class Record(models.Model):
         return citation
 
     @staticmethod
+    def _get_message_text(row):
+        try:
+            message = row[Headers.MESSAGE]
+        except KeyError:
+            message = None
+        logger.info('Message text was %s' % message)
+
+        return message
+
+    @staticmethod
+    def _get_message_object(message_text):
+        if message_text:
+            try:
+                msg = Message.objects.get(text=message_text)
+                logger.info('got message %s' % msg)
+            except Message.DoesNotExist:
+                msg = Message.objects.create(text=message_text)
+                msg.save()
+                logger.info('created message %s' % msg)
+        else:
+            logger.info('no message')
+            msg = None
+
+        return msg
+
+    @staticmethod
+    def _get_citation(row):
+        if row[Headers.CITATION]:
+            citation = row[Headers.CITATION]
+        else:
+            citation = Record.create_citation(row)
+
+        return citation
+
+    @staticmethod
     def get_or_create_from_csv(author, row):
         """This expects an author instance and a row of data from a CSV import,
         and returns (record, created), in the manner of objects.get_or_create.
@@ -157,28 +192,10 @@ class Record(models.Model):
             logger.info('Got an existing record')
             return record, False
         except Record.DoesNotExist:
-            try:
-                message = row[Headers.MESSAGE]
-            except KeyError:
-                message = None
-            logger.info('Message text was %s' % message)
+            message_text = Record._get_message_text(row)
+            message_object = Record._get_message_object(message_text)
 
-            if message:
-                try:
-                    msg = Message.objects.get(text=message)
-                    logger.info('got message %s' % msg)
-                except Message.DoesNotExist:
-                    msg = Message.objects.create(text=message)
-                    msg.save()
-                    logger.info('created message %s' % msg)
-            else:
-                logger.info('no message')
-                msg = None
-
-            if row[Headers.CITATION]:
-                citation = row[Headers.CITATION]
-            else:
-                citation = Record.create_citation(row)
+            citation = Record._get_citation(row)
 
             record = Record.objects.create(
                 author=author,
@@ -187,7 +204,7 @@ class Record(models.Model):
                 citation=citation,
                 doi=row[Headers.DOI],
                 paper_id=row[Headers.PAPER_ID],
-                message=msg)
+                message=message_object)
             logger.info('record created')
 
             return record, True
