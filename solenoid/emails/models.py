@@ -137,6 +137,23 @@ class EmailMessage(models.Model):
 
         return records
 
+    @classmethod
+    def _finalize_email(cls, email, records, author):
+        if email:
+            email = email[0]
+            email.rebuild_citations()
+        else:
+            email = cls(original_text=cls.create_original_text(records),
+                        author=author)
+            email.save()
+
+        # Make sure to create the ForeignKey relation from those records to
+        # the email! Otherwise this method will only ever create new emails
+        # rather than finding existing ones.
+        logger.info('Creating foreign key relationship to email for records')
+        records.update(email=email)
+        return email
+
     @staticmethod
     def _get_author_from_records(records):
         count = Author.objects.filter(record__in=records).distinct().count()
@@ -161,23 +178,6 @@ class EmailMessage(models.Model):
             raise ValidationError('Multiple unsent emails found.')
 
         return emails if emails else None
-
-    @classmethod
-    def _finalize_email(cls, email, records, author):
-        if email:
-            email = email[0]
-            email.rebuild_citations()
-        else:
-            email = cls(original_text=cls.create_original_text(records),
-                        author=author)
-            email.save()
-
-        # Make sure to create the ForeignKey relation from those records to
-        # the email! Otherwise this method will only ever create new emails
-        # rather than finding existing ones.
-        logger.info('Creating foreign key relationship to email for records')
-        records.update(email=email)
-        return email
 
     @classmethod
     def get_or_create_for_records(cls, records):

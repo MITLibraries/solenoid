@@ -212,6 +212,12 @@ class Record(models.Model):
             return None
 
     @staticmethod
+    def is_acq_method_known(row):
+        """Returns True if this row of CSV has a recognized method of
+        acquisition; False otherwise."""
+        return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
+
+    @staticmethod
     def is_record_creatable(row):
         """This expects a row of data from a CSV import and determines whether
         a valid record can be created from that data. It is not responsible for
@@ -258,12 +264,6 @@ class Record(models.Model):
         citable = bool(row[Headers.CITATION]) or \
             all([bool(row[x]) for x in Headers.CITATION_DATA])
         return all([bool(row[x]) for x in Headers.REQUIRED_DATA]) and citable
-
-    @staticmethod
-    def is_acq_method_known(row):
-        """Returns True if this row of CSV has a recognized method of
-        acquisition; False otherwise."""
-        return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
