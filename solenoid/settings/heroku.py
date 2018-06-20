@@ -98,3 +98,9 @@ else:
 # provisioned, but in the wild the observed name of this variable is
 # QUOTAGUARDSTATIC_URL.
 QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
+
+
+# EXCEPTION CONFIGURATION
+# -----------------------------------------------------------------------------
+
+INSTALLED_APPS += ['raven.contrib.django.raven_compat']
