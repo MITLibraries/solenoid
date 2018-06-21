@@ -64,8 +64,19 @@ class Command(BaseCommand):
             raise CommandError
 
     def handle(self, *args, **options):
-        yesterday = timezone.now() - timedelta(days=1)
-        calls = ElementsAPICall.objects.filter(timestamp__gte=yesterday)
+        # The issue_unsent_calls job runs hourly. It's possible that, if this
+        # command runs in the period between the last time that job started
+        # and the last time it was completed, a number of API calls will appear
+        # to have timed out (as they will exist but not yet have an http
+        # response status code). Therefore we should use a window that is
+        # slightly offset, to exclude the most recent job from this reporting
+        # window. (Using 2 hours rather than 1 so as not to have to think about
+        # fencepost errors or delays in http responses.)
+        yesterday = timezone.now() - timedelta(hours=26)
+        recently = timezone.now() - timedelta(hours=2)
+        calls = ElementsAPICall.objects.filter(
+            timestamp__gte=yesterday,
+            timezone__lt=recently)
 
         if calls:
             message = self._format_message(calls)
