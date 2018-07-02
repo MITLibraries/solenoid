@@ -76,7 +76,7 @@ class Command(BaseCommand):
         recently = timezone.now() - timedelta(hours=2)
         calls = ElementsAPICall.objects.filter(
             timestamp__gte=yesterday,
-            timezone__lt=recently)
+            timestamp__lt=recently)
 
         if calls:
             message = self._format_message(calls)
