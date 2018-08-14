@@ -232,8 +232,9 @@ INSTALLED_APPS += ['social_django']
 # These are the people who should be allowed to log in. This should be a list
 # of strings representing MIT usernames; they will be correctly formatted in
 # the SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS list comprehension.
-WHITELIST = ['m31', 'cjrobles', 'cquirion', 'lhanscom', 'khdunn',
-             'dfazio', 'efinnie', 'orbitee', 'francesb', 'mgraves']
+WHITELIST = ['cjrobles', 'cquirion', 'lhanscom', 'khdunn',
+             'dfazio', 'efinnie', 'francesb', 'mgraves',
+             'hbailey',]
 
 SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS = ['%s@mit.edu' % kerb
                                             for kerb in WHITELIST]
