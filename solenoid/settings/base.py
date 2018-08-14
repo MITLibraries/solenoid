@@ -233,7 +233,7 @@ INSTALLED_APPS += ['social_django']
 # of strings representing MIT usernames; they will be correctly formatted in
 # the SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS list comprehension.
 WHITELIST = ['cjrobles', 'cquirion', 'lhanscom', 'khdunn',
-             'dfazio', 'efinnie', 'orbitee', 'francesb', 'mgraves',
+             'dfazio', 'efinnie', 'francesb', 'mgraves',
              'hbailey',]
 
 SOCIAL_AUTH_MITOAUTH2_WHITELISTED_EMAILS = ['%s@mit.edu' % kerb
