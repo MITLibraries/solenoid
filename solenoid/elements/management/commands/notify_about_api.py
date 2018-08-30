@@ -43,7 +43,7 @@ class Command(BaseCommand):
             timestamp__gte=last_month).count()
 
         if monthly_calls >= 225:
-            message.append('You have issued {calls} in the past 30 days. '
+            message += ('You have issued {calls} in the past 30 days. '
                 'You may need to upgrade your static IP plan, which '
                 'only allows 250 calls/month.'.format(calls=monthly_calls))
         return message
