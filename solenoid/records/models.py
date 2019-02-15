@@ -327,7 +327,7 @@ class Record(models.Model):
                        'allow the Libraries to perform the downloading. If you ' # noqa
                        'follow this link, download the article, and attach it '
                        'to an email reply, we can deposit it on your behalf: '
-                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>') # noqa
+                       '<a href="http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi">http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi</a>]</b>') # noqa
         if self.acq_method == self.ACQ_FPV:
             return msg.substitute(publisher_name=self.publisher_name,
                                   doi=self.doi)
