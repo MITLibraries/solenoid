@@ -684,7 +684,7 @@ class RecordModelTest(TestCase):
                        'allow the Libraries to perform the downloading. If you ' # noqa
                        'follow this link, download the article, and attach it '
                        'to an email reply, we can deposit it on your behalf: '
-                       '<a href="https://dx.doi.org.libproxy.mit.edu/$doi">https://dx.doi.org.libproxy.mit.edu/$doi</a>]</b>')  # noqa
+                       '<a href="http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi">http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi</a>]</b>')  # noqa
 
         assert record.fpv_message == msg.substitute(
             publisher_name=publisher_name, doi=fake_doi)
