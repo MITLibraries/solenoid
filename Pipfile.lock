@@ -74,10 +74,11 @@
         },
         "django-ckeditor": {
             "hashes": [
-                "sha256:266353b93991babb399a62a25bc0cbb945f95901693a4f07c9506edabd6a0cd0"
+                "sha256:852ae92358a3209727d5fa4acc97088bfadf58b643b8aa967ca4feb7792427d4",
+                "sha256:c9ac3bbd48e269f54c3eb718aaee5252d99a9bca08417e2c02e1e49d989f0881"
             ],
             "index": "pypi",
-            "version": "==5.6.1"
+            "version": "==5.7.0"
         },
         "django-compressor": {
             "hashes": [
