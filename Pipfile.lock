@@ -74,11 +74,11 @@
         },
         "django-ckeditor": {
             "hashes": [
-                "sha256:852ae92358a3209727d5fa4acc97088bfadf58b643b8aa967ca4feb7792427d4",
-                "sha256:c9ac3bbd48e269f54c3eb718aaee5252d99a9bca08417e2c02e1e49d989f0881"
+                "sha256:0147f8905dc64747e45157a185feedee4e39973fa4b571c9c82ad10d9d4b8974",
+                "sha256:d79fb8248c50f29dc8f143e5ff7223bb4a916f14ffba6c3fcd998c6d986ad592"
             ],
             "index": "pypi",
-            "version": "==5.7.0"
+            "version": "==5.7.1"
         },
         "django-compressor": {
             "hashes": [
@@ -332,10 +332,10 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0",
-                "sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3"
+                "sha256:2393a695cd12afedd0dcb26fe5d50d0cf248e5a66f75dbd89a3d4eb333a61af4",
+                "sha256:a637e5fae88995b256e3409dc4d52c2e2e0ba32c42a6365fee8bbd2238de3cfb"
             ],
-            "version": "==1.24.2"
+            "version": "==1.24.3"
         },
         "whitenoise": {
             "hashes": [
