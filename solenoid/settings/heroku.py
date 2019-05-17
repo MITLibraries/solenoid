@@ -104,3 +104,10 @@ QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 # -----------------------------------------------------------------------------
 
 INSTALLED_APPS += ['raven.contrib.django.raven_compat']
+
+
+# DSPACE CUSTOMIZATION CONFIGURATION
+# -----------------------------------------------------------------------------
+
+# Do not substitute a default value on Heroku, this is required in production
+DSPACE_SALT = os.environ['DSPACE_AUTHOR_ID_SALT']

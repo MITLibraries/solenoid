@@ -133,6 +133,9 @@ class Import(ConditionalLoginRequiredMixin, FormView):
     def _get_author(self, row):
         try:
             author = Author.get_by_mit_id(row[Headers.MIT_ID])
+            if not author.dspace_id:
+                author.dspace_id = row[Headers.MIT_ID]
+                author.save()
         except Author.DoesNotExist:
             if Author.is_author_creatable(row):
                 dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])
@@ -141,7 +144,8 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                     last_name=row[Headers.LAST_NAME],
                     dlc=dlc,
                     email=row[Headers.EMAIL],
-                    mit_id=row[Headers.MIT_ID]
+                    mit_id=row[Headers.MIT_ID],
+                    dspace_id=row[Headers.MIT_ID]
                 )
             else:
                 author = None

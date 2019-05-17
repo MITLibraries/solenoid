@@ -47,6 +47,8 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
 * `heroku config:set DJANGO_SMTP_PASSWORD=<the MIT libsys password>`
   * This is in the Lastpass DLAD shared notes folder.
   * Make sure to read the part about escaping special characters.
+* `heroku config:set DSPACE_AUTHOR_ID_SALT=<the salt value>`
+  * This is in the Lastpass DLAD shared notes folder.
 * `heroku config:set WEB_CONCURRENCY=3`
 * `heroku config:set DJANGO_EMAIL_TESTING_MODE=False`
   * If you want to send email to real liaisons and the scholcomm moira list, set this
