@@ -11,6 +11,9 @@
     },
     "DJANGO_SECRET_KEY": {
       "required": true
+    },
+    "DSPACE_AUTHOR_ID_SALT": {
+      "required": true
     }
   },
   "addons": [

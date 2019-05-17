@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 from django.urls import resolve, reverse
 from django.test import TestCase, Client, override_settings
@@ -183,6 +184,21 @@ class AuthorTests(TestCase):
 
         self.assertEqual(Author.get_hash(mit_id),
                          hashlib.md5(mit_id.encode('utf-8')).hexdigest())
+
+    def test_author_dspace_id_hash(self):
+        dlc = DLC.objects.create(name='Test DLC')
+        mit_id = '000000000'
+        author = Author.objects.create(dlc=dlc,
+                                       email='foo@example.com',
+                                       first_name='Test',
+                                       last_name='Author',
+                                       mit_id=mit_id,
+                                       dspace_id=mit_id)
+
+        self.assertEqual(author.dspace_id,
+                         hashlib.md5((os.getenv('DSPACE_AUTHOR_ID_SALT',
+                                                'salty') +
+                                     mit_id).encode('utf-8')).hexdigest())
 
 
 class LiaisonModelTests(TestCase):

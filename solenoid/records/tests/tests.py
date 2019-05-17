@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 from datetime import date
+import hashlib
 import os
 from string import Template
 
@@ -121,6 +122,7 @@ class ImportViewTest(TestCase):
             first_name='Fake',
             last_name='Author',
             mit_id='123456789',
+            dspace_id='123456789',
             dlc=dlc,
             email='fake@example.com'
         )
@@ -129,6 +131,23 @@ class ImportViewTest(TestCase):
         record = Record.objects.latest('pk')
         self.assertEqual(record.author.first_name, 'Fake')
         self.assertEqual(record.author.last_name, 'Author')
+
+    def test_author_dspace_id_added_if_needed(self):
+        dlc = DLC.objects.create(name='Some Department Or Other')
+        Author.objects.create(
+            first_name='Fake',
+            last_name='Author',
+            mit_id='123456789',
+            dlc=dlc,
+            email='fake@example.com'
+        )
+        self._post_csv('missing_author_first_name.csv')
+
+        record = Record.objects.latest('pk')
+        self.assertEqual(record.author.dspace_id,
+                         hashlib.md5((os.getenv('DSPACE_AUTHOR_ID_SALT',
+                                                'salty') +
+                                     '123456789').encode('utf-8')).hexdigest())
 
     def test_publisher_name_set_when_present(self):
         self._post_csv('single_good_record.csv')

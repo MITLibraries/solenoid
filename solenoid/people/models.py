@@ -1,6 +1,7 @@
 import hashlib
 import logging
 
+from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
 
@@ -117,6 +118,7 @@ class Author(models.Model):
         "*hash* of the MIT ID, not the MIT ID itself. We want to have a "
         "unique identifier for the author but we don't want to be storing "
         "sensitive data offsite. Hashing the ID achieves our goals.")
+    _dspace_id = models.CharField(max_length=32)
 
     @classmethod
     def is_author_creatable(self, row):
@@ -125,10 +127,13 @@ class Author(models.Model):
         return all([bool(row[x]) for x in Headers.AUTHOR_DATA])
 
     @classmethod
-    def get_hash(cls, mit_id):
+    def get_hash(cls, mit_id, salt=None):
         # This doesn't have to be cryptographically secure - we just need a
         # reasonable non-collision guarantee.
-        return hashlib.md5(mit_id.encode('utf-8')).hexdigest()
+        if salt:
+            return hashlib.md5((salt + mit_id).encode('utf-8')).hexdigest()
+        else:
+            return hashlib.md5(mit_id.encode('utf-8')).hexdigest()
 
     @classmethod
     def get_by_mit_id(cls, mit_id):
@@ -147,3 +152,11 @@ class Author(models.Model):
     @mit_id.setter
     def mit_id(self, value):
         self._mit_id_hash = Author.get_hash(value)
+
+    @property
+    def dspace_id(self):
+        return self._dspace_id
+
+    @dspace_id.setter
+    def dspace_id(self, value):
+        self._dspace_id = Author.get_hash(value, settings.DSPACE_SALT)
