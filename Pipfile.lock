@@ -155,10 +155,10 @@
         },
         "newrelic": {
             "hashes": [
-                "sha256:3cd496022c6906ee3cdbf27c67ec3e03922830bfebbca4549ef6f2e58cf719e2"
+                "sha256:708ac6a75c76a59e3d6c0d714e2fbb1e4ec7d540f7d34bddd81e61bdb636e895"
             ],
             "index": "pypi",
-            "version": "==4.18.0.118"
+            "version": "==4.20.1.121"
         },
         "oauthlib": {
             "hashes": [
