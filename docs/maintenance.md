@@ -18,3 +18,5 @@ There is a management command, `solenoid/elements/management/commands/notify_abo
 `settings.WHITELIST` contains the list of MIT kerbs which are authorized to log in to Solenoid. This includes the list of users you are supporting, and should contain the project manager with the maintenance plan and the staff responsible for the relationship with Symplectic. It may need to be updated from time to time according to staff turnover or roles changes.
 
 There is a Moira list of solenoid users which you can use to communicate about downtime, etc.: https://groups.mit.edu/webmoira/list/solenoid-users
+
+There is also a Moira list of solenoid admins which is listed as a contact email in the 500 error page and to email API notifications as noted above. This should be updated as needed with members of the tech support team responsible for maintaining the application: https://groups.mit.edu/webmoira/list/solenoid-admins
