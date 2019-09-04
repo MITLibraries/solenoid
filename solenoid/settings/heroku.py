@@ -73,9 +73,9 @@ LOGGING = {
     }
 }
 
-# Will be emailed by the management command about API usage.
-ADMINS = [('Helen Bailey', 'hbailey@mit.edu'),
-          ('Mike Graves', 'mgraves@mit.edu')]
+# Will be emailed by the management command about API usage. This is currently
+# set to a Webmoira list.
+ADMINS = [('Solenoid Admins', 'solenoid-admins@mit.edu')]
 
 
 # OAUTH CONFIGURATION
