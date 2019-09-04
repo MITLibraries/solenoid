@@ -1,3 +1,5 @@
+from datetime import timedelta
+from freezegun import freeze_time
 import re
 import requests
 from unittest.mock import patch, MagicMock
@@ -6,6 +8,7 @@ from xml.etree.ElementTree import tostring
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -316,3 +319,32 @@ class ElementsAPICallTest(TestCase):
         call.response_status = 303
         call.save()
         assert not call.should_retry
+
+
+class DeleteStaleAPICallsTest(TestCase):
+    fixtures = ['testdata.yaml']
+
+    def setUp(self):
+        self.call = ElementsAPICall.objects.create(
+            request_data=ElementsAPICall.make_xml('username'),
+            request_url='https://10.0.0.2',
+            response_status='200'
+        )
+
+        with freeze_time(timezone.now() - timedelta(weeks=5)):
+            self.call = ElementsAPICall.objects.create(
+                request_data=ElementsAPICall.make_xml('username'),
+                request_url='https://10.0.0.2'
+            )
+
+        with freeze_time(timezone.now() - timedelta(weeks=5)):
+            self.call = ElementsAPICall.objects.create(
+                request_data=ElementsAPICall.make_xml('username'),
+                request_url='https://10.0.0.2',
+                response_status='200'
+            )
+
+    def test_command(self):
+        self.assertEqual(len(ElementsAPICall.objects.all()), 3)
+        call_command('delete_stale_api_calls')
+        self.assertEqual(len(ElementsAPICall.objects.all()), 2)

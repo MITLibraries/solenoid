@@ -8,6 +8,7 @@ python_version = "3.7"
 
 [dev-packages]
 coverage = ">=4.5.1"
+freezegun = "*"
 
 [packages]
 # Only needed for Heroku
