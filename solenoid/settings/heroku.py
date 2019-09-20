@@ -4,6 +4,8 @@ import sys
 
 from .base import *  # noqa
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -103,7 +105,10 @@ QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 # EXCEPTION CONFIGURATION
 # -----------------------------------------------------------------------------
 
-INSTALLED_APPS += ['raven.contrib.django.raven_compat']
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN', None),
+    integrations=[DjangoIntegration()]
+)
 
 
 # DSPACE CUSTOMIZATION CONFIGURATION
