@@ -19,6 +19,7 @@
         "beautifulsoup4": {
             "hashes": [
                 "sha256:5279c36b4b2ec2cb4298d723791467e3000e5384a43ea0cdf5d45207c7e97169",
+                "sha256:6135db2ba678168c07950f9a16c4031822c6f4aec75a65e0a97bc5ca09789931",
                 "sha256:dcdef580e18a76d54002088602eba453eec38ebbcafafeaabd8cab12b6155d57"
             ],
             "index": "pypi",
@@ -152,10 +153,10 @@
         },
         "newrelic": {
             "hashes": [
-                "sha256:736c2544bccc2db5a015b1a0f2852ee855b43aec40e5439da54af68640ef3505"
+                "sha256:da9adab674d9fe7aa8fbabb6691b33fb7be94a32b6a80548ec7018be9df8ef65"
             ],
             "index": "pypi",
-            "version": "==5.2.0.127"
+            "version": "==5.2.1.129"
         },
         "oauthlib": {
             "hashes": [
