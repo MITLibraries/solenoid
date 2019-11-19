@@ -4,9 +4,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
-
-from solenoid.records.helpers import Headers
-
+from solenoid.records.helpers import Fields
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +122,7 @@ class Author(models.Model):
     def is_author_creatable(self, row):
         """Expects a row of CSV data from Elements and determines whether an
         author instance can be created from it."""
-        return all([bool(row[x]) for x in Headers.AUTHOR_DATA])
+        return all([bool(row[x]) for x in Fields.AUTHOR_DATA])
 
     @classmethod
     def get_hash(cls, mit_id, salt=None):

@@ -1,12 +1,13 @@
-from bs4 import UnicodeDammit
-import chardet
 import csv
 import logging
 
+import chardet
+
+from bs4 import UnicodeDammit
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .helpers import Headers
+from .helpers import Fields
 
 logger = logging.getLogger(__name__)
 
@@ -79,10 +80,10 @@ def _validate_headers_existence(csv_utf_8):
 def _validate_headers_content(csv_utf_8):
     dialect = csv.Sniffer().sniff(csv_utf_8)
     headers = csv_utf_8.splitlines()[0].strip().split(dialect.delimiter)
-    if not all([x in headers for x in Headers.EXPECTED_HEADERS]):
+    if not all([x in headers for x in Fields.EXPECTED_FIELDS]):
         logger.warning("CSV file is missing one or more required columns")
         raise ValidationError("The CSV file must contain all of the following "
-            "columns: {cols}".format(cols=Headers.EXPECTED_HEADERS))
+            "columns: {cols}".format(cols=Fields.EXPECTED_FIELDS))
 
 
 def _validate_csv(csv_utf_8):
