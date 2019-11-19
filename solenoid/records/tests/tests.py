@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import copy
-from datetime import date
 import hashlib
 import os
+from datetime import date
 from string import Template
 
 from django.core.exceptions import ValidationError
-from django.urls import reverse, resolve
 from django.forms.models import model_to_dict
 from django.template.defaultfilters import escape
-from django.test import TestCase, Client, override_settings
-
+from django.test import Client, TestCase, override_settings
+from django.urls import resolve, reverse
 from solenoid.emails.models import EmailMessage
 from solenoid.people.models import DLC, Author, Liaison
 
 from ..forms import _validate_csv
-from ..helpers import Headers
+from ..helpers import Fields
 from ..models import Record
 from ..views import UnsentList
 
@@ -86,11 +85,11 @@ class ImportViewTest(TestCase):
         # Inadmissible encoding
         self._check_validation('bad_encoding.csv')
 
-        # Headers don't match data
+        # Fields don't match data
         self._check_validation('invalid.csv')
 
-        # A required header is missing
-        self._check_validation('missing_headers.csv')
+        # A required field is missing
+        self._check_validation('missing_fields.csv')
 
         # Seriously what even is this
         self._check_validation('this_is_a_cc0_kitten_pic_not_a_csv.jpeg')
@@ -515,105 +514,105 @@ class RecordModelTest(TestCase):
     fixtures = ['testdata.yaml']
 
     def setUp(self):
-        # A dict containing all the EXPECTED_HEADERS.
+        # A dict containing all the EXPECTED_FIELDS.
         self.csv_row = {
-            Headers.EMAIL: 'test@example.com',
-            Headers.DOI: '10.5137/527va',
-            Headers.FIRST_NAME: 'William Barton',
-            Headers.LAST_NAME: 'Rogers',
-            Headers.MIT_ID: '1',
-            Headers.PUBLISHER_NAME: 'Haus of Books',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.DLC: "President's Office",
-            Headers.PAPER_ID: '895327',
-            Headers.MESSAGE: '',
+            Fields.EMAIL: 'test@example.com',
+            Fields.DOI: '10.5137/527va',
+            Fields.FIRST_NAME: 'William Barton',
+            Fields.LAST_NAME: 'Rogers',
+            Fields.MIT_ID: '1',
+            Fields.PUBLISHER_NAME: 'Haus of Books',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.DLC: "President's Office",
+            Fields.PAPER_ID: '895327',
+            Fields.MESSAGE: '',
         }
 
         # MIT physics professor Frank Wilczek coauthored this paper, for which
         # he won the Nobel prize in 2004.
         self.citation_data = {
-            Headers.FIRST_NAME: 'Frank',
-            Headers.LAST_NAME: 'Wilczek',
-            Headers.PUBDATE: '19730625',
-            Headers.VOLUME: '30',
-            Headers.ISSUE: '26',
-            Headers.DOI: '10.1103/PhysRevLett.30.1343',
-            Headers.JOURNAL: 'Physical Review Letters',
-            Headers.TITLE: 'Ultraviolet behavior of non-abelian gauge theories'
+            Fields.FIRST_NAME: 'Frank',
+            Fields.LAST_NAME: 'Wilczek',
+            Fields.PUBDATE: '19730625',
+            Fields.VOLUME: '30',
+            Fields.ISSUE: '26',
+            Fields.DOI: '10.1103/PhysRevLett.30.1343',
+            Fields.JOURNAL: 'Physical Review Letters',
+            Fields.TITLE: 'Ultraviolet behavior of non-abelian gauge theories'
         }
 
     # need to actually test create_citation
     def test_is_row_valid_yes_citation_no_citation_data(self):
         row = copy.copy(self.csv_row)
-        row[Headers.CITATION] = 'This is a citation'
-        row[Headers.TITLE] = None
-        row[Headers.JOURNAL] = None
+        row[Fields.CITATION] = 'This is a citation'
+        row[Fields.TITLE] = None
+        row[Fields.JOURNAL] = None
         assert Record.is_row_valid(row)
 
     def test_is_row_valid_no_citation_yes_citation_data(self):
         row = copy.copy(self.csv_row)
-        row[Headers.CITATION] = None
-        row[Headers.TITLE] = 'This is a paper title'
-        row[Headers.JOURNAL] = 'Journal of Awesomeness'
+        row[Fields.CITATION] = None
+        row[Fields.TITLE] = 'This is a paper title'
+        row[Fields.JOURNAL] = 'Journal of Awesomeness'
         assert Record.is_row_valid(row)
 
     def test_is_row_valid_no_citation_no_citation_data(self):
         row = copy.copy(self.csv_row)
-        row[Headers.CITATION] = None
-        row[Headers.TITLE] = None
-        row[Headers.JOURNAL] = None
+        row[Fields.CITATION] = None
+        row[Fields.TITLE] = None
+        row[Fields.JOURNAL] = None
         assert not Record.is_row_valid(row)
 
     def test_is_record_creatable(self):
         # Data includes the basics? Good!
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: Record.ACQ_MANUSCRIPT,
-            Headers.CITATION: 'nonempty'
+            Fields.PUBLISHER_NAME: 'foo',
+            Fields.ACQ_METHOD: Record.ACQ_MANUSCRIPT,
+            Fields.CITATION: 'nonempty'
         }
         assert Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: '',
-            Headers.CITATION: 'nonempty'
+            Fields.PUBLISHER_NAME: 'foo',
+            Fields.ACQ_METHOD: '',
+            Fields.CITATION: 'nonempty'
         }
         assert Record.is_record_creatable(data)
 
         # Missing data for required basics? Bad!
         data = copy.copy(self.csv_row)
         data.update(self.citation_data)
-        data[Headers.CITATION] = ''
-        data[Headers.FIRST_NAME] = ''
+        data[Fields.CITATION] = ''
+        data[Fields.FIRST_NAME] = ''
         assert not Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: '',
-            Headers.ACQ_METHOD: 'random',
-            Headers.CITATION: 'nonempty'
+            Fields.PUBLISHER_NAME: '',
+            Fields.ACQ_METHOD: 'random',
+            Fields.CITATION: 'nonempty'
         }
         assert not Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
+            Fields.PUBLISHER_NAME: 'foo',
             # No acq method column at all
-            Headers.CITATION: 'nonempty'
+            Fields.CITATION: 'nonempty'
         }
 
         # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'nonempty',
-            Headers.DOI: ''
+            Fields.PUBLISHER_NAME: 'foo',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'nonempty',
+            Fields.DOI: ''
         }
         assert not Record.is_record_creatable(data)
 
         data = {
-            Headers.PUBLISHER_NAME: 'foo',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'nonempty',
-            Headers.DOI: '4217896'
+            Fields.PUBLISHER_NAME: 'foo',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'nonempty',
+            Fields.DOI: '4217896'
         }
         assert Record.is_record_creatable(data)
 
@@ -711,16 +710,16 @@ class RecordModelTest(TestCase):
     def test_get_or_create_from_csv(self):
         author = Author.objects.get(pk=1)
         record, created = Record.get_or_create_from_csv(
-            author, {Headers.PAPER_ID: 1})
+            author, {Fields.PAPER_ID: 1})
         assert record.pk == 1
         assert not created
 
         row = {
-            Headers.PUBLISHER_NAME: 'publisher_name',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'citation',
-            Headers.DOI: 'doi',
-            Headers.PAPER_ID: 'paper_id',
+            Fields.PUBLISHER_NAME: 'publisher_name',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'citation',
+            Fields.DOI: 'doi',
+            Fields.PAPER_ID: 'paper_id',
         }
 
         record, created = Record.get_or_create_from_csv(author, row)
@@ -735,11 +734,11 @@ class RecordModelTest(TestCase):
         """There are no duplicates: this should return None."""
 
         row = {
-            Headers.PUBLISHER_NAME: 'publisher_name',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'citation',
-            Headers.DOI: 'doi',
-            Headers.PAPER_ID: 'paper_id',
+            Fields.PUBLISHER_NAME: 'publisher_name',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'citation',
+            Fields.DOI: 'doi',
+            Fields.PAPER_ID: 'paper_id',
         }
         author = Author.objects.get(pk=1)
 
@@ -750,14 +749,14 @@ class RecordModelTest(TestCase):
         this should return None."""
 
         row = {
-            Headers.PUBLISHER_NAME: 'Wiley',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
-            Headers.DOI: '10.1412/4678156',
-            Headers.PAPER_ID: 'paper_id',
-            Headers.FIRST_NAME: 'Different',
-            Headers.LAST_NAME: 'Author',
-            Headers.MIT_ID: 214614,
+            Fields.PUBLISHER_NAME: 'Wiley',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
+            Fields.DOI: '10.1412/4678156',
+            Fields.PAPER_ID: 'paper_id',
+            Fields.FIRST_NAME: 'Different',
+            Fields.LAST_NAME: 'Author',
+            Fields.MIT_ID: 214614,
         }
 
         # Check assumption - we don't have this author in the db at all, so
@@ -783,14 +782,14 @@ class RecordModelTest(TestCase):
 
         # This is a duplicate of record #2, except for the paper ID.
         row = {
-            Headers.PUBLISHER_NAME: 'Nature',
-            Headers.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Headers.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
-            Headers.DOI: '10.1240.2/4914241',
-            Headers.PAPER_ID: '24618',
-            Headers.FIRST_NAME: 'Susumu',
-            Headers.LAST_NAME: 'Tonegawa',
-            Headers.MIT_ID: '2',
+            Fields.PUBLISHER_NAME: 'Nature',
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
+            Fields.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
+            Fields.DOI: '10.1240.2/4914241',
+            Fields.PAPER_ID: '24618',
+            Fields.FIRST_NAME: 'Susumu',
+            Fields.LAST_NAME: 'Tonegawa',
+            Fields.MIT_ID: '2',
         }
         author = Author.objects.get(last_name='Tonegawa')
 
@@ -804,9 +803,9 @@ class RecordModelTest(TestCase):
         volume & issue: NO
         doi: NO """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.VOLUME,
-                                   Headers.ISSUE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.VOLUME,
+                                   Fields.ISSUE,
+                                   Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -819,7 +818,7 @@ class RecordModelTest(TestCase):
         volume & issue: YES
         doi: NO """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.DOI],
+        data.update(dict.fromkeys([Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -832,8 +831,8 @@ class RecordModelTest(TestCase):
         volume & issue: NO
         doi: YES """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.VOLUME,
-                                   Headers.ISSUE],
+        data.update(dict.fromkeys([Fields.VOLUME,
+                                   Fields.ISSUE],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -856,10 +855,10 @@ class RecordModelTest(TestCase):
         volume & issue: NO
         doi: NO """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE,
-                                   Headers.VOLUME,
-                                   Headers.ISSUE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.PUBDATE,
+                                   Fields.VOLUME,
+                                   Fields.ISSUE,
+                                   Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -872,8 +871,8 @@ class RecordModelTest(TestCase):
         volume & issue: YES
         doi: NO """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.PUBDATE,
+                                   Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -886,9 +885,9 @@ class RecordModelTest(TestCase):
         volume & issue: NO
         doi: YES """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE,
-                                   Headers.VOLUME,
-                                   Headers.ISSUE],
+        data.update(dict.fromkeys([Fields.PUBDATE,
+                                   Fields.VOLUME,
+                                   Fields.ISSUE],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -901,7 +900,7 @@ class RecordModelTest(TestCase):
         volume & issue: YES
         doi: YES """
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE],
+        data.update(dict.fromkeys([Fields.PUBDATE],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -911,9 +910,9 @@ class RecordModelTest(TestCase):
     def test_create_citation_error_case_1(self):
         """Minimal citation; has volume, lacks issue."""
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE,
-                                   Headers.ISSUE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.PUBDATE,
+                                   Fields.ISSUE,
+                                   Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -923,9 +922,9 @@ class RecordModelTest(TestCase):
     def test_create_citation_error_case_2(self):
         """Minimal citation; has issue, lacks volume."""
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.PUBDATE,
-                                   Headers.VOLUME,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.PUBDATE,
+                                   Fields.VOLUME,
+                                   Fields.DOI],
                     None))
         citation = Record.create_citation(data)
         self.assertEqual(citation,
@@ -936,11 +935,11 @@ class RecordModelTest(TestCase):
         """Minimal citation and pubdate, but pubdate is incorrectly formatted
         (too few characters)."""
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.VOLUME,
-                                   Headers.ISSUE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.VOLUME,
+                                   Fields.ISSUE,
+                                   Fields.DOI],
                     None))
-        data[Headers.PUBDATE] = '12341'
+        data[Fields.PUBDATE] = '12341'
         citation = Record.create_citation(data)
         self.assertEqual(citation,
             'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
@@ -950,11 +949,11 @@ class RecordModelTest(TestCase):
         """Minimal citation and pubdate, but pubdate is incorrectly formatted
         (not all numbers)."""
         data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Headers.VOLUME,
-                                   Headers.ISSUE,
-                                   Headers.DOI],
+        data.update(dict.fromkeys([Fields.VOLUME,
+                                   Fields.ISSUE,
+                                   Fields.DOI],
                     None))
-        data[Headers.PUBDATE] = '1234m714'
+        data[Fields.PUBDATE] = '1234m714'
         citation = Record.create_citation(data)
         self.assertEqual(citation,
             'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
@@ -964,10 +963,10 @@ class RecordModelTest(TestCase):
         """update_if_needed alters the record when it sees a new author."""
         r1 = Record.objects.get(pk=1)
         row = {}
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = r1.doi
-        row[Headers.CITATION] = r1.citation
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = r1.doi
+        row[Fields.CITATION] = r1.citation
         author = Author.objects.get(pk=2)  # not the author of r1
         assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
@@ -978,10 +977,10 @@ class RecordModelTest(TestCase):
         r1 = Record.objects.get(pk=1)
         row = {}
         new_publisher = r1.publisher_name + 'new'
-        row[Headers.PUBLISHER_NAME] = new_publisher
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = r1.doi
-        row[Headers.CITATION] = r1.citation
+        row[Fields.PUBLISHER_NAME] = new_publisher
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = r1.doi
+        row[Fields.CITATION] = r1.citation
         author = r1.author
         assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
@@ -992,10 +991,10 @@ class RecordModelTest(TestCase):
         method."""
         r1 = Record.objects.get(pk=1)
         row = {}
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
-        row[Headers.DOI] = r1.doi
-        row[Headers.CITATION] = r1.citation
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
+        row[Fields.DOI] = r1.doi
+        row[Fields.CITATION] = r1.citation
         author = r1.author
         assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
@@ -1006,10 +1005,10 @@ class RecordModelTest(TestCase):
         r1 = Record.objects.get(pk=1)
         row = {}
         new_doi = r1.doi + 'new'
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = new_doi
-        row[Headers.CITATION] = r1.citation
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = new_doi
+        row[Fields.CITATION] = r1.citation
         author = r1.author
         assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
@@ -1021,10 +1020,10 @@ class RecordModelTest(TestCase):
         r1 = Record.objects.get(pk=1)
         row = {}
         new_citation = r1.citation + 'new'
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = r1.doi
-        row[Headers.CITATION] = new_citation
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = r1.doi
+        row[Fields.CITATION] = new_citation
         author = r1.author
         assert r1.update_if_needed(author, row)
         r1.refresh_from_db()
@@ -1035,22 +1034,22 @@ class RecordModelTest(TestCase):
         changed."""
         r1 = Record.objects.get(pk=1)
         row = {}
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = r1.doi
-        row[Headers.LAST_NAME] = 'Fermi'
-        row[Headers.FIRST_NAME] = 'Enrico'
-        row[Headers.PUBDATE] = '20160815'
-        row[Headers.TITLE] = 'Paper name'
-        row[Headers.JOURNAL] = 'Some journal or other'
-        row[Headers.VOLUME] = '145'
-        row[Headers.ISSUE] = '5'
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = r1.doi
+        row[Fields.LAST_NAME] = 'Fermi'
+        row[Fields.FIRST_NAME] = 'Enrico'
+        row[Fields.PUBDATE] = '20160815'
+        row[Fields.TITLE] = 'Paper name'
+        row[Fields.JOURNAL] = 'Some journal or other'
+        row[Fields.VOLUME] = '145'
+        row[Fields.ISSUE] = '5'
         author = r1.author
 
         # Ensure that the citation will not have changed
         r1.citation = Record.create_citation(row)
         r1.save()
-        row[Headers.CITATION] = r1.citation
+        row[Fields.CITATION] = r1.citation
 
         assert not r1.update_if_needed(author, row)
 
@@ -1060,17 +1059,17 @@ class RecordModelTest(TestCase):
         different citation than the currently existing one."""
         r1 = Record.objects.get(pk=1)
         row = {}
-        row[Headers.PUBLISHER_NAME] = r1.publisher_name
-        row[Headers.ACQ_METHOD] = r1.acq_method
-        row[Headers.DOI] = r1.doi
-        row[Headers.LAST_NAME] = 'Fermi'
-        row[Headers.FIRST_NAME] = 'Enrico'
-        row[Headers.PUBDATE] = '20160815'
-        row[Headers.TITLE] = 'Paper name'
-        row[Headers.JOURNAL] = 'Some journal or other'
-        row[Headers.VOLUME] = '145'
-        row[Headers.ISSUE] = '5'
-        row[Headers.CITATION] = ''
+        row[Fields.PUBLISHER_NAME] = r1.publisher_name
+        row[Fields.ACQ_METHOD] = r1.acq_method
+        row[Fields.DOI] = r1.doi
+        row[Fields.LAST_NAME] = 'Fermi'
+        row[Fields.FIRST_NAME] = 'Enrico'
+        row[Fields.PUBDATE] = '20160815'
+        row[Fields.TITLE] = 'Paper name'
+        row[Fields.JOURNAL] = 'Some journal or other'
+        row[Fields.VOLUME] = '145'
+        row[Fields.ISSUE] = '5'
+        row[Fields.CITATION] = ''
         author = r1.author
 
         assert r1.citation != Record.create_citation(row)  # check assumption
