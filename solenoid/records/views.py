@@ -95,7 +95,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         return True
 
     def _check_row_validity(self, row):
-        if not Record.is_row_valid(row):
+        if not Record.is_data_valid(row):
             logger.warning('Invalid record row')
             messages.warning(self.request, 'Publication #{id} by {author} '
                 'is missing required data (one or more of {info}), so '
@@ -107,7 +107,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         return True
 
     def _check_row_superfluity(self, author, row):
-        if Record.is_row_superfluous(author, row):
+        if Record.is_paper_superfluous(author, row):
             logger.info('Record is superfluous')
             messages.info(self.request, 'Publication #{id} by {author} '
                 'has already been requested (possibly from another '

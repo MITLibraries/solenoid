@@ -515,7 +515,7 @@ class RecordModelTest(TestCase):
 
     def setUp(self):
         # A dict containing all the EXPECTED_FIELDS.
-        self.csv_row = {
+        self.paper_data = {
             Fields.EMAIL: 'test@example.com',
             Fields.DOI: '10.5137/527va',
             Fields.FIRST_NAME: 'William Barton',
@@ -542,26 +542,26 @@ class RecordModelTest(TestCase):
         }
 
     # need to actually test create_citation
-    def test_is_row_valid_yes_citation_no_citation_data(self):
-        row = copy.copy(self.csv_row)
-        row[Fields.CITATION] = 'This is a citation'
-        row[Fields.TITLE] = None
-        row[Fields.JOURNAL] = None
-        assert Record.is_row_valid(row)
+    def test_is_metadata_valid_yes_citation_no_citation_data(self):
+        metadata = copy.copy(self.paper_data)
+        metadata[Fields.CITATION] = 'This is a citation'
+        metadata[Fields.TITLE] = None
+        metadata[Fields.JOURNAL] = None
+        assert Record.is_data_valid(metadata)
 
-    def test_is_row_valid_no_citation_yes_citation_data(self):
-        row = copy.copy(self.csv_row)
-        row[Fields.CITATION] = None
-        row[Fields.TITLE] = 'This is a paper title'
-        row[Fields.JOURNAL] = 'Journal of Awesomeness'
-        assert Record.is_row_valid(row)
+    def test_is_metadata_valid_no_citation_yes_citation_data(self):
+        metadata = copy.copy(self.paper_data)
+        metadata[Fields.CITATION] = None
+        metadata[Fields.TITLE] = 'This is a paper title'
+        metadata[Fields.JOURNAL] = 'Journal of Awesomeness'
+        assert Record.is_data_valid(metadata)
 
-    def test_is_row_valid_no_citation_no_citation_data(self):
-        row = copy.copy(self.csv_row)
-        row[Fields.CITATION] = None
-        row[Fields.TITLE] = None
-        row[Fields.JOURNAL] = None
-        assert not Record.is_row_valid(row)
+    def test_is_metadata_valid_no_citation_no_citation_data(self):
+        metadata = copy.copy(self.paper_data)
+        metadata[Fields.CITATION] = None
+        metadata[Fields.TITLE] = None
+        metadata[Fields.JOURNAL] = None
+        assert not Record.is_data_valid(metadata)
 
     def test_is_record_creatable(self):
         # Data includes the basics? Good!
@@ -580,7 +580,7 @@ class RecordModelTest(TestCase):
         assert Record.is_record_creatable(data)
 
         # Missing data for required basics? Bad!
-        data = copy.copy(self.csv_row)
+        data = copy.copy(self.paper_data)
         data.update(self.citation_data)
         data[Fields.CITATION] = ''
         data[Fields.FIRST_NAME] = ''
@@ -733,7 +733,7 @@ class RecordModelTest(TestCase):
     def test_get_duplicates_1(self):
         """There are no duplicates: this should return None."""
 
-        row = {
+        metadata = {
             Fields.PUBLISHER_NAME: 'publisher_name',
             Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Fields.CITATION: 'citation',
@@ -742,13 +742,13 @@ class RecordModelTest(TestCase):
         }
         author = Author.objects.get(pk=1)
 
-        assert Record.get_duplicates(author, row) is None
+        assert Record.get_duplicates(author, metadata) is None
 
     def test_get_duplicates_2(self):
         """There's a paper with the same citation but a different author;
         this should return None."""
 
-        row = {
+        metadata = {
             Fields.PUBLISHER_NAME: 'Wiley',
             Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Fields.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
@@ -772,7 +772,7 @@ class RecordModelTest(TestCase):
             email='da@example.com'
         )
 
-        assert Record.get_duplicates(author, row) is None
+        assert Record.get_duplicates(author, metadata) is None
 
     def test_get_duplicates_3(self):
         """There's a paper with the same citation, the same author, and a
@@ -781,7 +781,7 @@ class RecordModelTest(TestCase):
         assert not Record.objects.filter(paper_id=24618)
 
         # This is a duplicate of record #2, except for the paper ID.
-        row = {
+        metadata = {
             Fields.PUBLISHER_NAME: 'Nature',
             Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
             Fields.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
@@ -793,7 +793,7 @@ class RecordModelTest(TestCase):
         }
         author = Author.objects.get(last_name='Tonegawa')
 
-        dupes = Record.get_duplicates(author, row)
+        dupes = Record.get_duplicates(author, metadata)
         assert dupes.count() == 1
         assert int(dupes[0].paper_id) == 123141
 
@@ -962,27 +962,27 @@ class RecordModelTest(TestCase):
     def test_update_if_needed_case_1(self):
         """update_if_needed alters the record when it sees a new author."""
         r1 = Record.objects.get(pk=1)
-        row = {}
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = r1.doi
-        row[Fields.CITATION] = r1.citation
+        metadata = {}
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.CITATION] = r1.citation
         author = Author.objects.get(pk=2)  # not the author of r1
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
         assert r1.author == author
 
     def test_update_if_needed_case_2(self):
         """update_if_needed alters the record when it sees a new publisher."""
         r1 = Record.objects.get(pk=1)
-        row = {}
+        metadata = {}
         new_publisher = r1.publisher_name + 'new'
-        row[Fields.PUBLISHER_NAME] = new_publisher
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = r1.doi
-        row[Fields.CITATION] = r1.citation
+        metadata[Fields.PUBLISHER_NAME] = new_publisher
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
         assert r1.publisher_name == new_publisher
 
@@ -990,27 +990,27 @@ class RecordModelTest(TestCase):
         """update_if_needed alters the record when it sees a new acquisition
         method."""
         r1 = Record.objects.get(pk=1)
-        row = {}
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
-        row[Fields.DOI] = r1.doi
-        row[Fields.CITATION] = r1.citation
+        metadata = {}
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
         assert r1.acq_method == 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'
 
     def test_update_if_needed_case_4(self):
         """update_if_needed alters the record when it sees a new DOI."""
         r1 = Record.objects.get(pk=1)
-        row = {}
+        metadata = {}
         new_doi = r1.doi + 'new'
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = new_doi
-        row[Fields.CITATION] = r1.citation
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = new_doi
+        metadata[Fields.CITATION] = r1.citation
         author = r1.author
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
         assert r1.doi == new_doi
 
@@ -1018,14 +1018,14 @@ class RecordModelTest(TestCase):
         """update_if_needed alters the record when it sees a new citation
         that is not blank."""
         r1 = Record.objects.get(pk=1)
-        row = {}
+        metadata = {}
         new_citation = r1.citation + 'new'
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = r1.doi
-        row[Fields.CITATION] = new_citation
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.CITATION] = new_citation
         author = r1.author
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
         assert r1.citation == new_citation
 
@@ -1033,47 +1033,47 @@ class RecordModelTest(TestCase):
         """update_if_needed does NOT alter the record if nothing has
         changed."""
         r1 = Record.objects.get(pk=1)
-        row = {}
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = r1.doi
-        row[Fields.LAST_NAME] = 'Fermi'
-        row[Fields.FIRST_NAME] = 'Enrico'
-        row[Fields.PUBDATE] = '20160815'
-        row[Fields.TITLE] = 'Paper name'
-        row[Fields.JOURNAL] = 'Some journal or other'
-        row[Fields.VOLUME] = '145'
-        row[Fields.ISSUE] = '5'
+        metadata = {}
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.LAST_NAME] = 'Fermi'
+        metadata[Fields.FIRST_NAME] = 'Enrico'
+        metadata[Fields.PUBDATE] = '20160815'
+        metadata[Fields.TITLE] = 'Paper name'
+        metadata[Fields.JOURNAL] = 'Some journal or other'
+        metadata[Fields.VOLUME] = '145'
+        metadata[Fields.ISSUE] = '5'
         author = r1.author
 
         # Ensure that the citation will not have changed
-        r1.citation = Record.create_citation(row)
+        r1.citation = Record.create_citation(metadata)
         r1.save()
-        row[Fields.CITATION] = r1.citation
+        metadata[Fields.CITATION] = r1.citation
 
-        assert not r1.update_if_needed(author, row)
+        assert not r1.update_if_needed(author, metadata)
 
     def test_update_if_needed_case_7(self):
         """update_if_needed does alter the record if the citation is blank,
         but other data from which we would generate a citation leads to a
         different citation than the currently existing one."""
         r1 = Record.objects.get(pk=1)
-        row = {}
-        row[Fields.PUBLISHER_NAME] = r1.publisher_name
-        row[Fields.ACQ_METHOD] = r1.acq_method
-        row[Fields.DOI] = r1.doi
-        row[Fields.LAST_NAME] = 'Fermi'
-        row[Fields.FIRST_NAME] = 'Enrico'
-        row[Fields.PUBDATE] = '20160815'
-        row[Fields.TITLE] = 'Paper name'
-        row[Fields.JOURNAL] = 'Some journal or other'
-        row[Fields.VOLUME] = '145'
-        row[Fields.ISSUE] = '5'
-        row[Fields.CITATION] = ''
+        metadata = {}
+        metadata[Fields.PUBLISHER_NAME] = r1.publisher_name
+        metadata[Fields.ACQ_METHOD] = r1.acq_method
+        metadata[Fields.DOI] = r1.doi
+        metadata[Fields.LAST_NAME] = 'Fermi'
+        metadata[Fields.FIRST_NAME] = 'Enrico'
+        metadata[Fields.PUBDATE] = '20160815'
+        metadata[Fields.TITLE] = 'Paper name'
+        metadata[Fields.JOURNAL] = 'Some journal or other'
+        metadata[Fields.VOLUME] = '145'
+        metadata[Fields.ISSUE] = '5'
+        metadata[Fields.CITATION] = ''
         author = r1.author
 
-        assert r1.citation != Record.create_citation(row)  # check assumption
+        assert r1.citation != Record.create_citation(metadata)  # check assumption
 
-        assert r1.update_if_needed(author, row)
+        assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()
-        assert r1.citation == Record.create_citation(row)
+        assert r1.citation == Record.create_citation(metadata)
