@@ -23,7 +23,7 @@ class Fields(object):
                        TITLE, JOURNAL, VOLUME, ISSUE]
 
     # This is information we can get from the database if it happens to be
-    # missing from a row in an Elements CSV file, if we already know about
+    # missing from the Elements metadata, if we already know about
     # this author. However, we need all of it if we don't already know about
     # the author.
     AUTHOR_DATA = [EMAIL, FIRST_NAME, LAST_NAME, DLC]

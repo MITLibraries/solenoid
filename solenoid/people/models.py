@@ -119,10 +119,9 @@ class Author(models.Model):
     _dspace_id = models.CharField(max_length=32)
 
     @classmethod
-    def is_author_creatable(self, row):
-        """Expects a row of CSV data from Elements and determines whether an
-        author instance can be created from it."""
-        return all([bool(row[x]) for x in Fields.AUTHOR_DATA])
+    def is_author_creatable(self, paper_data):
+        """Expects metadata for a single paper from Elements and determines whether an author instance can be created from it."""
+        return all([bool(paper_data[x]) for x in Fields.AUTHOR_DATA])
 
     @classmethod
     def get_hash(cls, mit_id, salt=None):
