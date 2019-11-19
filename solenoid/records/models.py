@@ -99,11 +99,11 @@ class Record(models.Model):
     def create_citation(paper_data):
         """Create text suitable for the citation field.
 
-        Some CSV records fill in the citation field, but some leave it blank;
-        in those cases we need to build our own citation text. Stakeholders
-        have indicated that it doesn't matter what citation format we use or
-        whether the citation is complete (as long as it includes author, title,
-        and journal title).
+        Some Elements papers include the citation field in their metadata,
+        but some leave it blank; in those cases we need to build our own
+        citation text. Stakeholders have indicated that it doesn't matter what
+        citation format we use or whether the citation is complete (as long as
+        it includes author, title, and journal title).
 
         This method assumes that the supplied paper metadata has already been
         validated; it does not perform any validation.

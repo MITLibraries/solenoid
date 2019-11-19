@@ -1,10 +1,10 @@
 import hashlib
 import os
 
+from django.test import Client, TestCase, override_settings
 from django.urls import resolve, reverse
-from django.test import TestCase, Client, override_settings
 
-from .models import Liaison, DLC, Author
+from .models import DLC, Author, Liaison
 from .views import LiaisonList
 
 
@@ -115,7 +115,7 @@ class LiaisonUpdateTests(TestCase):
 class DLCTests(TestCase):
 
     # We used to have an option for letting people manually edit DLCs. We've
-    # backed this out in favor of only creating DLCs via CSV import - there
+    # backed this out in favor of only creating DLCs via data import - there
     # is name authority work going on upstream we would prefer to rely on.
     # If it's desirable to put that functionality back, there were tests for it
     # here, and it last existed at commit
