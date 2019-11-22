@@ -3,16 +3,15 @@ import logging
 
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic.edit import FormView
-from django.views.generic.list import ListView
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-
-from solenoid.people.models import Author, DLC
+from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
+from solenoid.people.models import DLC, Author
 from solenoid.userauth.mixins import ConditionalLoginRequiredMixin
 
 from .forms import ImportForm
-from .helpers import Headers
+from .helpers import Fields
 from .models import Record
 
 logger = logging.getLogger(__name__)
@@ -70,8 +69,8 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             logger.warning('Invalid acquisition method')
             messages.warning(self.request, 'Publication #{id} by {author} '
                 'has an unrecognized acquisition method, so this citation '
-                'will not be imported.'.format(id=row[Headers.PAPER_ID],
-                                   author=row[Headers.LAST_NAME]))
+                'will not be imported.'.format(id=row[Fields.PAPER_ID],
+                                   author=row[Fields.LAST_NAME]))
             return False
         return True
 
@@ -89,34 +88,34 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                 'duplicates the following record(s) already in the '
                 'database: {dupes}. Please merge #{id} into an existing '
                 'record in Elements. It will not be imported.'.format(
-                    id=row[Headers.PAPER_ID],
-                    author=row[Headers.LAST_NAME],
+                    id=row[Fields.PAPER_ID],
+                    author=row[Fields.LAST_NAME],
                     dupes=dupe_list))
             return False
         return True
 
     def _check_row_validity(self, row):
-        if not Record.is_row_valid(row):
+        if not Record.is_data_valid(row):
             logger.warning('Invalid record row')
             messages.warning(self.request, 'Publication #{id} by {author} '
                 'is missing required data (one or more of {info}), so '
                 'this citation will not be imported.'.format(
-                    id=row[Headers.PAPER_ID],
-                    author=row[Headers.LAST_NAME],
-                    info=', '.join(Headers.REQUIRED_DATA)))
+                    id=row[Fields.PAPER_ID],
+                    author=row[Fields.LAST_NAME],
+                    info=', '.join(Fields.REQUIRED_DATA)))
             return False
         return True
 
     def _check_row_superfluity(self, author, row):
-        if Record.is_row_superfluous(author, row):
+        if Record.is_paper_superfluous(author, row):
             logger.info('Record is superfluous')
             messages.info(self.request, 'Publication #{id} by {author} '
                 'has already been requested (possibly from another '
                 'author), so this record will not be imported. Please add '
                 'this citation manually to an email, and manually mark it '
                 'as requested in Symplectic, if you would like to request '
-                'it from this author also'.format(id=row[Headers.PAPER_ID],
-                    author=row[Headers.LAST_NAME]))
+                'it from this author also'.format(id=row[Fields.PAPER_ID],
+                    author=row[Fields.LAST_NAME]))
             return False
         return True
 
@@ -132,27 +131,27 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
     def _get_author(self, row):
         try:
-            author = Author.get_by_mit_id(row[Headers.MIT_ID])
+            author = Author.get_by_mit_id(row[Fields.MIT_ID])
             if not author.dspace_id:
-                author.dspace_id = row[Headers.MIT_ID]
+                author.dspace_id = row[Fields.MIT_ID]
                 author.save()
         except Author.DoesNotExist:
             if Author.is_author_creatable(row):
-                dlc, _ = DLC.objects.get_or_create(name=row[Headers.DLC])
+                dlc, _ = DLC.objects.get_or_create(name=row[Fields.DLC])
                 author = Author.objects.create(
-                    first_name=row[Headers.FIRST_NAME],
-                    last_name=row[Headers.LAST_NAME],
+                    first_name=row[Fields.FIRST_NAME],
+                    last_name=row[Fields.LAST_NAME],
                     dlc=dlc,
-                    email=row[Headers.EMAIL],
-                    mit_id=row[Headers.MIT_ID],
-                    dspace_id=row[Headers.MIT_ID]
+                    email=row[Fields.EMAIL],
+                    mit_id=row[Fields.MIT_ID],
+                    dspace_id=row[Fields.MIT_ID]
                 )
             else:
                 author = None
                 logger.warning('No author can be found for record')
                 messages.warning(self.request, 'The author for publication '
                     '#{id} is missing required information. This record will '
-                    'not be created'.format(id=row[Headers.PAPER_ID]))
+                    'not be created'.format(id=row[Fields.PAPER_ID]))
         logger.info('author was %s' % author)
         return author
 
@@ -162,12 +161,12 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             record, created = Record.get_or_create_from_csv(author, row)
         else:
             logger.warning('Cannot create record for publication {id} '
-                'with author {author}'.format(id=row[Headers.PAPER_ID],
-                    author=row[Headers.LAST_NAME]))
+                'with author {author}'.format(id=row[Fields.PAPER_ID],
+                    author=row[Fields.LAST_NAME]))
             messages.warning(self.request, 'The record for publication '
                 '#{id} by {author} is missing required information and '
-                'will not be created.'.format(id=row[Headers.PAPER_ID],
-                    author=row[Headers.LAST_NAME]))
+                'will not be created.'.format(id=row[Fields.PAPER_ID],
+                    author=row[Fields.LAST_NAME]))
             record = None
             created = None
 

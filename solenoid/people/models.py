@@ -4,9 +4,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
-
-from solenoid.records.helpers import Headers
-
+from solenoid.records.helpers import Fields
 
 logger = logging.getLogger(__name__)
 
@@ -88,8 +86,8 @@ class DLC(models.Model):
         return self.name
 
     name = models.CharField(max_length=100, unique=True)
-    # DLCs are created as needed during the CSV import process, and we don't
-    # have liaison information available at that time.
+    # DLCs are created as needed during the metadata import process, and we
+    # don't have liaison information available at that time.
     liaison = models.ForeignKey(
         Liaison,
         blank=True,
@@ -107,9 +105,9 @@ class Author(models.Model):
     def __str__(self):
         return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)  # noqa
 
-    # Authors may have blank DLCs in the CSV, but if that happens we're going
-    # to push it back to the Sympletic layer and request that the user fix it
-    # there.
+    # Authors may have blank DLCs in a given paper's metadata, but if that
+    # happens we're going to push it back to the Sympletic layer and request
+    # that the user fix it there.
     dlc = models.ForeignKey(DLC, on_delete=models.CASCADE)
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=30)
@@ -121,10 +119,9 @@ class Author(models.Model):
     _dspace_id = models.CharField(max_length=32)
 
     @classmethod
-    def is_author_creatable(self, row):
-        """Expects a row of CSV data from Elements and determines whether an
-        author instance can be created from it."""
-        return all([bool(row[x]) for x in Headers.AUTHOR_DATA])
+    def is_author_creatable(self, paper_data):
+        """Expects metadata for a single paper from Elements and determines whether an author instance can be created from it."""
+        return all([bool(paper_data[x]) for x in Fields.AUTHOR_DATA])
 
     @classmethod
     def get_hash(cls, mit_id, salt=None):
@@ -143,8 +140,8 @@ class Author(models.Model):
 
     # These properties allow us to get and set the mit ID using the normal
     # API; in particular, we can directly set the ID from the MTI ID value in
-    # the CSV files. However, under the hood, we're throwing out the sensitive
-    # data and storing hashes. Hooray!
+    # the paper metadata. However, under the hood, we're throwing out the
+    # sensitive data and storing hashes. Hooray!
     @property
     def mit_id(self):
         return self._mit_id_hash
