@@ -2,13 +2,14 @@ from unittest.mock import patch
 from urllib.parse import urljoin
 from xml.etree.ElementTree import tostring
 
+from requests.exceptions import HTTPError
+
 import requests_mock
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from freezegun import freeze_time
-from requests.exceptions import HTTPError
 
 from ..emails.models import EmailMessage
 from ..emails.signals import email_sent
@@ -49,6 +50,9 @@ class TasksTest(TestCase):
         with self.assertRaises(RetryError):
             m.register_uri('PATCH', 'mock://api.com/409', status_code=409)
             patch_elements_record('mock://api.com/409', GOOD_XML)
+        with self.assertRaises(RetryError):
+            m.register_uri('PATCH', 'mock://api.com/500', status_code=500)
+            patch_elements_record('mock://api.com/500', GOOD_XML)
         with self.assertRaises(RetryError):
             m.register_uri('PATCH', 'mock://api.com/504', status_code=504)
             patch_elements_record('mock://api.com/504', GOOD_XML)

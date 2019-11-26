@@ -28,7 +28,8 @@ def patch_elements_record(self, url, xml_data):
                               headers={'Content-Type': 'text/xml'},
                               proxies=PROXIES,
                               auth=AUTH)
-    if response.status_code in [409, 504]:
-        raise RetryError(response.status_code)
+    if response.status_code in [409, 500, 504]:
+        raise RetryError(f'Elements response status {response.status_code} '
+                         'requires retry')
     response.raise_for_status()
     return response

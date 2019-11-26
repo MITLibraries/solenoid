@@ -38,7 +38,7 @@ def wrap_elements_api_call(sender, **kwargs):
 
     # Construct XML. (This is the same for all records in the email.)
     xml = make_xml(username=kwargs['username'])
-    request_data = tostring(xml).decode('utf-8')
+    request_data = tostring(xml, encoding='unicode')
 
     for record in instance.record_set.all():
         url = urljoin(settings.ELEMENTS_ENDPOINT,
