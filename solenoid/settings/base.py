@@ -399,3 +399,10 @@ INTERNAL_IPS = ['127.0.0.1']
 # -----------------------------------------------------------------------------
 
 DSPACE_SALT = os.getenv('DSPACE_AUTHOR_ID_SALT', default='salty')
+
+
+# CELERY CONFIGURATION
+# -----------------------------------------------------------------------------
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
+                              default='redis://localhost:6379/0')
