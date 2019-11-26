@@ -9,6 +9,7 @@ python_version = "3.7"
 [dev-packages]
 coverage = ">=4.5.1"
 freezegun = "*"
+requests-mock = "*"
 
 [packages]
 # Only needed for Heroku
@@ -32,3 +33,5 @@ newrelic = "*"
 whitenoise = "*"
 Pillow = "*"
 sentry-sdk = "*"
+celery = "*"
+redis = "*"
