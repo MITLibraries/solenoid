@@ -11,10 +11,37 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
 
+import dj_database_url
 from django.urls import reverse_lazy
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def boolean(value):
+    """Turn the given string value into a boolean.
+
+    Any truthy value will be interpreted as True and anything else will
+    be False. For convenience, this function will also accept a boolean
+    value (and simply return it) and the value None, which will be
+    interpreted as False.
+    """
+    if isinstance(value, bool) or value is None:
+        return bool(value)
+    return value.lower() in ('true', 't', 'yes', 'y', '1')
+
+
+def make_list(value):
+    """Return a list of items from a comma-separated string.
+
+    Surrounding whitespace will be stripped from the list items. If the
+    provided string is empty, an empty list will be returned. This function
+    will also accept the value None and return an empty list.
+    """
+    if value is None:
+        return []
+    return list(filter(None, [s.strip() for s in value.split(',')]))
+
 
 # -----------------------------------------------------------------------------
 # ------------------------> core django configurations <-----------------------
@@ -60,15 +87,7 @@ MIDDLEWARE = [
 # DEBUG
 # -----------------------------------------------------------------------------
 
-# By setting this an an environment variable, it is easy to switch debug on in
-# servers to do a quick test.
-# DEBUG SHOULD BE FALSE ON PRODUCTION for security reasons.
-PROTO_DEBUG = os.environ.get('DJANGO_DEBUG')
-
-if PROTO_DEBUG == 'True' or PROTO_DEBUG is True:
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = boolean(os.getenv('DEBUG', False))
 
 # DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -76,10 +95,9 @@ else:
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600)
 }
 
 
@@ -87,11 +105,14 @@ DATABASES = {
 # -----------------------------------------------------------------------------
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_c+yx&rwl@mg$c()!p+78($if4uqa^p$czhl-tl$)*1v5#xus0'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-# In production, this list should contain the URL of the server and nothing
-# else, for security reasons. For local testing '*' is OK.
-ALLOWED_HOSTS = ['*']
+# This will accept a comma-separated list of allowed hosts
+ALLOWED_HOSTS = make_list(os.getenv('ALLOWED_HOSTS'))
+
+if 'HEROKU_APP_NAME' in os.environ:
+    ALLOWED_HOSTS.append(
+            '{}.herokuapp.com'.format(os.environ['HEROKU_APP_NAME']))
 
 ROOT_URLCONF = 'solenoid.urls'
 
@@ -99,6 +120,7 @@ WSGI_APPLICATION = 'solenoid.wsgi.application'
 
 SITE_ID = 1
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # INTERNATIONALIZATION CONFIGURATION
 # -----------------------------------------------------------------------------

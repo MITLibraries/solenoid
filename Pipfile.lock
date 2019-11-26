@@ -1,11 +1,7 @@
 {
     "_meta": {
         "hash": {
-<<<<<<< HEAD
             "sha256": "53406b373de4356533de017bd1d05a6170538ada1360b52cc632b9888c2aa649"
-=======
-            "sha256": "59c3cbea877917a5bac2566032ad8430571da8ec66ea7790612ff38aaf548624"
->>>>>>> Replace ElementsAPICall model with a celery task to patch update an E… (#173)
         },
         "pipfile-spec": 6,
         "requires": {
@@ -20,21 +16,12 @@
         ]
     },
     "default": {
-<<<<<<< HEAD
         "asgiref": {
             "hashes": [
                 "sha256:7e06d934a7718bf3975acbf87780ba678957b87c7adc056f13b6215d610695a0",
                 "sha256:ea448f92fc35a0ef4b1508f53a04c4670255a3f33d22a81c8fc9c872036adbe5"
             ],
             "version": "==3.2.3"
-=======
-        "amqp": {
-            "hashes": [
-                "sha256:6e649ca13a7df3faacdc8bbb280aa9a6602d22fd9d545336077e573a1f4ff3b8",
-                "sha256:77f1aef9410698d20eaeac5b73a87817365f457a507d82edf292e12cbb83b08d"
-            ],
-            "version": "==2.5.2"
->>>>>>> Replace ElementsAPICall model with a celery task to patch update an E… (#173)
         },
         "beautifulsoup4": {
             "hashes": [
@@ -425,18 +412,7 @@
                 "sha256:62556265ec1011bd87113fb81b7516f52688887b7a010ee899ff1fd18fd22700"
             ],
             "index": "pypi",
-<<<<<<< HEAD
             "version": "==5.0.1"
-=======
-            "version": "==4.1.4"
-        },
-        "zipp": {
-            "hashes": [
-                "sha256:3718b1cbcd963c7d4c5511a8240812904164b7f381b647143a89d3b98f9bcd8e",
-                "sha256:f06903e9f1f43b12d371004b4ac7b06ab39a44adc747266928ae6debfa7b3335"
-            ],
-            "version": "==0.6.0"
->>>>>>> Replace ElementsAPICall model with a celery task to patch update an E… (#173)
         }
     },
     "develop": {
