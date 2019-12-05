@@ -158,7 +158,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
     def _get_record(self, row, author):
         if Record.is_record_creatable(row):
             logger.info('record was creatable')
-            record, created = Record.get_or_create_from_csv(author, row)
+            record, created = Record.get_or_create_from_data(author, row)
         else:
             logger.warning('Cannot create record for publication {id} '
                 'with author {author}'.format(id=row[Fields.PAPER_ID],

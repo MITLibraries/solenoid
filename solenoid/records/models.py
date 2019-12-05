@@ -179,7 +179,7 @@ class Record(models.Model):
         return citation
 
     @staticmethod
-    def get_or_create_from_csv(author, paper_data):
+    def get_or_create_from_data(author, paper_data):
         """This expects an author instance and metadata about a single paper
         (either from a CSV import or retrieved via the Elements API),
         and returns (record, created), in the manner of objects.get_or_create.

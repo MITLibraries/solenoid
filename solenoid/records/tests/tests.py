@@ -707,9 +707,9 @@ class RecordModelTest(TestCase):
         assert record.fpv_message == msg.substitute(
             publisher_name=publisher_name, doi=fake_doi)
 
-    def test_get_or_create_from_csv(self):
+    def test_get_or_create_from_data(self):
         author = Author.objects.get(pk=1)
-        record, created = Record.get_or_create_from_csv(
+        record, created = Record.get_or_create_from_data(
             author, {Fields.PAPER_ID: 1})
         assert record.pk == 1
         assert not created
@@ -722,7 +722,7 @@ class RecordModelTest(TestCase):
             Fields.PAPER_ID: 'paper_id',
         }
 
-        record, created = Record.get_or_create_from_csv(author, row)
+        record, created = Record.get_or_create_from_data(author, row)
         assert created
         assert record.publisher_name == 'publisher_name'
         assert record.acq_method == 'RECRUIT_FROM_AUTHOR_FPV'
