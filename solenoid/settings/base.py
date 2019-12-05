@@ -87,7 +87,7 @@ MIDDLEWARE = [
 # DEBUG
 # -----------------------------------------------------------------------------
 
-DEBUG = boolean(os.getenv('DEBUG', False))
+DEBUG = boolean(os.getenv('DJANGO_DEBUG', False))
 
 # DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
