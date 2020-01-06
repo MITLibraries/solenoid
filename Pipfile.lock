@@ -113,10 +113,11 @@
         },
         "django-libsass": {
             "hashes": [
-                "sha256:49db3334b87e1f7955c4f9fb9945bc296f8bfd27a14d6d89706e4b0e5dc5de1c"
+                "sha256:38fab4ce1245542f3afd7248dc48f8a0b261f5f6c61e7cc43969a9c9079b5ffd",
+                "sha256:3e74fd8e75ac0e6ebc0443efc3e530167981bf279fecc2294094c820ae266fbb"
             ],
             "index": "pypi",
-            "version": "==0.7"
+            "version": "==0.8"
         },
         "gunicorn": {
             "hashes": [
