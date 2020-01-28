@@ -107,8 +107,8 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         return True
 
     def _check_row_superfluity(self, author, row):
-        if Record.is_paper_superfluous(author, row):
-            logger.info('Record is superfluous')
+        if Record.paper_requested(row):
+            logger.info('Paper already requested, record not imported')
             messages.info(self.request, 'Publication #{id} by {author} '
                 'has already been requested (possibly from another '
                 'author), so this record will not be imported. Please add '
@@ -155,23 +155,23 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         logger.info('author was %s' % author)
         return author
 
-    def _get_record(self, row, author):
-        if Record.is_record_creatable(row):
+    def _get_record(self, paper_data, author):
+        if Record.is_record_creatable(paper_data):
             logger.info('record was creatable')
-            record, created = Record.get_or_create_from_data(author, row)
+            record, created = Record.get_or_create_from_data(author, paper_data)
         else:
-            logger.warning('Cannot create record for publication {id} '
-                'with author {author}'.format(id=row[Fields.PAPER_ID],
-                    author=row[Fields.LAST_NAME]))
-            messages.warning(self.request, 'The record for publication '
-                '#{id} by {author} is missing required information and '
-                'will not be created.'.format(id=row[Fields.PAPER_ID],
-                    author=row[Fields.LAST_NAME]))
+            logger.warning(f'Cannot create record for publication '
+                           f'{paper_data[Fields.PAPER_ID]} with '
+                           f'author {paper_data[Fields.LAST_NAME]}')
+            messages.warning(self.request, f'The record for publication '
+                             f'#{paper_data[Fields.PAPER_ID]} by '
+                             f'{paper_data[Fields.LAST_NAME]} is missing '
+                             f'required information and will not be created.')
             record = None
             created = None
 
-        logger.info('record was %s' % record)
-        logger.info('created was %s' % created)
+        logger.info(f'record was {record}')
+        logger.info(f'created was {created}')
 
         return record, created
 

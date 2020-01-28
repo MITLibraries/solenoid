@@ -238,10 +238,12 @@ class Record(models.Model):
 
     @staticmethod
     def is_record_creatable(paper_data):
-        """This expects metadata about a single paper (either from a CSV import
-        or retrieved via the Elements API), and determines whether
-        a valid record can be created from that data. It is not responsible for
-        confirming that the foreign-keyed Author exists or can be created.
+        """Determines whether a valid Record can be created from supplied data.
+
+        Args:
+            paper_data (dict): A dict of metadata fields about a single paper.
+        Returns:
+            bool: True if record can be created, False otherwise.
         """
         try:
             assert Record.is_acq_method_known(paper_data)
@@ -258,17 +260,24 @@ class Record(models.Model):
             return False
 
     @staticmethod
-    def is_paper_superfluous(author, paper_data):
-        """Return True if we have already requested this paper (possibly from
-        another author), False otherwise."""
+    def paper_requested(paper_data):
+        """Checks whether we have already sent an email request for this paper.
 
-        # Find records of the same paper (whether under the same or  different
-        # authors), if any.
+        Args:
+            paper_data (dict:[str, str]): A dict of metadata fields about a
+                single paper.
+
+        Returns:
+            bool: True if we've already requested this paper (from any author),
+                False otherwise.
+        """
+
+        # Find all records of the same paper, if any.
         records = Record.objects.filter(
             paper_id=paper_data[Fields.PAPER_ID]
         )
 
-        # Return True if we've already sent an email for any of those papers;
+        # Return True if we've already sent an email for any of those records;
         # False otherwise.
         return any([record.email.date_sent
                     for record in records
