@@ -126,7 +126,11 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
         # If it doesn't exist, users will see a 500, which is also reasonable.
         email = EmailMessage.objects.get(pk=self.kwargs['pk'])
         # Don't use username as it's usually a cryptic string.
-        email.send(self.request.user.email)
+        try:
+            email.send(self.request.user.email)
+        except AttributeError as e:
+            logger.info(e)
+            email.send('admin')
         messages.success(self.request, "Email message updated and sent. "
             "Articles in Elements will be updated within an hour to reflect "
             "their new library status.")
