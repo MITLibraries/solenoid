@@ -5,6 +5,7 @@ import sys
 from .base import *  # noqa
 
 import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # DATABASE CONFIGURATION
@@ -103,7 +104,8 @@ QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 
 sentry_sdk.init(
     dsn=os.environ.get('SENTRY_DSN', None),
-    integrations=[DjangoIntegration()]
+    environment=os.environ.get('SENTRY_ENVIRONMENT', 'development'),
+    integrations=[CeleryIntegration(), DjangoIntegration()]
 )
 
 

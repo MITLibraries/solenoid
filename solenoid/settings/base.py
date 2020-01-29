@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 
@@ -416,5 +417,5 @@ DSPACE_SALT = os.getenv('DSPACE_AUTHOR_ID_SALT', default='salty')
 # CELERY CONFIGURATION
 # -----------------------------------------------------------------------------
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL',
+CELERY_BROKER_URL = os.getenv('REDIS_URL',
                               default='redis://localhost:6379/0')
