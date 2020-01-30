@@ -5,6 +5,7 @@ import sys
 from .base import *  # noqa
 
 import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # DATABASE CONFIGURATION
@@ -86,11 +87,7 @@ ADMINS = [('Solenoid Admins', 'solenoid-admins@mit.edu')]
 # Default to requiring login on Heroku servers, but allow this to be turned off
 # via environment variable in case it's useful to have a test server be more
 # freely accessible.
-if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'False':
-    # You can't actually set a Boolean environment variable, just a string.
-    LOGIN_REQUIRED = False
-else:
-    LOGIN_REQUIRED = True
+LOGIN_REQUIRED = boolean(os.environ.get('DJANGO_LOGIN_REQUIRED', True))
 
 
 # QUOTAGUARD CONFIGURATION
@@ -107,7 +104,8 @@ QUOTAGUARD_URL = os.environ.get('QUOTAGUARDSTATIC_URL', None)
 
 sentry_sdk.init(
     dsn=os.environ.get('SENTRY_DSN', None),
-    integrations=[DjangoIntegration()]
+    environment=os.environ.get('SENTRY_ENVIRONMENT', 'development'),
+    integrations=[CeleryIntegration(), DjangoIntegration()]
 )
 
 

@@ -11,10 +11,37 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
 
+import dj_database_url
 from django.urls import reverse_lazy
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def boolean(value):
+    """Turn the given string value into a boolean.
+
+    Any truthy value will be interpreted as True and anything else will
+    be False. For convenience, this function will also accept a boolean
+    value (and simply return it) and the value None, which will be
+    interpreted as False.
+    """
+    if isinstance(value, bool) or value is None:
+        return bool(value)
+    return value.lower() in ('true', 't', 'yes', 'y', '1')
+
+
+def make_list(value):
+    """Return a list of items from a comma-separated string.
+
+    Surrounding whitespace will be stripped from the list items. If the
+    provided string is empty, an empty list will be returned. This function
+    will also accept the value None and return an empty list.
+    """
+    if value is None:
+        return []
+    return list(filter(None, [s.strip() for s in value.split(',')]))
+
 
 # -----------------------------------------------------------------------------
 # ------------------------> core django configurations <-----------------------
@@ -54,21 +81,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 
 # DEBUG
 # -----------------------------------------------------------------------------
 
-# By setting this an an environment variable, it is easy to switch debug on in
-# servers to do a quick test.
-# DEBUG SHOULD BE FALSE ON PRODUCTION for security reasons.
-PROTO_DEBUG = os.environ.get('DJANGO_DEBUG')
-
-if PROTO_DEBUG == 'True' or PROTO_DEBUG is True:
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = boolean(os.getenv('DJANGO_DEBUG', False))
 
 # DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -76,10 +96,9 @@ else:
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600)
 }
 
 
@@ -87,11 +106,14 @@ DATABASES = {
 # -----------------------------------------------------------------------------
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_c+yx&rwl@mg$c()!p+78($if4uqa^p$czhl-tl$)*1v5#xus0'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-# In production, this list should contain the URL of the server and nothing
-# else, for security reasons. For local testing '*' is OK.
-ALLOWED_HOSTS = ['*']
+# This will accept a comma-separated list of allowed hosts
+ALLOWED_HOSTS = make_list(os.getenv('ALLOWED_HOSTS'))
+
+if 'HEROKU_APP_NAME' in os.environ:
+    ALLOWED_HOSTS.append(
+            '{}.herokuapp.com'.format(os.environ['HEROKU_APP_NAME']))
 
 ROOT_URLCONF = 'solenoid.urls'
 
@@ -99,6 +121,7 @@ WSGI_APPLICATION = 'solenoid.wsgi.application'
 
 SITE_ID = 1
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # INTERNATIONALIZATION CONFIGURATION
 # -----------------------------------------------------------------------------
@@ -188,7 +211,7 @@ LOGGING = {
 # EMAIL CONFIGURATION
 # -----------------------------------------------------------------------------
 
-ADMINS = []
+ADMINS = make_list(os.environ.get('SOLENOID_ADMINS', None))
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'outgoing.mit.edu'
@@ -212,12 +235,7 @@ SCHOLCOMM_MOIRA_LIST = 'sccs-fta@mit.edu'
 
 # If True, will only send email to admins. If False, will send email to
 # liaisons and the moira list.
-testmode = os.environ.get('DJANGO_EMAIL_TESTING_MODE', None)
-
-if testmode == 'False':
-    EMAIL_TESTING_MODE = False
-else:
-    EMAIL_TESTING_MODE = True
+EMAIL_TESTING_MODE = boolean(os.environ.get('DJANGO_EMAIL_TESTING_MODE', False))
 
 
 # -----------------------------------------------------------------------------
@@ -271,11 +289,7 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = [
 # to be set with an environment variable to facilitate testing. You will need
 # to fill in key and secret values for your environment as well if you set this
 # to True.
-if os.environ.get('DJANGO_LOGIN_REQUIRED') == 'True':
-    # You can't actually set a Boolean environment variable, just a string.
-    LOGIN_REQUIRED = True
-else:
-    LOGIN_REQUIRED = False
+LOGIN_REQUIRED = boolean(os.environ.get('DJANGO_LOGIN_REQUIRED', False))
 
 if LOGIN_REQUIRED:
     # args is *case-sensitive*, even though other parts of python-social-auth
@@ -348,8 +362,7 @@ ELEMENTS_PASSWORD = os.environ.get('DJANGO_ELEMENTS_PASSWORD')
 # Set this to False if you don't want to issue API calls (e.g. during testing,
 # on localhost, on environments that don't know the password or don't have IPs
 # known to the Elements firewall).
-# It will be true -if the environment variable is set to anything at all-.
-USE_ELEMENTS = bool(os.environ.get('DJANGO_USE_ELEMENTS', False))
+USE_ELEMENTS = boolean(os.environ.get('DJANGO_USE_ELEMENTS', False))
 
 QUOTAGUARD_URL = None
 
@@ -399,3 +412,10 @@ INTERNAL_IPS = ['127.0.0.1']
 # -----------------------------------------------------------------------------
 
 DSPACE_SALT = os.getenv('DSPACE_AUTHOR_ID_SALT', default='salty')
+
+
+# CELERY CONFIGURATION
+# -----------------------------------------------------------------------------
+
+CELERY_BROKER_URL = os.getenv('REDIS_URL',
+                              default='redis://localhost:6379/0')

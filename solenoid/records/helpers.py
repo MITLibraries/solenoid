@@ -1,4 +1,4 @@
-class Headers(object):
+class Fields(object):
     EMAIL = 'Email'
     DOI = 'Doi'
     FIRST_NAME = 'First Name'
@@ -18,12 +18,12 @@ class Headers(object):
     VOLUME = 'Volume'
     ISSUE = 'Issue'
 
-    EXPECTED_HEADERS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
-                        PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE,
-                        TITLE, JOURNAL, VOLUME, ISSUE]
+    EXPECTED_FIELDS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
+                       PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE,
+                       TITLE, JOURNAL, VOLUME, ISSUE]
 
     # This is information we can get from the database if it happens to be
-    # missing from a row in an Elements CSV file, if we already know about
+    # missing from the Elements metadata, if we already know about
     # this author. However, we need all of it if we don't already know about
     # the author.
     AUTHOR_DATA = [EMAIL, FIRST_NAME, LAST_NAME, DLC]
@@ -41,7 +41,7 @@ class Headers(object):
     # * CITATION and citation-related data: We can construct a minimal citation
     #   from other data; alternately, we don't need the other data if we have a
     #   citation. The Record model will check for this.
-    REQUIRED_DATA = list(set(EXPECTED_HEADERS) -
+    REQUIRED_DATA = list(set(EXPECTED_FIELDS) -
                          set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION} -
                          {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE} -
                          # Acq method is allowed to be blank.

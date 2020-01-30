@@ -4,11 +4,10 @@ from string import Template
 
 from django.core.exceptions import ValidationError
 from django.db import models
-
 from solenoid.emails.models import EmailMessage
 from solenoid.people.models import Author
 
-from .helpers import Headers
+from .helpers import Fields
 
 logger = logging.getLogger(__name__)
 
@@ -97,17 +96,17 @@ class Record(models.Model):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ STATIC METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @staticmethod
-    def create_citation(row):
+    def create_citation(paper_data):
         """Create text suitable for the citation field.
 
-        Some CSV records fill in the citation field, but some leave it blank;
-        in those cases we need to build our own citation text. Stakeholders
-        have indicated that it doesn't matter what citation format we use or
-        whether the citation is complete (as long as it includes author, title,
-        and journal title).
+        Some Elements papers include the citation field in their metadata,
+        but some leave it blank; in those cases we need to build our own
+        citation text. Stakeholders have indicated that it doesn't matter what
+        citation format we use or whether the citation is complete (as long as
+        it includes author, title, and journal title).
 
-        This method assumes that the CSV row has already been validated; it
-        does not perform any validation.
+        This method assumes that the supplied paper metadata has already been
+        validated; it does not perform any validation.
 
         APA format is:
             Author, F.M. (Publication year). Article Title. Journal Title,
@@ -115,38 +114,39 @@ class Record(models.Model):
         We don't appear to get page number information, so we'll skip that.
         """
         citation = '{last}, {first_init}. '.format(
-            last=row[Headers.LAST_NAME],
-            first_init=row[Headers.FIRST_NAME][0])
+            last=paper_data[Fields.LAST_NAME],
+            first_init=paper_data[Fields.FIRST_NAME][0])
 
-        if row[Headers.PUBDATE]:
+        if paper_data[Fields.PUBDATE]:
             # We expect that the pubdate is a yyyymmdd string. If it isn't,
             # don't guess, and don't add a publication year.
             try:
-                assert re.compile("^\d{8}$").match(row[Headers.PUBDATE])
-                citation += '({year}). '.format(year=row[Headers.PUBDATE][0:4])
+                assert re.compile("^\d{8}$").match(paper_data[Fields.PUBDATE])
+                citation += '({year}). '.format(
+                    year=paper_data[Fields.PUBDATE][0:4])
             except AssertionError:
                 pass
 
         citation += '{title}. {journal}'.format(
-            title=row[Headers.TITLE],
-            journal=row[Headers.JOURNAL])
+            title=paper_data[Fields.TITLE],
+            journal=paper_data[Fields.JOURNAL])
 
-        if row[Headers.VOLUME] and row[Headers.ISSUE]:
+        if paper_data[Fields.VOLUME] and paper_data[Fields.ISSUE]:
             citation += ', {volume}({issue})'.format(
-                volume=row[Headers.VOLUME],
-                issue=row[Headers.ISSUE])
+                volume=paper_data[Fields.VOLUME],
+                issue=paper_data[Fields.ISSUE])
 
         citation += '.'
 
-        if row[Headers.DOI]:
-            citation += ' doi:{doi}'.format(doi=row[Headers.DOI])
+        if paper_data[Fields.DOI]:
+            citation += ' doi:{doi}'.format(doi=paper_data[Fields.DOI])
 
         return citation
 
     @staticmethod
-    def _get_message_text(row):
+    def _get_message_text(paper_data):
         try:
-            message = row[Headers.MESSAGE]
+            message = paper_data[Fields.MESSAGE]
         except KeyError:
             message = None
         logger.info('Message text was %s' % message)
@@ -170,48 +170,49 @@ class Record(models.Model):
         return msg
 
     @staticmethod
-    def _get_citation(row):
-        if row[Headers.CITATION]:
-            citation = row[Headers.CITATION]
+    def _get_citation(paper_data):
+        if paper_data[Fields.CITATION]:
+            citation = paper_data[Fields.CITATION]
         else:
-            citation = Record.create_citation(row)
+            citation = Record.create_citation(paper_data)
 
         return citation
 
     @staticmethod
-    def get_or_create_from_csv(author, row):
-        """This expects an author instance and a row of data from a CSV import,
+    def get_or_create_from_data(author, paper_data):
+        """This expects an author instance and metadata about a single paper
+        (either from a CSV import or retrieved via the Elements API),
         and returns (record, created), in the manner of objects.get_or_create.
         It does not validate data; you should do that before invoking this.
         If it finds discrepancies between the data it knows about and the
         imported data, it updates the record.
         """
         try:
-            record = Record.objects.get(paper_id=row[Headers.PAPER_ID],
+            record = Record.objects.get(paper_id=paper_data[Fields.PAPER_ID],
                                         author=author)
             logger.info('Got an existing record')
             return record, False
         except Record.DoesNotExist:
-            message_text = Record._get_message_text(row)
+            message_text = Record._get_message_text(paper_data)
             message_object = Record._get_message_object(message_text)
 
-            citation = Record._get_citation(row)
+            citation = Record._get_citation(paper_data)
 
             record = Record.objects.create(
                 author=author,
-                publisher_name=row[Headers.PUBLISHER_NAME],
-                acq_method=row[Headers.ACQ_METHOD],
+                publisher_name=paper_data[Fields.PUBLISHER_NAME],
+                acq_method=paper_data[Fields.ACQ_METHOD],
                 citation=citation,
-                doi=row[Headers.DOI],
-                paper_id=row[Headers.PAPER_ID],
+                doi=paper_data[Fields.DOI],
+                paper_id=paper_data[Fields.PAPER_ID],
                 message=message_object)
             logger.info('record created')
 
             return record, True
 
     @staticmethod
-    def get_duplicates(author, row):
-        """See if this CSV row would duplicate a record already in the
+    def get_duplicates(author, paper_data):
+        """See if this paper's metadata would duplicate a record already in the
         database.
 
         A _duplicate_ is a record with a different PaperID but the same author
@@ -221,94 +222,105 @@ class Record(models.Model):
         with the same citation multiple times, once per author.)"""
 
         dupes = Record.objects.filter(author=author,
-                                      citation=row[Headers.CITATION]
-                                      ).exclude(paper_id=row[Headers.PAPER_ID])
+                                      citation=paper_data[Fields.CITATION]
+                                      ).exclude(
+                                          paper_id=paper_data[Fields.PAPER_ID])
         if dupes:
             return dupes
         else:
             return None
 
     @staticmethod
-    def is_acq_method_known(row):
-        """Returns True if this row of CSV has a recognized method of
+    def is_acq_method_known(paper_data):
+        """Returns True if this paper has a recognized method of
         acquisition; False otherwise."""
-        return (row[Headers.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
+        return (paper_data[Fields.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
 
     @staticmethod
-    def is_record_creatable(row):
-        """This expects a row of data from a CSV import and determines whether
-        a valid record can be created from that data. It is not responsible for
-        confirming that the foreign-keyed Author exists or can be created.
+    def is_record_creatable(paper_data):
+        """Determines whether a valid Record can be created from supplied data.
+
+        Args:
+            paper_data (dict): A dict of metadata fields about a single paper.
+        Returns:
+            bool: True if record can be created, False otherwise.
         """
         try:
-            assert Record.is_acq_method_known(row)
+            assert Record.is_acq_method_known(paper_data)
 
-            if row[Headers.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
-                assert bool(row[Headers.DOI])
-                assert bool(row[Headers.PUBLISHER_NAME])
+            if paper_data[Fields.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
+                assert bool(paper_data[Fields.DOI])
+                assert bool(paper_data[Fields.PUBLISHER_NAME])
 
-            if not row[Headers.CITATION]:
-                assert all([bool(row[x]) for x in Headers.CITATION_DATA])
+            if not paper_data[Fields.CITATION]:
+                assert all([bool(paper_data[x]) for x in Fields.CITATION_DATA])
 
             return True
         except (AssertionError, KeyError):
             return False
 
     @staticmethod
-    def is_row_superfluous(author, row):
-        """Return True if we have already requested this paper (possibly from
-        another author), False otherwise."""
+    def paper_requested(paper_data):
+        """Checks whether we have already sent an email request for this paper.
 
-        # Find records of the same paper (whether under the same or  different
-        # authors), if any.
+        Args:
+            paper_data (dict:[str, str]): A dict of metadata fields about a
+                single paper.
+
+        Returns:
+            bool: True if we've already requested this paper (from any author),
+                False otherwise.
+        """
+
+        # Find all records of the same paper, if any.
         records = Record.objects.filter(
-            paper_id=row[Headers.PAPER_ID]
+            paper_id=paper_data[Fields.PAPER_ID]
         )
 
-        # Return True if we've already sent an email for any of those papers;
+        # Return True if we've already sent an email for any of those records;
         # False otherwise.
         return any([record.email.date_sent
                     for record in records
                     if record.email])
 
     @staticmethod
-    def is_row_valid(row):
-        """Returns True if this row of CSV has the required data for making a
-        Record; False otherwise.
+    def is_data_valid(paper_data):
+        """Returns True if this metadata has the required data fields for
+        making a Record; False otherwise.
 
         For citation data, we'll accept *either* a preconstructed citation,
         *or* enough data to construct a minimal citation ourselves."""
-        citable = bool(row[Headers.CITATION]) or \
-            all([bool(row[x]) for x in Headers.CITATION_DATA])
-        return all([bool(row[x]) for x in Headers.REQUIRED_DATA]) and citable
+        citable = bool(paper_data[Fields.CITATION]) or \
+            all([bool(paper_data[x]) for x in Fields.CITATION_DATA])
+        return all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and citable
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def update_if_needed(self, author, row):
-        """Checks a CSV data row to see if there are any discrepancies with the
-        existing record. If so, updates it and returns True. If not, returns
-        False."""
+    def update_if_needed(self, author, paper_data):
+        """Checks a paper's supplied metadata to see if there are any
+        discrepancies with the existing record. If so, updates it and returns
+        True. If not, returns False."""
         changed = False
         if not all([self.author == author,
-                    self.publisher_name == row[Headers.PUBLISHER_NAME],
-                    self.acq_method == row[Headers.ACQ_METHOD],
-                    self.doi == row[Headers.DOI]]):
+                    self.publisher_name == paper_data[Fields.PUBLISHER_NAME],
+                    self.acq_method == paper_data[Fields.ACQ_METHOD],
+                    self.doi == paper_data[Fields.DOI]]):
             self.author = author
-            self.publisher_name = row[Headers.PUBLISHER_NAME]
-            self.acq_method = row[Headers.ACQ_METHOD]
-            self.doi = row[Headers.DOI]
+            self.publisher_name = paper_data[Fields.PUBLISHER_NAME]
+            self.acq_method = paper_data[Fields.ACQ_METHOD]
+            self.doi = paper_data[Fields.DOI]
             changed = True
 
         # Don't update records with blank citation information - that will
         # cause ValidationErrors. Instead, update them with nonblank info, or
         # check if updates to other info merit an update to the citation if the
         # citation is blank.
-        if row[Headers.CITATION]:
-            if self.citation != row[Headers.CITATION]:
-                self.citation = row[Headers.CITATION]
+        if paper_data[Fields.CITATION]:
+            if self.citation != paper_data[Fields.CITATION]:
+                self.citation = paper_data[Fields.CITATION]
                 changed = True
         else:
-            new_cite = Record.create_citation(row)
+            new_cite = Record.create_citation(paper_data)
             if self.citation != new_cite:
                 self.citation = new_cite
                 changed = True
