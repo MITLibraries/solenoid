@@ -13,8 +13,6 @@ When CKEditor must be updated, be aware that solenoid needs to do careful surger
 
 Solenoid also integrates with the Symplectic Elements API. This API may change at any time without warning, with changes deployed to the same endpoint. The endpoint URL may also change without warning due to Elements system configuration.
 
-There is a management command, `solenoid/elements/management/commands/notify_about_api.py`, which monitors the health of the API integration. It runs daily on Heroku; if any Elements API calls have been issued, it emails `settings.ADMINS` a report with a count of the total number of calls, successes, and failures. This should notify admins in a timely fashion if something has broken with the API integration.
-
 `settings.WHITELIST` contains the list of MIT kerbs which are authorized to log in to Solenoid. This includes the list of users you are supporting, and should contain the project manager with the maintenance plan and the staff responsible for the relationship with Symplectic. It may need to be updated from time to time according to staff turnover or roles changes.
 
 There is a Moira list of solenoid users which you can use to communicate about downtime, etc.: https://groups.mit.edu/webmoira/list/solenoid-users
