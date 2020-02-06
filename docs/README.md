@@ -145,12 +145,6 @@ Set the following environment variables:
   * If you used 'solenoid' as your username you can skip this step.
 * `heroku config:set DJANGO_USE_ELEMENTS_USER=True`
 
-If you want to get emails with API monitoring information:
-* `heroku addons:create scheduler:standard`
-* `heroku addons:open scheduler`
-* Add `python manage.py issue_unsent_calls` at your desired frequency
-* Add `python manage.py notify_about_api` at your desired frequency (the management command assumes this will run daily)
-
 ### With Sympletic customer service
 
 Notwithstanding the fact that you are using basic auth and you have whitelisted your IP(s), have customer service make a hole in the server's firewall for your IP(s) - you'll need all 3 to authenticate.
