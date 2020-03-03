@@ -5,33 +5,12 @@ from xml.etree.ElementTree import tostring
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
-from django.utils import timezone
 from freezegun import freeze_time
 
 from solenoid.emails.models import EmailMessage
 from solenoid.emails.signals import email_sent
-from solenoid.elements.helpers import make_xml
 from solenoid.elements.views import wrap_elements_api_call
-
-USERNAME = 'username'
-
-with freeze_time('2019-01-01'):
-    GOOD_XML = (f'<update-object xmlns="http://www.symplectic.co.uk/'
-                f'publications/api"><oa><library-status status="full-'
-                f'text-requested"><last-requested-when>'
-                f'{timezone.now().isoformat()}</last-requested-when>'
-                f'<note-field clear-existing-note="true"><note>'
-                f'Library status changed to Full text requested on '
-                f'{timezone.now().strftime("%-d %B %Y")} '
-                f'by username.</note></note-field></library-status>'
-                f'</oa></update-object>')
-
-
-class HelpersTest(TestCase):
-    @freeze_time('2019-01-01')
-    def test_make_xml(self):
-        xml = make_xml('username')
-        assert GOOD_XML == tostring(xml, encoding='unicode')
+from solenoid.elements.xml_handlers import make_xml
 
 
 class ViewsTests(TestCase):

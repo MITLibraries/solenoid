@@ -7,11 +7,9 @@ import requests
 from django.conf import settings
 
 from .errors import RetryError
+from .xml_handlers import NS
 
 logger = logging.getLogger(__name__)
-
-NS = {'atom': 'http://www.w3.org/2005/Atom',
-      'api': 'http://www.symplectic.co.uk/publications/api'}
 
 AUTH = (settings.ELEMENTS_USER,
         settings.ELEMENTS_PASSWORD)

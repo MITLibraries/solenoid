@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:api="http://www.symplectic.co.uk/publications/api">
+  <entry>
+    <api:related direction="from" category="publication" id="1">
+      <api:object
+        category="publication"
+        id="1"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/1"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication One</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+        <api:oa>
+          <api:library-status status="library-finished" status-display-name="Library finished">
+            <api:last-updated-when>2017-04-06T07:18:26.483-04:00</api:last-updated-when>
+            <api:note>[Imported from OADB] - No receipt notes&#xD; [Marked as Library finished]&#xD;
+            </api:note>
+          </api:library-status>
+        </api:oa>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="2">
+      <api:object
+        category="publication"
+        id="2"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/2"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Two</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+          <api:record format="native" id="0000" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="1111">
+            <api:verification-status>unverified</api:verification-status>
+            <api:native>
+              <api:field name="c-citation" type="text" display-name="Citation">
+                <api:text>Publication One Citation.</api:text>
+              </api:field>
+              <api:field name="c-do-not-request" type="boolean" display-name="DoNotRequest">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-optout" type="boolean" display-name="OptOut">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-received" type="boolean" display-name="Received">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-requested" type="boolean" display-name="Requested">
+                <api:boolean>false</api:boolean>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="3">
+      <api:object
+        category="publication"
+        id="3"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/3"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Three</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+          <api:record format="native" id="0000" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="1111">
+            <api:verification-status>unverified</api:verification-status>
+            <api:native>
+              <api:field name="c-citation" type="text" display-name="Citation">
+                <api:text>Publication One Citation.</api:text>
+              </api:field>
+              <api:field name="c-do-not-request" type="boolean" display-name="DoNotRequest">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-optout" type="boolean" display-name="OptOut">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-received" type="boolean" display-name="Received">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-requested" type="boolean" display-name="Requested">
+                <api:boolean>true</api:boolean>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="4">
+      <api:object
+        category="publication"
+        id="4"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/4"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Four</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2008</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+          <api:record format="native" id="0000" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="1111">
+            <api:verification-status>unverified</api:verification-status>
+            <api:native>
+              <api:field name="c-do-not-request" type="boolean" display-name="DoNotRequest">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-optout" type="boolean" display-name="OptOut">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-received" type="boolean" display-name="Received">
+                <api:boolean>false</api:boolean>
+              </api:field>
+              <api:field name="c-requested" type="boolean" display-name="Requested">
+                <api:boolean>false</api:boolean>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+</feed>

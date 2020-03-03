@@ -7,8 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import receiver
 from solenoid.emails.signals import email_sent
 
-from .helpers import make_xml
 from .tasks import task_patch_elements_record
+from .xml_handlers import make_xml
 
 logger = logging.getLogger(__name__)
 
