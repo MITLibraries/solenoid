@@ -10,6 +10,7 @@ python_version = "3.8"
 coverage = ">=4.5.1"
 freezegun = "*"
 requests-mock = "*"
+pytest-django = "*"
 
 [packages]
 # Only needed for Heroku
@@ -36,3 +37,4 @@ sentry-sdk = "*"
 celery = "*"
 redis = "*"
 python-dotenv = "*"
+backoff = "*"

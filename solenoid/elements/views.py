@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from solenoid.emails.signals import email_sent
 
 from .helpers import make_xml
-from .tasks import patch_elements_record
+from .tasks import task_patch_elements_record
 
 logger = logging.getLogger(__name__)
 
@@ -48,4 +48,4 @@ def wrap_elements_api_call(sender, **kwargs):
         logger.info(f'Call patch_elements_record task for record #{record.pk}')
 
         # Call task
-        patch_elements_record.delay(url, request_data)
+        task_patch_elements_record.delay(url, request_data)
