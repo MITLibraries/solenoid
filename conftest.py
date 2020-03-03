@@ -36,7 +36,7 @@ def mock_elements():
     with requests_mock.Mocker() as m:
         m.get('mock://api.com', text='Success')
         m.get('mock://api.com/400', status_code=400)
-        m.get('http://api.com/409', status_code=409)
+        m.get('mock://api.com/409', status_code=409)
         m.get('mock://api.com/500', status_code=500)
         m.get('mock://api.com/504', status_code=504)
         m.get(f'mock://api.com/users/{TEST_AUTHOR_ID}', text=author_xml)

@@ -14,7 +14,7 @@ def test_get_from_elements_success(mock_elements):
 def test_get_from_elements_retries_and_raises_exception(mock_elements):
     assert 0 == mock_elements.call_count
     with pytest.raises(RetryError):
-        get_from_elements('http://api.com/409')
+        get_from_elements('mock://api.com/409')
     assert 3 == mock_elements.call_count
     with pytest.raises(RetryError):
         get_from_elements('mock://api.com/500')
