@@ -1,18 +1,14 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Import CSV{% endblock %}
+{% block title %}Import Data{% endblock %}
 
 {% block content %}
-  <h2>Import CSV</h2>
+  <h2>Import Data</h2>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post">
     {% csrf_token %}
     {{ form | crispy }}
-    <input type="submit" name="import" value="import csv" class="button button-primary">
+    <input type="submit" name="import" value="import data" class="button button-primary">
   </form>
-
-  <p>
-    <i><a href="{% url 'records:instructions' %}">Instructions</a> for generating CSV files, if needed</i>    
-  </p>
 {% endblock %}

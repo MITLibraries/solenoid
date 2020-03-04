@@ -16,7 +16,7 @@ class Message(models.Model):
     """The text of special messages associated with publishers.
 
     This is stored in class instances and not in a helpers file because we are
-    getting it from CSV imports. However, we're not just making it a field on
+    getting it from data imports. However, we're not just making it a field on
     Record because we expect a great deal of duplication (since special
     messages will likely be the same for all records by a given publisher, at
     least over some period of time)."""
@@ -28,15 +28,13 @@ class Record(models.Model):
         * citation information for an MIT author publication
         * plus all of the other data from Elements we will need to construct an
           email
-    This information is extracted from CSV files at time of import (not, e.g.,
-    pulled from Elements by API).
     """
 
     class Meta:
         ordering = ['author__dlc', 'author__last_name']
         # PaperID is not unique, because papers with multiple MIT authors may
-        # show up in the CSV multiple times. However, we should only see them
-        # once per author.
+        # show up in data imports multiple times. However, we should only see
+        # them once per author.
         unique_together = (('author', 'paper_id'))
 
     ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
@@ -181,11 +179,11 @@ class Record(models.Model):
     @staticmethod
     def get_or_create_from_data(author, paper_data):
         """This expects an author instance and metadata about a single paper
-        (either from a CSV import or retrieved via the Elements API),
-        and returns (record, created), in the manner of objects.get_or_create.
-        It does not validate data; you should do that before invoking this.
-        If it finds discrepancies between the data it knows about and the
-        imported data, it updates the record.
+        (retrieved via the Elements API), and returns (record, created),
+        in the manner of objects.get_or_create. It does not validate data;
+        you should do that before invoking this. If it finds discrepancies
+        between the data it knows about and the imported data, it updates
+        the record.
         """
         try:
             record = Record.objects.get(paper_id=paper_data[Fields.PAPER_ID],
