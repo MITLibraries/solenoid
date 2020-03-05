@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:api="http://www.symplectic.co.uk/publications/api">
+  <api:schema-version>5.5</api:schema-version><category scheme="http://www.symplectic.co.uk/publications/atom/feeds/" term="item" label="Item"/>
+  <id>tag:elements@organisation,5.16:/secure-api/v5.5/feeds/publications/diacritics</id>
+  <updated>2020-02-03T22:35:51.08-05:00</updated>
+  <generator uri="https://org-url" version="5.16">Symplectic Elements</generator>
+  <icon>https://org-url:port/secure-api/v5.5/symplectic.ico</icon>
+  <rights>This data is the property of the Organisation, and can only be used with permission.</rights>
+  <subtitle>This feed represents a single publication.</subtitle><link type="application/atom+xml" rel="self" href="https://org-url:port/secure-api/v5.5/publications/diacritics"/>
+  <title>Publication with diacritics</title>
+  <author>
+    <name>Symplectic Elements at Organisation</name>
+  </author>
+  <entry>
+    <id>tag:elements@organisation,5.16:/secure-api/v5.5/publications/diacritics</id><category scheme="http://www.symplectic.co.uk/publications/atom/entries/" term="item" label="Item"/>
+    <updated>2020-02-03T22:35:51.08-05:00</updated><link type="application/atom+xml" rel="alternate" href="https://org-url:port/secure-api/v5.5/publications/diacritics"/>
+    <title>Publication with diacritics</title>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <p>Publication (journal article)</p>
+        <p>
+          <a href="https://org-url:port/secure-api/v5.5/publications/diacritics/relationships">Relationships</a>
+          with other data</p>
+      </div>
+    </content>
+    <api:object
+      category="publication"
+      id="diacritics"
+      last-affected-when="2020-02-03T22:35:51.08-05:00"
+      last-modified-when="2020-02-03T22:35:51.08-05:00"
+      href="https://org-url:port/secure-api/v5.5/publications/diacritics"
+      created-when="2017-06-23T19:41:58.97-04:00"
+      type-id="5"
+      type="journal-article">
+      <!--Publication type 5 is "journal article"-->
+      <api:ever-approved>true</api:ever-approved>
+      <api:reporting-date-1>2017-10-01</api:reporting-date-1>
+      <api:is-public>true</api:is-public>
+      <api:records>
+        <api:record format="native" id="1" source-id="2" source-name="source-1" source-display-name="Source 1" id-at-source="doi:123.45">
+          <api:native>
+            <api:field name="authors" type="person-list" display-name="Authors">
+              <api:people>
+                <api:person>
+                  <api:links><api:link type="elements/user" id="fun" href="https://org-url:port/secure-api/v5.5/users/fun"/></api:links>
+                  <api:last-name>New Author</api:last-name>
+                  <api:initials>X</api:initials>
+                  <api:first-names>Person Two</api:first-names>
+                  <api:separate-first-names>
+                    <api:first-name>Person Two</api:first-name>
+                  </api:separate-first-names>
+                </api:person>
+              </api:people>
+            </api:field>
+            <api:field name="c-aa-match-score" type="decimal" display-name="AA Match Score">
+              <api:decimal>1</api:decimal>
+            </api:field>
+            <api:field name="confidential" type="boolean" display-name="Confidential">
+              <api:boolean>false</api:boolean>
+            </api:field>
+            <api:field name="doi" type="text" display-name="DOI">
+              <api:text>doi:123.45</api:text>
+              <api:links><api:link type="doi" href="http://doi.org/doi:123.45"/><api:link type="altmetric" href="http://www.example.com/details.php?doi=doi:123.45"/></api:links>
+            </api:field>
+            <api:field name="issn" type="text" display-name="ISSN">
+              <api:text>fake_issn</api:text>
+              <api:links><api:link type="elements/journal" href="https://org-url:port/secure-api/v5.5/journals/diacritics"/></api:links>
+            </api:field>
+            <api:field name="journal" type="text" display-name="Journal">
+              <api:text>A Very Important Journal</api:text>
+            </api:field>
+            <api:field name="pagination" type="pagination" display-name="Pagination">
+              <api:pagination>
+                <api:begin-page>35</api:begin-page>
+                <api:end-page>53</api:end-page>
+              </api:pagination>
+            </api:field>
+            <api:field name="publication-date" type="date" display-name="Publication date">
+              <api:date>
+                <api:year>2017</api:year>
+              </api:date>
+            </api:field>
+            <api:field name="publisher" type="text" display-name="Publisher">
+              <api:text>Big Publisher</api:text>
+            </api:field>
+            <api:field name="c-citation" type="text" display-name="Citation">
+              <api:text>Newmån, Díânne Ç. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.</api:text>
+            </api:field>
+            <api:field name="title" type="text" display-name="Title">
+              <api:text>Publication with diacritics</api:text>
+            </api:field>
+            <api:field name="volume" type="text" display-name="Volume">
+              <api:text>95</api:text>
+            </api:field>
+          </api:native>
+        </api:record>
+      </api:records>
+      <api:fields/>
+      <api:relationships href="https://org-url:port/secure-api/v5.5/publications/diacritics/relationships"/>
+    </api:object>
+  </entry>
+</feed>

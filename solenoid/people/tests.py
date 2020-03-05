@@ -124,6 +124,7 @@ class DLCTests(TestCase):
         DLC.objects.create(name='Test DLC')
 
 
+@override_settings(DSPACE_SALT='salty')
 @override_settings(LOGIN_REQUIRED=False)
 class AuthorTests(TestCase):
     def tearDown(self):
@@ -196,9 +197,8 @@ class AuthorTests(TestCase):
                                        dspace_id=mit_id)
 
         self.assertEqual(author.dspace_id,
-                         hashlib.md5((os.getenv('DSPACE_AUTHOR_ID_SALT',
-                                                'salty') +
-                                     mit_id).encode('utf-8')).hexdigest())
+                         hashlib.md5(('salty' + mit_id).encode('utf-8'))
+                         .hexdigest())
 
 
 class LiaisonModelTests(TestCase):

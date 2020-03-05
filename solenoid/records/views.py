@@ -192,7 +192,6 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             paper_data = parse_paper_xml(paper_xml)
             paper_data.update(author_data)
 
-
             if not self._check_data_validity(paper_data):
                 continue
 

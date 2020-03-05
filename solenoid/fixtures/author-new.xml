@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:api="http://www.symplectic.co.uk/publications/api">
+  <api:schema-version>5.5</api:schema-version><category scheme="http://www.symplectic.co.uk/publications/atom/feeds/" term="item" label="Item"/>
+  <id>tag:elements@organisation,5.16:/secure-api/v5.5/feeds/users/54321</id>
+  <updated>2020-02-09T20:11:07.353-05:00</updated>
+  <generator uri="https://org-url/" version="5.16">Symplectic Elements</generator>
+  <icon>https://org-url:port/secure-api/v5.5/symplectic.ico</icon>
+  <rights>This data is the property of the Organisation, and can only be used with permission.</rights>
+  <subtitle>This feed represents a single user.</subtitle><link type="application/atom+xml" rel="self" href="https://org-url:port/secure-api/v5.5/users/54321"/>
+  <title>New Author, Person Two</title>
+  <author>
+    <name>Symplectic Elements at Organisation</name>
+  </author>
+  <entry>
+    <id>tag:elements@organisation,5.16:/secure-api/v5.5/users/54321</id><category scheme="http://www.symplectic.co.uk/publications/atom/entries/" term="item" label="Item"/>
+    <updated>2020-02-09T20:11:07.353-05:00</updated><link type="application/atom+xml" rel="alternate" href="https://org-url:port/secure-api/v5.5/users/54321"/>
+    <title>New Author, Person Two</title>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <p>User</p>
+        <a href="https://org-url:port/secure-api/v5.5/users/54321/photo?type=profile">Photo</a>
+        <p>
+          <a href="https://org-url:port/secure-api/v5.5/users/54321/relationships">Relationships</a>
+          with other data</p>
+      </div>
+    </content>
+    <api:object
+      category="user"
+      id="54321"
+      proprietary-id="MITID02"
+      authenticating-authority="MIT"
+      username="PTWONA"
+      last-affected-when="2020-02-09T20:11:07.353-05:00"
+      last-modified-when="2019-07-27T18:07:09.37-04:00"
+      href="https://org-url:port/secure-api/v5.5/users/54321"
+      created-when="2016-11-01T11:22:37.54-04:00"
+      type-id="1"
+      type="person">
+      <!--User type 1 is "person"-->
+      <api:ever-approved>true</api:ever-approved>
+      <api:is-public>false</api:is-public>
+      <api:is-current-staff>true</api:is-current-staff>
+      <api:is-academic>true</api:is-academic>
+      <api:is-login-allowed>true</api:is-login-allowed>
+      <api:initials>E</api:initials>
+      <api:last-name>New Author</api:last-name>
+      <api:first-name>Person Two</api:first-name>
+      <api:email-address>PTWONA@ORG.EDU</api:email-address>
+      <api:primary-group-descriptor>Department Faculty</api:primary-group-descriptor>
+      <api:arrive-date>2011-10-01</api:arrive-date>
+      <api:leave-date>2020-06-30</api:leave-date>
+      <api:institutional-email-is-public>true</api:institutional-email-is-public>
+      <api:claimed>false</api:claimed>
+      <api:records>
+        <api:record format="native" id="142280" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="2DF1871C-F681-401A-BA0A-3DE7916C99AA"><api:native/></api:record>
+      </api:records><api:fields/><api:relationships href="https://org-url:port/secure-api/v5.5/users/54321/relationships"/>
+    </api:object>
+  </entry>
+</feed>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:api="http://www.symplectic.co.uk/publications/api">
+  <entry>
+    <api:related direction="from" category="publication" id="1">
+      <api:object
+        category="publication"
+        id="emoji"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/1"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication with Emoji</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="1">
+      <api:object
+        category="publication"
+        id="nonroman"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/1"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication with NonRoman Characters</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="1">
+      <api:object
+        category="publication"
+        id="diacritics"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/1"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication with Diacritics</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="1">
+      <api:object
+        category="publication"
+        id="math"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/1"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication with Math</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2013</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+</feed>
