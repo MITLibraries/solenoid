@@ -53,6 +53,11 @@ def mock_elements():
         yield m
 
 
+@pytest.fixture(params=['409', '500', '504'])
+def error(request):
+    return f'mock://api.com/{request.param}'
+
+
 @pytest.fixture()
 def patch_xml():
     with freeze_time('2019-01-01'):

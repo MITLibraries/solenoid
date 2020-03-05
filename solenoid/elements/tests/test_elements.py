@@ -11,17 +11,10 @@ def test_get_from_elements_success(mock_elements):
     assert response == 'Success'
 
 
-def test_get_from_elements_retries_and_raises_exception(mock_elements):
-    assert 0 == mock_elements.call_count
+def test_get_from_elements_retries_and_raises_exception(mock_elements, error):
     with pytest.raises(RetryError):
-        get_from_elements('mock://api.com/409')
-    assert 3 == mock_elements.call_count
-    with pytest.raises(RetryError):
-        get_from_elements('mock://api.com/500')
-    assert 6 == mock_elements.call_count
-    with pytest.raises(RetryError):
-        get_from_elements('mock://api.com/504')
-    assert 9 == mock_elements.call_count
+        get_from_elements(error)
+    assert mock_elements.call_count == 3
 
 
 def test_get_from_elements_failure_raises_exception(mock_elements):
@@ -40,13 +33,9 @@ def test_patch_elements_record_success(mock_elements, patch_xml):
     assert 200 == response.status_code
 
 
-def test_patch_elements_record_raises_retry(mock_elements, patch_xml):
+def test_patch_elements_record_raises_retry(mock_elements, error, patch_xml):
     with pytest.raises(RetryError):
-        patch_elements_record('mock://api.com/409', patch_xml)
-    with pytest.raises(RetryError):
-        patch_elements_record('mock://api.com/500', patch_xml)
-    with pytest.raises(RetryError):
-        patch_elements_record('mock://api.com/504', patch_xml)
+        patch_elements_record(error, patch_xml)
 
 
 def test_patch_elements_record_failure_raises_exception(mock_elements,
