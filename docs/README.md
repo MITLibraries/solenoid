@@ -1,14 +1,14 @@
 # README.md
 
 ## Development
-* Consult DLAD development guidelines at http://mitlibraries.github.io/ .
-* The github repo is https://github.com/MITLibraries/solenoid .
+* Consult DLS developer documentation at https://mitlibraries.github.io/guides/.
+* The github repo is https://github.com/MITLibraries/solenoid.
 * Make sure you have pipenv installed
 * `pipenv install`
   * You only really need to install dev-packages.
   * The `certifi` dependency should be regularly updated (and will be auto-updated whenever you `pipenv install`).
-* `python manage.py test` to run the tests
-  * If you `pip install coverage`, you can `coverage run manage.py test` to get a coverage report along with running your test
+* `pytest` to run the tests
+  * If you `pip install coverage`, you can `coverage run -m pytest` to get a coverage report along with running your test
   * There is a `.coveragerc` file which provides sensible defaults
   * `coverage html` will generate a nicely HTML-formatted report at `htmlcov/index.html`
 * Static assets
@@ -36,6 +36,7 @@ If for some reason you wanted to set it up from scratch, you'd need to do the fo
 * Add its URL to `ALLOWED_HOSTS` in `settings/heroku.py`
 * Provision the following apps (the free tier is fine):
   * Postgres
+  * Redis
   * Newrelic
     * This is optional - you can live on the edge if you don't like logging - but if you don't have it, you need to edit the Procfile to take out the newrelic run-program parts
   * Papertrail

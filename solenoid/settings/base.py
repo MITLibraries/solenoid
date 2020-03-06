@@ -211,7 +211,7 @@ LOGGING = {
 # EMAIL CONFIGURATION
 # -----------------------------------------------------------------------------
 
-ADMINS = make_list(os.environ.get('SOLENOID_ADMINS', None))
+ADMINS = [('Solenoid Admin', os.getenv('SOLENOID_ADMIN', None))]
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'outgoing.mit.edu'
