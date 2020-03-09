@@ -1,5 +1,7 @@
 import logging
 
+from requests.exceptions import HTTPError
+
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -178,7 +180,15 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
         author_id = form.cleaned_data['author_id']
         author_url = f'{settings.ELEMENTS_ENDPOINT}users/{author_id}'
-        author_xml = get_from_elements(author_url)
+        try:
+            author_xml = get_from_elements(author_url)
+        except HTTPError as e:
+            logger.info(e)
+            if '404 Client Error' in str(e):
+                msg = (f'Author with ID {author_id} not found in Elements. '
+                       'Please confirm the Elements ID and try again.')
+                messages.warning(self.request, msg)
+                return super(Import, self).form_invalid(form)
         author_data = parse_author_xml(author_xml)
         pub_ids = parse_author_pubs_xml(
             get_paged(f'{author_url}/publications?&detail=full'))
