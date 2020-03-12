@@ -218,102 +218,106 @@ def test_paper_id_respected_case_4(client, mock_elements, test_settings):
     assert 'info' in [m.level_tag for m in response.context['messages']]
 
 
-# TODO: check with stakeholders to find out if any of the below concerns are
-# still relevant in this new API-based import process. If so, rewrite these
-# tests accordingly.
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_records_without_publishers_accepted_if_not_fpv(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('missing_publisher_name_non_fpv.csv')
+
+    self.assertEqual(orig_count + 1, Record.objects.count())
 
 
-#     def test_records_without_publishers_accepted_if_not_fpv(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('missing_publisher_name_non_fpv.csv')
-#
-#         self.assertEqual(orig_count + 1, Record.objects.count())
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_records_without_publishers_rejected_if_fpv(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('missing_publisher_name_fpv.csv')
+
+    self.assertEqual(orig_count, Record.objects.count())
 
 
-#     def test_records_without_publishers_rejected_if_fpv(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('missing_publisher_name_fpv.csv')
-#
-#         self.assertEqual(orig_count, Record.objects.count())
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_acq_method_set_when_present(self):
+    self._post_csv('single_good_record.csv')
+
+    record = Record.objects.latest('pk')
+    self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
 
-#     def test_acq_method_set_when_present(self):
-#         self._post_csv('single_good_record.csv')
-#
-#         record = Record.objects.latest('pk')
-#         self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_records_with_unknown_acq_method_rejected(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('bad_acq_method.csv')
+
+    self.assertEqual(orig_count, Record.objects.count())
 
 
-#     def test_records_with_unknown_acq_method_rejected(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('bad_acq_method.csv')
-#
-#         self.assertEqual(orig_count, Record.objects.count())
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_records_with_new_acq_methods_accepted(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('new_acq_methods2.csv')
+
+    self.assertEqual(orig_count + 2, Record.objects.count())
 
 
-#     def test_records_with_new_acq_methods_accepted(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('new_acq_methods2.csv')
-#
-#         self.assertEqual(orig_count + 2, Record.objects.count())
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_citation_set_when_present(self):
+    self._post_csv('single_good_record.csv')
+
+    record = Record.objects.latest('pk')
+    self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.')  # noqa
 
 
-#     def test_citation_set_when_present(self):
-#         self._post_csv('single_good_record.csv')
-#
-#         record = Record.objects.latest('pk')
-#         self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.')  # noqa
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_fpv_records_without_doi_rejected(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('missing_doi_fpv.csv')
+
+    self.assertEqual(orig_count, Record.objects.count())
 
 
-#     def test_fpv_records_without_doi_rejected(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('missing_doi_fpv.csv')
-#
-#         self.assertEqual(orig_count, Record.objects.count())
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_manuscript_records_without_doi_accepted(self):
+    orig_count = Record.objects.count()
+
+    self._post_csv('missing_doi_manuscript.csv')
+
+    self.assertEqual(orig_count + 1, Record.objects.count())
+    record = Record.objects.latest('pk')
+    self.assertEqual(record.doi, '')
+    self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
 
 
-#     def test_manuscript_records_without_doi_accepted(self):
-#         orig_count = Record.objects.count()
-#
-#         self._post_csv('missing_doi_manuscript.csv')
-#
-#         self.assertEqual(orig_count + 1, Record.objects.count())
-#         record = Record.objects.latest('pk')
-#         self.assertEqual(record.doi, '')
-#         self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
+@pytest.mark.skip(reason="needs to be rewritten or deleted")
+def test_special_message_added(self):
+    # Case 1: the special message field is blank.
+    self._post_csv('single_good_record.csv')
 
+    record = Record.objects.latest('pk')
+    self.assertFalse(record.message)
 
-#     def test_special_message_added(self):
-#         # Case 1: the special message field is blank.
-#         self._post_csv('single_good_record.csv')
-#
-#         record = Record.objects.latest('pk')
-#         self.assertFalse(record.message)
-#
-#         # Case 2: the special message field is not blank.
-#         # Note that this record has a different paper ID and author than the
-#         # first one - that's important, as it means we're creating a new record
-#         # rather than accessing the existing one, which may not have a message,
-#         # depending on how we ultimately handle citation updates. (Changing
-#         # PaperID alone isn't enough, since the system would recognize that the
-#         # records have the same author and citation, and reject the second as
-#         # a duplicate.)
-#         self._post_csv('single_good_record_with_message.csv')
-#
-#         record2 = Record.objects.latest('pk')
-#         self.assertEqual(record2.message.text, 'special message goes here')
-#
-#         # Case 3: the special message field is not blank, *and* it's one we've
-#         # seen before.
-#         # Note that this CSV is the same as single_good_record_with_message,
-#         # except for a different paper ID and author.
-#         self._post_csv('single_good_record_with_message_2.csv')
-#
-#         record3 = Record.objects.latest('pk')
-#         self.assertEqual(record3.message.text, 'special message goes here')
-#         self.assertEqual(record2.message, record3.message)
+    # Case 2: the special message field is not blank.
+    # Note that this record has a different paper ID and author than the
+    # first one - that's important, as it means we're creating a new record
+    # rather than accessing the existing one, which may not have a message,
+    # depending on how we ultimately handle citation updates. (Changing
+    # PaperID alone isn't enough, since the system would recognize that the
+    # records have the same author and citation, and reject the second as
+    # a duplicate.)
+    self._post_csv('single_good_record_with_message.csv')
+
+    record2 = Record.objects.latest('pk')
+    self.assertEqual(record2.message.text, 'special message goes here')
+
+    # Case 3: the special message field is not blank, *and* it's one we've
+    # seen before.
+    # Note that this CSV is the same as single_good_record_with_message,
+    # except for a different paper ID and author.
+    self._post_csv('single_good_record_with_message_2.csv')
+
+    record3 = Record.objects.latest('pk')
+    self.assertEqual(record3.message.text, 'special message goes here')
+    self.assertEqual(record2.message, record3.message)
