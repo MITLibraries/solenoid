@@ -10,8 +10,6 @@ class Fields(object):
     DLC = 'DLC'
     PAPER_ID = 'PaperID'
     MESSAGE = 'C-Publisher-Related-Email-Message'
-    # Note - this seems to be a string like '20050601' and not an actual year,
-    # column title notwithstanding.
     PUBDATE = 'Year Published'
     TITLE = 'Title1'
     JOURNAL = 'Journal-name'
@@ -33,7 +31,7 @@ class Fields(object):
     CITATION_DATA = [FIRST_NAME, LAST_NAME, TITLE, JOURNAL]
 
     # And this is the information from EXPECTED_HEADERS that we can't find if
-    # it isn't in the CSV.
+    # it isn't in the data.
     # Some information is optional because...
     # * DOI: only needed for FPV manuscripts - the model is responsible for
     #   checking.

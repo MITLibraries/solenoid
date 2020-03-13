@@ -41,7 +41,7 @@
     <api:related direction="from" category="publication" id="2">
       <api:object
         category="publication"
-        id="2"
+        id="2-updated"
         last-affected-when="2020-01-06T22:24:50.733-05:00"
         last-modified-when="2020-01-06T22:24:50.733-05:00"
         href="https://org-url:port/secure-api/v5.5/publications/2"
@@ -67,7 +67,7 @@
             <api:verification-status>unverified</api:verification-status>
             <api:native>
               <api:field name="c-citation" type="text" display-name="Citation">
-                <api:text>Publication Two Citation.</api:text>
+                <api:text>Publication One Citation.</api:text>
               </api:field>
               <api:field name="c-do-not-request" type="boolean" display-name="DoNotRequest">
                 <api:boolean>false</api:boolean>
