@@ -191,7 +191,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                 return super(Import, self).form_invalid(form)
         author_data = parse_author_xml(author_xml)
         pub_ids = parse_author_pubs_xml(
-            get_paged(f'{author_url}/publications?&detail=full'))
+            get_paged(f'{author_url}/publications?&detail=full'), author_data)
 
         for paper in pub_ids:
             paper_id = paper['id']

@@ -1,3 +1,4 @@
+import datetime as dt
 import logging
 import xml.etree.ElementTree as ET
 
@@ -15,6 +16,17 @@ def extract_field(root, search_string):
     except AttributeError:
         field = ''
     return field
+
+
+def get_pub_date(root):
+    year = int(root.find(".//api:field[@name='publication-date']"
+                         "//api:year", NS).text)
+    month = int(root.find(".//api:field[@name='publication-date']"
+                          "//api:month", NS).text)
+    day = int(root.find(".//api:field[@name='publication-date']"
+                        "//api:day", NS).text)
+    pub_date = dt.date(year, month, day)
+    return pub_date
 
 
 def make_xml(username):
@@ -38,7 +50,7 @@ def make_xml(username):
     return top
 
 
-def parse_author_pubs_xml(xml_gen):
+def parse_author_pubs_xml(xml_gen, author_data):
     '''Takes a an author-publications record feed from Symplectic
     Elements, parses each record according to local rules for which
     publications should be requested based on certain metadata fields, and
@@ -49,9 +61,15 @@ def parse_author_pubs_xml(xml_gen):
     for page in xml_gen:
         root = ET.fromstring(page)
         for entry in root.findall("./atom:entry", NS):
-            pub_id = entry.find(".//api:object[@category='publication']",
-                                NS).get('id')
-            title = entry.find(".//api:field[@name='title']/api:text", NS).text
+            # Filter for papers to be requested based on various criteria
+            pub_date = get_pub_date(entry)
+            if pub_date <= dt.date(2009, 3, 18):
+                continue
+            if not (pub_date >= author_data['Start Date'] and
+                    pub_date <= author_data['End Date']):
+                continue
+            if entry.find(".//api:library-status", NS):
+                continue
             if entry.find(".//api:record[@source-name='manual']", NS):
                 if (entry.find(".//api:field[@name='c-do-not-request']"
                                "/api:boolean",
@@ -63,14 +81,12 @@ def parse_author_pubs_xml(xml_gen):
                     entry.find(".//api:field[@name='c-requested']/api:boolean",
                                NS).text == 'true'):
                     continue
-            if entry.find(".//api:library-status", NS):
-                continue
-            if int(entry.find(".//api:field[@name='publication-date']"
-                              "//api:year", NS).text) < 2009:
-                continue
-            else:
-                RESULTS.append({'id': pub_id,
-                                'title': title})
+
+            # If paper has passed all the checks above, add it to request list
+            pub_id = entry.find(".//api:object[@category='publication']",
+                                NS).get('id')
+            title = entry.find(".//api:field[@name='title']/api:text", NS).text
+            RESULTS.append({'id': pub_id, 'title': title})
     return RESULTS
 
 
@@ -82,7 +98,13 @@ def parse_author_xml(author_xml):
         'Last Name': extract_field(root, ".//api:last-name"),
         'MIT ID': root.find(".//api:object",
                             NS).get('proprietary-id'),
-        'DLC': extract_field(root, ".//api:primary-group-descriptor")
+        'DLC': extract_field(root, ".//api:primary-group-descriptor"),
+        'Start Date': dt.datetime.strptime(extract_field(root,
+                                           ".//api:arrive-date"),
+                                           "%Y-%m-%d").date(),
+        'End Date': dt.datetime.strptime(extract_field(root,
+                                         ".//api:leave-date"),
+                                         "%Y-%m-%d").date()
     }
     return AUTHOR_DATA
 
