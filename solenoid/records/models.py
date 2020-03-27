@@ -116,14 +116,7 @@ class Record(models.Model):
             first_init=paper_data[Fields.FIRST_NAME][0])
 
         if paper_data[Fields.PUBDATE]:
-            # We expect that the pubdate is a yyyymmdd string. If it isn't,
-            # don't guess, and don't add a publication year.
-            try:
-                assert re.compile("^\d{8}$").match(paper_data[Fields.PUBDATE])
-                citation += '({year}). '.format(
-                    year=paper_data[Fields.PUBDATE][0:4])
-            except AssertionError:
-                pass
+            citation += f'({paper_data[Fields.PUBDATE][0:4]}). '
 
         citation += '{title}. {journal}'.format(
             title=paper_data[Fields.TITLE],
