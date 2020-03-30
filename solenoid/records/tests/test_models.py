@@ -431,34 +431,6 @@ class RecordModelTest(TestCase):
             'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
         )
 
-    def test_create_citation_error_case_3(self):
-        """Minimal citation and pubdate, but pubdate is incorrectly formatted
-        (too few characters)."""
-        data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Fields.VOLUME,
-                                   Fields.ISSUE,
-                                   Fields.DOI],
-                    None))
-        data[Fields.PUBDATE] = '12341'
-        citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
-
-    def test_create_citation_error_case_4(self):
-        """Minimal citation and pubdate, but pubdate is incorrectly formatted
-        (not all numbers)."""
-        data = copy.copy(self.citation_data)
-        data.update(dict.fromkeys([Fields.VOLUME,
-                                   Fields.ISSUE,
-                                   Fields.DOI],
-                    None))
-        data[Fields.PUBDATE] = '1234m714'
-        citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
-
     def test_update_if_needed_case_1(self):
         """update_if_needed alters the record when it sees a new author."""
         r1 = Record.objects.get(pk=1)

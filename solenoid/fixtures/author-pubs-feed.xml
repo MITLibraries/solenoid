@@ -184,4 +184,34 @@
       </api:object>
     </api:related>
   </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="5">
+      <api:object
+        category="publication"
+        id="5"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/4"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Five</api:text>
+              </api:field>
+              <api:field name="publication-date" type="date" display-name="Publication date">
+                <api:date>
+                  <api:day>1</api:day>
+                  <api:month>1</api:month>
+                  <api:year>2010</api:year>
+                </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
 </feed>

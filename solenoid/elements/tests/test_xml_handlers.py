@@ -1,3 +1,4 @@
+import datetime
 import xml.etree.ElementTree as ET
 
 from freezegun import freeze_time
@@ -28,7 +29,11 @@ def test_make_xml(patch_xml):
 
 
 def test_parse_author_pubs_xml(author_pubs_xml):
-    pubs = parse_author_pubs_xml([author_pubs_xml])
+    author_data = {
+        'Start Date': datetime.date(2011, 10, 1),
+        'End Date': datetime.date(2020, 6, 30)
+    }
+    pubs = parse_author_pubs_xml([author_pubs_xml], author_data)
     assert pubs == [{'id': '2',
                     'title': 'Publication Two'}]
 
@@ -40,7 +45,9 @@ def test_parse_author_xml(author_xml):
         'First Name': 'Person',
         'Last Name': 'Author',
         'MIT ID': 'MITID',
-        'DLC': 'Department Faculty'
+        'DLC': 'Department Faculty',
+        'Start Date': datetime.date(2011, 10, 1),
+        'End Date': datetime.date(2020, 6, 30)
     }
 
 
