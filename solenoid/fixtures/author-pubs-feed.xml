@@ -56,8 +56,7 @@
               </api:field>
               <api:field name="publication-date" type="date" display-name="Publication date">
                 <api:date>
-                  <api:day>1</api:day>
-                  <api:month>1</api:month>
+                  <api:month>2</api:month>
                   <api:year>2013</api:year>
                 </api:date>
               </api:field>

@@ -19,12 +19,19 @@ def extract_field(root, search_string):
 
 
 def get_pub_date(root):
-    year = int(root.find(".//api:field[@name='publication-date']"
-                         "//api:year", NS).text)
-    month = int(root.find(".//api:field[@name='publication-date']"
-                          "//api:month", NS).text)
-    day = int(root.find(".//api:field[@name='publication-date']"
-                        "//api:day", NS).text)
+    year = int(extract_field(root, ".//api:field[@name='publication-date']"
+                             "//api:year"))
+    try:
+        month = int(extract_field(root,
+                                  ".//api:field[@name='publication-date']"
+                                  "//api:month"))
+    except ValueError:
+        month = 1
+    try:
+        day = int(extract_field(root, ".//api:field[@name='publication-date']"
+                                "//api:day"))
+    except ValueError:
+        day = 1
     pub_date = dt.date(year, month, day)
     return pub_date
 
