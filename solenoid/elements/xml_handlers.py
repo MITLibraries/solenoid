@@ -19,12 +19,22 @@ def extract_field(root, search_string):
 
 
 def get_pub_date(root):
-    year = int(root.find(".//api:field[@name='publication-date']"
-                         "//api:year", NS).text)
-    month = int(root.find(".//api:field[@name='publication-date']"
-                          "//api:month", NS).text)
-    day = int(root.find(".//api:field[@name='publication-date']"
-                        "//api:day", NS).text)
+    try:
+        year = int(extract_field(root, ".//api:field[@name='publication-date']"
+                                 "//api:year"))
+    except ValueError:
+        return None
+    try:
+        month = int(extract_field(root,
+                                  ".//api:field[@name='publication-date']"
+                                  "//api:month"))
+    except ValueError:
+        month = 1
+    try:
+        day = int(extract_field(root, ".//api:field[@name='publication-date']"
+                                "//api:day"))
+    except ValueError:
+        day = 1
     pub_date = dt.date(year, month, day)
     return pub_date
 
@@ -63,10 +73,12 @@ def parse_author_pubs_xml(xml_gen, author_data):
         for entry in root.findall("./atom:entry", NS):
             # Filter for papers to be requested based on various criteria
             pub_date = get_pub_date(entry)
-            if pub_date <= dt.date(2009, 3, 18):
+            if not pub_date:
+                pass
+            elif pub_date <= dt.date(2009, 3, 18):
                 continue
-            if not (pub_date >= author_data['Start Date'] and
-                    pub_date <= author_data['End Date']):
+            elif (pub_date < author_data['Start Date'] or
+                  pub_date > author_data['End Date']):
                 continue
             if entry.find(".//api:library-status", NS):
                 continue

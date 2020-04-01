@@ -84,11 +84,6 @@
                 <api:end-page>53</api:end-page>
               </api:pagination>
             </api:field>
-            <api:field name="publication-date" type="date" display-name="Publication date">
-              <api:date>
-                <api:year>2017</api:year>
-              </api:date>
-            </api:field>
             <api:field name="publisher" type="text" display-name="Publisher">
               <api:text>Big Publisher</api:text>
             </api:field>
@@ -122,12 +117,6 @@
                 <api:begin-page>35</api:begin-page>
                 <api:end-page>53</api:end-page>
               </api:pagination>
-            </api:field>
-            <api:field name="publication-date" type="date" display-name="Publication date">
-              <api:date>
-                <api:month>2</api:month>
-                <api:year>2017</api:year>
-              </api:date>
             </api:field>
             <api:field name="publication-status" type="text" display-name="Status">
               <api:text>Published</api:text>
@@ -187,12 +176,6 @@
                 <api:begin-page>35</api:begin-page>
                 <api:end-page>53</api:end-page>
               </api:pagination>
-            </api:field>
-            <api:field name="publication-date" type="date" display-name="Publication date">
-              <api:date>
-                <api:month>10</api:month>
-                <api:year>2017</api:year>
-              </api:date>
             </api:field>
             <api:field name="publication-status" type="text" display-name="Status">
               <api:text>Published</api:text>
