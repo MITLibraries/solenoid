@@ -162,23 +162,6 @@
               </api:field>
             </api:native>
           </api:record>
-          <api:record format="native" id="0000" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="1111">
-            <api:verification-status>unverified</api:verification-status>
-            <api:native>
-              <api:field name="c-do-not-request" type="boolean" display-name="DoNotRequest">
-                <api:boolean>false</api:boolean>
-              </api:field>
-              <api:field name="c-optout" type="boolean" display-name="OptOut">
-                <api:boolean>false</api:boolean>
-              </api:field>
-              <api:field name="c-received" type="boolean" display-name="Received">
-                <api:boolean>false</api:boolean>
-              </api:field>
-              <api:field name="c-requested" type="boolean" display-name="Requested">
-                <api:boolean>false</api:boolean>
-              </api:field>
-            </api:native>
-          </api:record>
         </api:records>
       </api:object>
     </api:related>
@@ -206,6 +189,29 @@
                   <api:month>1</api:month>
                   <api:year>2010</api:year>
                 </api:date>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="6">
+      <api:object
+        category="publication"
+        id="6"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/4"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Six</api:text>
               </api:field>
             </api:native>
           </api:record>
