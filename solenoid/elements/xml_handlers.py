@@ -75,13 +75,18 @@ def parse_author_pubs_xml(xml_gen, author_data):
             pub_date = get_pub_date(entry)
             if not pub_date:
                 pass
+            # Paper was published after OA policy enacted
             elif pub_date <= dt.date(2009, 3, 18):
                 continue
+            # Paper was published while author was MIT faculty
             elif (pub_date < author_data['Start Date'] or
                   pub_date > author_data['End Date']):
                 continue
+            # Paper does not have a library status
             if entry.find(".//api:library-status", NS):
                 continue
+            # IF paper has a manual entry record in Elements, none of the
+            # following fields are true
             if entry.find(".//api:record[@source-name='manual']", NS):
                 if (entry.find(".//api:field[@name='c-do-not-request']"
                                "/api:boolean",
@@ -93,7 +98,12 @@ def parse_author_pubs_xml(xml_gen, author_data):
                     entry.find(".//api:field[@name='c-requested']/api:boolean",
                                NS).text == 'true'):
                     continue
-
+            # IF paper has a dspace record in Elements, status is not 'Public'
+            if entry.find(".//api:record[@source-name='dspace']", NS):
+                status = extract_field(entry, ".//api:field[@name="
+                                       "'repository-status']/api:text")
+                if status == 'Public':
+                    continue
             # If paper has passed all the checks above, add it to request list
             pub_id = entry.find(".//api:object[@category='publication']",
                                 NS).get('id')
