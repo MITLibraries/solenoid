@@ -3,12 +3,22 @@ import xml.etree.ElementTree as ET
 
 from freezegun import freeze_time
 
-from solenoid.elements.xml_handlers import (extract_field, get_pub_date,
-                                            make_xml,
+from solenoid.elements.xml_handlers import (extract_attribute, extract_field,
+                                            get_pub_date, make_xml,
                                             parse_author_pubs_xml,
                                             parse_author_xml, parse_paper_xml)
 
-USERNAME = 'username'
+
+def test_extract_attribute_exists(publication_xml):
+    pub_root = ET.fromstring(publication_xml)
+    value = extract_attribute(pub_root, './/api:object', 'id')
+    assert value == '12345'
+
+
+def test_extract_field_attribute_not_exists(publication_xml):
+    pub_root = ET.fromstring(publication_xml)
+    value = extract_attribute(pub_root, './/api:object', 'notanattribute')
+    assert value is None
 
 
 def test_extract_field_exists(publication_xml):

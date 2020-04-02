@@ -10,6 +10,14 @@ NS = {'atom': 'http://www.w3.org/2005/Atom',
       'api': 'http://www.symplectic.co.uk/publications/api'}
 
 
+def extract_attribute(root, search_string, attribute):
+    try:
+        value = root.find(search_string, NS).get(attribute)
+    except AttributeError:
+        value = None
+    return value
+
+
 def extract_field(root, search_string):
     try:
         field = root.find(search_string, NS).text
