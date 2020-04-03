@@ -537,7 +537,7 @@ class EmailMessageModelTestCase(TestCase):
         r1.save()
 
         r2 = Record.objects.get(pk=2)
-        r2.acq_method = Record.ACQ_FPV
+        r2.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
         r2.save()
 
         records = Record.objects.filter(pk__in=[1, 2, 3])

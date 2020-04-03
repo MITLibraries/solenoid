@@ -37,20 +37,6 @@ class Record(models.Model):
         # them once per author.
         unique_together = (('author', 'paper_id'))
 
-    ACQ_MANUSCRIPT = "RECRUIT_FROM_AUTHOR_MANUSCRIPT"
-    ACQ_FPV = "RECRUIT_FROM_AUTHOR_FPV"
-    ACQ_BLANK = ""
-    ACQ_INDIV = "INDIVIDUAL_DOWNLOAD"
-
-    ACQ_METHODS = (
-        (ACQ_MANUSCRIPT, ACQ_MANUSCRIPT),
-        (ACQ_FPV, ACQ_FPV),
-        (ACQ_BLANK, ACQ_BLANK),
-        (ACQ_INDIV, ACQ_INDIV),
-    )
-
-    ACQ_METHODS_LIST = [tuple[0] for tuple in ACQ_METHODS]
-
     author = models.ForeignKey(
         Author,
         on_delete=models.CASCADE)
@@ -61,7 +47,6 @@ class Record(models.Model):
         on_delete=models.CASCADE)
     publisher_name = models.CharField(max_length=75)
     acq_method = models.CharField(
-        choices=ACQ_METHODS,
         max_length=32,
         blank=True)
     citation = models.TextField()
@@ -222,12 +207,6 @@ class Record(models.Model):
             return None
 
     @staticmethod
-    def is_acq_method_known(paper_data):
-        """Returns True if this paper has a recognized method of
-        acquisition; False otherwise."""
-        return (paper_data[Fields.ACQ_METHOD] in Record.ACQ_METHODS_LIST)
-
-    @staticmethod
     def is_record_creatable(paper_data):
         """Determines whether a valid Record can be created from supplied data.
 
@@ -237,8 +216,6 @@ class Record(models.Model):
             bool: True if record can be created, False otherwise.
         """
         try:
-            assert Record.is_acq_method_known(paper_data)
-
             if paper_data[Fields.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
                 assert bool(paper_data[Fields.DOI])
                 assert bool(paper_data[Fields.PUBLISHER_NAME])
@@ -331,7 +308,7 @@ class Record(models.Model):
                        'follow this link, download the article, and attach it '
                        'to an email reply, we can deposit it on your behalf: '
                        '<a href="http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi">http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi</a>]</b>') # noqa
-        if self.acq_method == self.ACQ_FPV:
+        if self.acq_method == 'RECRUIT_FROM_AUTHOR_FPV':
             return msg.substitute(publisher_name=self.publisher_name,
                                   doi=self.doi)
         else:
@@ -346,7 +323,5 @@ class Record(models.Model):
 
     @property
     def is_valid(self):
-        return all([self.acq_method in self.ACQ_METHODS_LIST,
-                    # If acq_method is FPV, we must have the DOI. If not, it
-                    # doesn't matter. That's what this truth table says.
-                    self.acq_method != Record.ACQ_FPV or bool(self.doi)])
+        # If acq_method is FPV, we must have the DOI.
+        return (self.acq_method != 'RECRUIT_FROM_AUTHOR_FPV' or bool(self.doi))

@@ -72,16 +72,6 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
         logger.info('messages added')
 
-    def _check_acq_method(self, paper_data):
-        if not Record.is_acq_method_known(paper_data):
-            logger.warning('Invalid acquisition method')
-            messages.warning(self.request, 'Publication #{id} by {author} '
-                'has an unrecognized acquisition method, so this citation '
-                'will not be imported.'.format(id=paper_data[Fields.PAPER_ID],
-                                   author=paper_data[Fields.LAST_NAME]))
-            return False
-        return True
-
     def _check_for_duplicates(self, author, paper_data):
         dupes = Record.get_duplicates(author, paper_data)
         logger.info('dupes {dupes}'.format(dupes=dupes))
@@ -211,9 +201,6 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                 paper_data.update(policy_data)
 
             if not self._check_data_validity(paper_data):
-                continue
-
-            if not self._check_acq_method(paper_data):
                 continue
 
             author = self._get_author(paper_data)
