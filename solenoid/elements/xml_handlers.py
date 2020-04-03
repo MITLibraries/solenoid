@@ -139,6 +139,21 @@ def parse_author_xml(author_xml):
     return AUTHOR_DATA
 
 
+def parse_journal_policies(journal_policies_xml):
+    root = ET.fromstring(journal_policies_xml)
+    POLICY_DATA = {
+        'C-Method-Of-Acquisition': extract_field(root, ".//api:field[@name="
+                                                 "'c-method-of-acquisition']"
+                                                 "/api:text"),
+        'C-Publisher-Related-Email-Message': extract_field(root, ".//api:field"
+                                                           "[@name='c-"
+                                                           "publisher-related-"
+                                                           "email-message']/"
+                                                           "api:text"),
+    }
+    return POLICY_DATA
+
+
 def parse_paper_xml(paper_xml):
     root = ET.fromstring(paper_xml)
     PAPER_DATA = {
@@ -147,21 +162,16 @@ def parse_paper_xml(paper_xml):
                                   "/api:text"),
         'Publisher-name': extract_field(root, ".//api:field[@name='publisher']"
                                         "/api:text"),
-        'C-Method-Of-Acquisition': extract_field(root, ".//api:field[@name="
-                                                 "'c-method-of-acquisition']"
-                                                 "/api:text"),
+        'C-Method-Of-Acquisition': '',
         'PaperID': root.find(".//api:object", NS).get('id'),
-        'C-Publisher-Related-Email-Message': extract_field(root,
-                                                           ".//api:field["
-                                                           "@name='c-publisher"
-                                                           "-related-email-"
-                                                           "message']/"
-                                                           "api:text"),
+        'C-Publisher-Related-Email-Message': '',
         'Year Published': extract_field(root, ".//api:field[@name='publication"
                                         "-date']/api:date/api:year"),
         'Title1': extract_field(root, 'atom:title'),
         'Journal-name': extract_field(root, ".//api:field[@name='journal']/"
                                       "api:text"),
+        'Journal-elements-url': extract_attribute(root, ".//api:journal",
+                                                  "href"),
         'Volume': extract_field(root, ".//api:field[@name='volume']/api:text"),
         'Issue': extract_field(root, ".//api:field[@name='issue']/api:text")
     }
