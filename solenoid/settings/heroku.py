@@ -2,7 +2,7 @@ import dj_database_url
 import os
 import sys
 
-from .base import *  # noqa
+from .base import *
 
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -12,7 +12,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 # -----------------------------------------------------------------------------
 
 db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)  # noqa
+DATABASES['default'].update(db_from_env)
 
 
 # GENERAL CONFIGURATION
@@ -58,7 +58,8 @@ LOGGING = {
     },
     'formatters': {
         'brief': {
-            'format': '%(asctime)s %(levelname)s %(name)s[%(funcName)s]: %(message)s',  # noqa
+            'format': ('%(asctime)s %(levelname)s %(name)s[%(funcName)s]: '
+                       '%(message)s'),
         },
     },
     'handlers': {

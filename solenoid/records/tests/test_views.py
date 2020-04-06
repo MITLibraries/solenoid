@@ -248,7 +248,10 @@ def test_citation_set_when_present(self):
     self._post_csv('single_good_record.csv')
 
     record = Record.objects.latest('pk')
-    self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines Affect Biofilm Formation by Pseudomonas Aeruginosa in Similar Ways at Various Scales." Research in Microbiology 161 3 (2010): 187-91.')  # noqa
+    self.assertEqual(record.citation, 'Ramos, Itzel, et al. "Phenazines '
+                     'Affect Biofilm Formation by Pseudomonas Aeruginosa in '
+                     'Similar Ways at Various Scales." Research in '
+                     'Microbiology 161 3 (2010): 187-91.')
 
 
 @pytest.mark.skip(reason="needs to be rewritten or deleted")

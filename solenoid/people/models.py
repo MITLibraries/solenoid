@@ -103,7 +103,8 @@ class Author(models.Model):
         ordering = ['last_name', 'first_name']
 
     def __str__(self):
-        return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)  # noqa
+        return ("{self.first_name} {self.last_name}/{self.dlc}"
+                .format(self=self))
 
     # Authors may have blank DLCs in a given paper's metadata, but if that
     # happens we're going to push it back to the Sympletic layer and request

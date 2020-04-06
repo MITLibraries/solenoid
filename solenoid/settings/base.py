@@ -186,7 +186,8 @@ LOGGING = {
     },
     'formatters': {
         'brief': {
-            'format': '%(asctime)s %(levelname)s %(name)s[%(funcName)s]: %(message)s',  # noqa
+            'format': ('%(asctime)s %(levelname)s %(name)s[%(funcName)s]: '
+                       '%(message)s'),
         },
     },
     'handlers': {
@@ -327,7 +328,8 @@ INSTALLED_APPS += ['ckeditor']
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
 
-CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'  # noqa
+CKEDITOR_JQUERY_URL = ('https://ajax.googleapis.com/ajax/libs/jquery/'
+                       '1.12.4/jquery.min.js')
 
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security

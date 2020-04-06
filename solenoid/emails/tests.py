@@ -453,7 +453,8 @@ class EmailMessageModelTestCase(TestCase):
         format and update the email sending function."""
         email = EmailMessage.objects.get(pk=3)
         self.assertEqual(email.latest_text,
-                         "<b>Most recent text<b> of email 3 <div class='control-citations'>citations</div>")  # noqa
+                         "<b>Most recent text<b> of email 3 <div class="
+                         "'control-citations'>citations</div>")
         self.assertEqual(email.plaintext,
                          "Most recent text of email 3 citations")
 
@@ -654,7 +655,8 @@ class EmailMessageModelTestCase(TestCase):
 
     def test_rebuild_citations_sets_text(self):
         email = EmailMessage.objects.get(pk=1)
-        orig_citation = 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)'  # noqa
+        orig_citation = ('Fermi, Enrico. Paper name. Some journal or other. '
+                         '145:5 (2016)')
         new_citation = 'yo I am for sure a citation'
 
         r = Record(email=email, author=email.author, publisher_name='yo',

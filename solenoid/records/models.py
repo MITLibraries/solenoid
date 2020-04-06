@@ -49,8 +49,8 @@ class Record(models.Model):
     message = models.TextField(blank=True)
 
     def __str__(self):
-        return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
-            self=self)
+        return ("{self.author.last_name}, {self.author.first_name} "
+                "({self.paper_id})".format(self=self))
 
     def save(self, *args, **kwargs):
         # blank=False by default in TextFields, but this applies only to *form*
@@ -260,10 +260,13 @@ class Record(models.Model):
     def fpv_message(self):
         msg = Template('<b>[Note: $publisher_name allows authors to download '
                        'and deposit the final published article, but does not '
-                       'allow the Libraries to perform the downloading. If you ' # noqa
-                       'follow this link, download the article, and attach it '
-                       'to an email reply, we can deposit it on your behalf: '
-                       '<a href="http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi">http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi</a>]</b>') # noqa
+                       'allow the Libraries to perform the downloading. If '
+                       'you follow this link, download the article, and '
+                       'attach it to an email reply, we can deposit it on '
+                       'your behalf: <a href="http://libproxy.mit.edu/'
+                       'login?url=https://dx.doi.org/$doi">http://'
+                       'libproxy.mit.edu/login?url=https://dx.doi.org/'
+                       '$doi</a>]</b>')
         if self.acq_method == 'RECRUIT_FROM_AUTHOR_FPV':
             return msg.substitute(publisher_name=self.publisher_name,
                                   doi=self.doi)

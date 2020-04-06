@@ -26,7 +26,8 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return "In re {self.author} (sent {self.date_sent})".format(self=self)  # noqa
+            return ("In re {self.author} (sent "
+                    "{self.date_sent})".format(self=self))
         else:
             return "In re {self.author} (unsent)".format(self=self)
 
@@ -161,7 +162,8 @@ class EmailMessage(models.Model):
         # requires Author. Don't call this with an empty record set!
         assert records
         if count > 1:
-            logger.warning('Records have different authors - not creating email')  # noqa
+            logger.warning('Records have different authors - not creating '
+                           'email')
             raise ValidationError('Records do not all have the same author.')
         else:
             return Author.objects.filter(record__in=records)[0]

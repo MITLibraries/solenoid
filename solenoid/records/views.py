@@ -82,7 +82,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                          for id
                          in dupes.values_list('paper_id', flat=True)]
             dupe_list = ', '.join(dupe_list)
-            logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))  # noqa
+            logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))
             messages.warning(self.request, 'Publication #{id} by {author} '
                              'duplicates the following record(s) already in '
                              'the database: {dupes}. Please merge #{id} into '
