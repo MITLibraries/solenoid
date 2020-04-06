@@ -1,5 +1,4 @@
 import logging
-import re
 from string import Template
 
 from django.core.exceptions import ValidationError
@@ -216,7 +215,8 @@ class Record(models.Model):
         *or* enough data to construct a minimal citation ourselves."""
         citable = bool(paper_data[Fields.CITATION]) or \
             all([bool(paper_data[x]) for x in Fields.CITATION_DATA])
-        return all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and citable
+        return (all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and
+                citable)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

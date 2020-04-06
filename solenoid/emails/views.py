@@ -54,7 +54,7 @@ class EmailCreate(ConditionalLoginRequiredMixin, View):
             request.session["total_email"] = len(email_pks) + 1
             request.session["current_email"] = 1
             return HttpResponseRedirect(reverse('emails:evaluate',
-                args=(first_pk,)))
+                                                args=(first_pk,)))
         except IndexError:
             logger.exception('No email pks found; email cannot be created.')
             messages.warning(request, 'No email messages found.')
@@ -78,9 +78,9 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
     def _check_citation_validity(self):
         if self.object.new_citations:
             messages.error(self.request, "New citations for this author "
-                "have been imported since last time the email was edited. "
-                "They've been added to this email automatically, but please "
-                "proofread.")
+                           "have been imported since last time the email "
+                           "was edited. They've been added to this email "
+                           "automatically, but please proofread.")
 
     def _check_record_count(self):
         available_records = Record.objects.filter(
@@ -89,10 +89,11 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
 
         if available_records.count() > self.object.record_set.count():
             messages.error(self.request, "New citations for this author "
-                "have been imported since last time the email was edited, but "
-                "not added to this email. Do you want to <a href='{url}'>add "
-                "them?</a>".format(
-                    url=reverse('emails:rebuild', args=(self.object.pk,))))
+                           "have been imported since last time the email was "
+                           "edited, but not added to this email. Do you want "
+                           "to <a href='{url}'>add them?</a>"
+                           .format(url=reverse('emails:rebuild',
+                                               args=(self.object.pk,))))
 
     def _finish_handle(self):
         next_pk = self._update_session()
@@ -101,7 +102,7 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
         else:
             try:
                 del self.kwargs['next_pk']
-            except:
+            except Exception:
                 pass
 
         return HttpResponseRedirect(self.get_success_url())
@@ -109,7 +110,8 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
     def _handle_cancel(self):
         logger.info('Canceling changes to email {}'.format(self.kwargs['pk']))
         messages.info(self.request, "Any changes to the email have "
-            "been discarded. You may return to the email and update it later.")
+                      "been discarded. You may return to the email and "
+                      "update it later.")
         return self._finish_handle()
 
     def _handle_save(self):
@@ -132,8 +134,8 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
             logger.info(e)
             email.send('admin')
         messages.success(self.request, "Email message updated and sent. "
-            "Articles in Elements will be updated within an hour to reflect "
-            "their new library status.")
+                         "Articles in Elements will be updated within an "
+                         "hour to reflect their new library status.")
         return self._finish_handle()
 
     def _get_title(self):
@@ -207,9 +209,9 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
 
         if self.object.date_sent:
             messages.warning(request, 'This email has been sent; no '
-                'further changes can be made.')
+                             'further changes can be made.')
             return HttpResponseRedirect(reverse('emails:evaluate',
-                args=(self.kwargs['pk'])))
+                                                args=(self.kwargs['pk'])))
 
         if 'submit_cancel' in request.POST:
             return self._handle_cancel()
@@ -218,8 +220,8 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
         elif 'submit_send' in request.POST:
             return self._handle_send()
         else:
-            messages.warning(request,
-                "I'm sorry; I can't tell what you meant to do.")
+            messages.warning(request, "I'm sorry; I can't tell what you meant "
+                             "to do.")
             return self.form_invalid(self.get_form())
 
 
@@ -237,11 +239,11 @@ class EmailSend(ConditionalLoginRequiredMixin, View):
 
         if False in statuses:
             logger.warning('Could not send all emails. {bad} of {all} were '
-                'not sent.'.format(bad=statuses.count(False),
-                                   all=len(pk_list)))
-            messages.warning(request,
-                'Some emails were not successfully sent. Check to be sure '
-                'that a liaison has been assigned for each DLC and try again.')
+                           'not sent.'.format(bad=statuses.count(False),
+                                              all=len(pk_list)))
+            messages.warning(request, 'Some emails were not successfully sent.'
+                             ' Check to be sure that a liaison has been '
+                             'assigned for each DLC and try again.')
         else:
             logger.info('All emails successfully sent')
             messages.success(request, 'All emails sent. Hooray!')
@@ -306,4 +308,4 @@ class EmailRebuild(ConditionalLoginRequiredMixin, View):
         messages.info(request, "New citations added. Please proofread.")
 
         return HttpResponseRedirect(reverse('emails:evaluate',
-            args=(email.pk,)))
+                                            args=(email.pk,)))

@@ -14,6 +14,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dlc',
             name='liaison',
-            field=models.ForeignKey(blank=True, null=True, to='people.Liaison', on_delete=models.CASCADE),
+            field=models.ForeignKey(blank=True, null=True,
+                                    to='people.Liaison',
+                                    on_delete=models.CASCADE),
         ),
     ]

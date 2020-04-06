@@ -22,6 +22,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='record',
             name='acq_method',
-            field=models.CharField(max_length=32, blank=True, choices=[('RECRUIT_FROM_AUTHOR_MANUSCRIPT', 'RECRUIT_FROM_AUTHOR_MANUSCRIPT'), ('RECRUIT_FROM_AUTHOR_FPV', 'RECRUIT_FROM_AUTHOR_FPV'), ('', ''), ('INDIVIDUAL_DOWNLOAD', 'INDIVIDUAL_DOWNLOAD')]),
+            field=models.CharField(max_length=32, blank=True,
+                                   choices=[('RECRUIT_FROM_AUTHOR_MANUSCRIPT',
+                                             'RECRUIT_FROM_AUTHOR_MANUSCRIPT'),
+                                            ('RECRUIT_FROM_AUTHOR_FPV',
+                                             'RECRUIT_FROM_AUTHOR_FPV'),
+                                            ('', ''),
+                                            ('INDIVIDUAL_DOWNLOAD',
+                                             'INDIVIDUAL_DOWNLOAD')]),
         ),
     ]

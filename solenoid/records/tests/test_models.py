@@ -532,7 +532,7 @@ class RecordModelTest(TestCase):
         metadata[Fields.CITATION] = ''
         author = r1.author
 
-        assert r1.citation != Record.create_citation(metadata)  # check assumption
+        assert r1.citation != Record.create_citation(metadata)
 
         assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()

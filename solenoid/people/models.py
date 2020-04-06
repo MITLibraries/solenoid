@@ -113,14 +113,18 @@ class Author(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=40)
     _mit_id_hash = models.CharField(max_length=32, help_text="This stores the "
-        "*hash* of the MIT ID, not the MIT ID itself. We want to have a "
-        "unique identifier for the author but we don't want to be storing "
-        "sensitive data offsite. Hashing the ID achieves our goals.")
+                                    "*hash* of the MIT ID, not the MIT ID "
+                                    "itself. We want to have a unique "
+                                    "identifier for the author but we don't "
+                                    "want to be storing sensitive data "
+                                    "offsite. Hashing the ID achieves "
+                                    "our goals.")
     _dspace_id = models.CharField(max_length=32)
 
     @classmethod
     def is_author_creatable(self, paper_data):
-        """Expects metadata for a single paper from Elements and determines whether an author instance can be created from it."""
+        """Expects metadata for a single paper from Elements and determines
+        whether an author instance can be created from it."""
         return all([bool(paper_data[x]) for x in Fields.AUTHOR_DATA])
 
     @classmethod

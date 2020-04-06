@@ -106,8 +106,7 @@ class EmailEvaluateTestCase(TestCase):
             'latest_text': new_text
         })
 
-        self.assertEqual(new_text,
-            EmailMessage.objects.get(pk=1).latest_text)
+        self.assertEqual(new_text, EmailMessage.objects.get(pk=1).latest_text)
 
     def test_only_unsent_emails_are_editable_1(self):
         """The email evaluate page for a sent email shows its text as sent but
@@ -152,7 +151,8 @@ class EmailEvaluateTestCase(TestCase):
         # Set up a path that should take us through the evaluate view 3 times.
         # Implicitly, we entered the email evaluation workflow with the pks =
         # [1, 2, 3], but 1 has already been popped by EmailCreate.
-        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/
+        # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
         session['email_pks'] = [2, 3]
@@ -186,7 +186,8 @@ class EmailEvaluateTestCase(TestCase):
         # Set up a path that should take us through the evaluate view 3 times.
         # Implicitly, we entered the email evaluation workflow with the pks =
         # [1, 2, 3], but 1 has already been popped by EmailCreate.
-        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/
+        # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
         session['email_pks'] = [2, 3]
@@ -224,7 +225,8 @@ class EmailEvaluateTestCase(TestCase):
         # Set up a path that should take us through the evaluate view 3 times.
         # Implicitly, we entered the email evaluation workflow with the pks =
         # [1, 2, 3], but 1 has already been popped by EmailCreate.
-        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/#persistent-state
+        # See https://docs.djangoproject.com/en/1.8/topics/testing/tools/
+        # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
         session['email_pks'] = [2, 3]
@@ -755,7 +757,7 @@ class EmailSendTestCase(TestCase):
         email.send('username')
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
-            mail.outbox[0].to)
+                      mail.outbox[0].to)
 
     @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com',
                        EMAIL_TESTING_MODE=False)

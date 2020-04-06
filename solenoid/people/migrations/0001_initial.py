@@ -13,8 +13,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Author',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('email', models.EmailField(max_length=254, help_text='Author email address')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID',
+                                        auto_created=True, primary_key=True)),
+                ('email', models.EmailField(max_length=254,
+                                            help_text='Author email address')),
                 ('first_name', models.CharField(max_length=20)),
                 ('last_name', models.CharField(max_length=40)),
                 ('mit_id', models.CharField(max_length=10)),
@@ -27,7 +29,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DLC',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID',
+                                        auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
             ],
             options={
@@ -38,7 +41,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Liaison',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID',
+                                        auto_created=True, primary_key=True)),
                 ('first_name', models.CharField(max_length=15)),
                 ('last_name', models.CharField(max_length=30)),
                 ('email_address', models.EmailField(max_length=254)),
@@ -51,7 +55,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dlc',
             name='liaison',
-            field=models.ForeignKey(to='people.Liaison', on_delete=models.CASCADE),
+            field=models.ForeignKey(to='people.Liaison',
+                                    on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='author',
