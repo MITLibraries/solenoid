@@ -12,17 +12,6 @@ from .helpers import Fields
 logger = logging.getLogger(__name__)
 
 
-class Message(models.Model):
-    """The text of special messages associated with publishers.
-
-    This is stored in class instances and not in a helpers file because we are
-    getting it from data imports. However, we're not just making it a field on
-    Record because we expect a great deal of duplication (since special
-    messages will likely be the same for all records by a given publisher, at
-    least over some period of time)."""
-    text = models.TextField()
-
-
 class Record(models.Model):
     """The Record contains:
         * citation information for an MIT author publication
@@ -58,11 +47,7 @@ class Record(models.Model):
     # constraint). The unique ID on pubdata-dev does not match that on the
     # production server.
     paper_id = models.CharField(max_length=10)
-    message = models.ForeignKey(
-        Message,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE)
+    message = models.TextField(blank=True)
 
     def __str__(self):
         return "{self.author.last_name}, {self.author.first_name} ({self.paper_id})".format( # noqa
@@ -120,32 +105,6 @@ class Record(models.Model):
         return citation
 
     @staticmethod
-    def _get_message_text(paper_data):
-        try:
-            message = paper_data[Fields.MESSAGE]
-        except KeyError:
-            message = None
-        logger.info('Message text was %s' % message)
-
-        return message
-
-    @staticmethod
-    def _get_message_object(message_text):
-        if message_text:
-            try:
-                msg = Message.objects.get(text=message_text)
-                logger.info('got message %s' % msg)
-            except Message.DoesNotExist:
-                msg = Message.objects.create(text=message_text)
-                msg.save()
-                logger.info('created message %s' % msg)
-        else:
-            logger.info('no message')
-            msg = None
-
-        return msg
-
-    @staticmethod
     def _get_citation(paper_data):
         if paper_data[Fields.CITATION]:
             citation = paper_data[Fields.CITATION]
@@ -169,9 +128,6 @@ class Record(models.Model):
             logger.info('Got an existing record')
             return record, False
         except Record.DoesNotExist:
-            message_text = Record._get_message_text(paper_data)
-            message_object = Record._get_message_object(message_text)
-
             citation = Record._get_citation(paper_data)
 
             record = Record.objects.create(
@@ -181,7 +137,7 @@ class Record(models.Model):
                 citation=citation,
                 doi=paper_data[Fields.DOI],
                 paper_id=paper_data[Fields.PAPER_ID],
-                message=message_object)
+                message=paper_data[Fields.MESSAGE])
             logger.info('record created')
 
             return record, True

@@ -74,11 +74,11 @@ class EmailMessage(models.Model):
             citations += '<p>'
             citations += record.citation
 
-            if record.message:
-                citations += '<b>[{msg}]</b>'.format(msg=record.message.text)
-
             if record.fpv_message:
-                citations += record.fpv_message
+                citations += f'<br /><b>{record.fpv_message}</b>'
+            elif record.message:
+                citations += f'<br /><b>[{record.message}]</b>'
+
             citations += '</p>'
         logger.info('Citations created')
 

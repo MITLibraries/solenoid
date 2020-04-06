@@ -206,6 +206,7 @@ class RecordModelTest(TestCase):
             Fields.CITATION: 'citation',
             Fields.DOI: 'doi',
             Fields.PAPER_ID: 'paper_id',
+            Fields.MESSAGE: ''
         }
 
         record, created = Record.get_or_create_from_data(author, row)
@@ -215,6 +216,7 @@ class RecordModelTest(TestCase):
         assert record.citation == 'citation'
         assert record.doi == 'doi'
         assert record.paper_id == 'paper_id'
+        assert record.message == ''
 
     def test_get_duplicates_1(self):
         """There are no duplicates: this should return None."""
