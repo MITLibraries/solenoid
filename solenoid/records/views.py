@@ -204,7 +204,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             paper_data.update(author_data)
 
             journal_url = paper_data["Journal-elements-url"]
-            if journal_url is not None:
+            if bool(journal_url):
                 policy_xml = get_from_elements(f'{journal_url}/'
                                                f'policies?detail=full')
                 policy_data = parse_journal_policies(policy_xml)

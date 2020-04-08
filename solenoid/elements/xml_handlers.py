@@ -13,8 +13,10 @@ NS = {'atom': 'http://www.w3.org/2005/Atom',
 def extract_attribute(root, search_string, attribute):
     try:
         value = root.find(search_string, NS).get(attribute)
+        if value is None:
+            value = ''
     except AttributeError:
-        value = None
+        value = ''
     return value
 
 

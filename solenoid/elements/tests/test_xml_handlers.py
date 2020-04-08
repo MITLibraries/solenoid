@@ -17,10 +17,10 @@ def test_extract_attribute_exists(publication_xml):
     assert value == '12345'
 
 
-def test_extract_field_attribute_not_exists(publication_xml):
+def test_extract_attribute_does_not_exist(publication_xml):
     pub_root = ET.fromstring(publication_xml)
     value = extract_attribute(pub_root, './/api:object', 'notanattribute')
-    assert value is None
+    assert value == ''
 
 
 def test_extract_field_exists(publication_xml):
