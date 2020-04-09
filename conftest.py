@@ -55,6 +55,11 @@ def publication_no_date_xml():
 
 
 @pytest.fixture()
+def journal_policies_xml():
+    return _get_file('journal-policies.xml')
+
+
+@pytest.fixture()
 def publication_updated_xml():
     return _get_file('publication-updated.xml')
 
@@ -94,7 +99,7 @@ def mock_elements(author_xml, author_new_xml, author_pubs_xml,
                   author_pubs_new_xml, author_pubs_updated_xml, fun_author_xml,
                   fun_author_pubs_xml, fun_publication_diacritics_xml,
                   fun_publication_emoji_xml, fun_publication_math_xml,
-                  fun_publication_nonroman_xml,
+                  fun_publication_nonroman_xml, journal_policies_xml,
                   publication_xml, publication_new_xml,
                   publication_no_date_xml,
                   publication_updated_xml):
@@ -117,6 +122,8 @@ def mock_elements(author_xml, author_new_xml, author_pubs_xml,
         m.get(f'mock://api.com/users/54321/'
               f'publications?&detail=full', text=author_pubs_new_xml)
         m.get(f'mock://api.com/publications/2', text=publication_xml)
+        m.get(f'mock://api.com/journals/0000/policies?detail=full',
+              text=journal_policies_xml)
         m.get(f'mock://api.com/publications/2-updated',
               text=publication_updated_xml)
         m.get(f'mock://api.com/publications/6', text=publication_no_date_xml)

@@ -13,6 +13,7 @@ from django.views.generic.list import ListView
 from solenoid.elements.elements import get_from_elements, get_paged
 from solenoid.elements.xml_handlers import (parse_author_pubs_xml,
                                             parse_author_xml,
+                                            parse_journal_policies,
                                             parse_paper_xml)
 from solenoid.people.models import DLC, Author
 from solenoid.userauth.mixins import ConditionalLoginRequiredMixin
@@ -201,6 +202,13 @@ class Import(ConditionalLoginRequiredMixin, FormView):
             paper_xml = get_from_elements(paper_url)
             paper_data = parse_paper_xml(paper_xml)
             paper_data.update(author_data)
+
+            journal_url = paper_data["Journal-elements-url"]
+            if bool(journal_url):
+                policy_xml = get_from_elements(f'{journal_url}/'
+                                               f'policies?detail=full')
+                policy_data = parse_journal_policies(policy_xml)
+                paper_data.update(policy_data)
 
             if not self._check_data_validity(paper_data):
                 continue

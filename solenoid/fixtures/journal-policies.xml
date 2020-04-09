@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:api="http://www.symplectic.co.uk/publications/api">
+  <api:schema-version>5.5</api:schema-version><category scheme="http://www.symplectic.co.uk/publications/atom/feeds/" term="relationship-list" label="Relationship list"/>
+  <id>tag:elements@organisation,5.16:/secure-api/v5.5/feeds/journals/0000/policies?detail=full</id>
+  <updated>2020-04-03T12:09:18.0395901-04:00</updated>
+  <generator uri="https://org-url/" version="5.16">Symplectic Elements</generator>
+  <icon>https://org-url:port/secure-api/v5.5/symplectic.ico</icon>
+  <rights>This data is the property of the Organisation, and can only be used with permission.</rights>
+  <subtitle>This feed represents a page of relationships from the following search query: https://org-url:port/secure-api/v5.5/journals/0000/policies?detail=full</subtitle>
+  <api:pagination results-count="1" items-per-page="25"><api:page position="this" href="https://org-url:port/secure-api/v5.5/journals/0000/policies?detail=full"/></api:pagination><link type="application/atom+xml" rel="self" href="https://org-url:port/secure-api/v5.5/journals/0000/policies?detail=full"/>
+  <title>Deposit advice related to the journal: A Very Important Journal</title>
+  <author>
+    <name>Symplectic Elements at Organisation</name>
+  </author>
+  <entry>
+    <id>tag:elements@organisation,5.16:/secure-api/v5.5//journals/0000/policies?detail=full</id><category scheme="http://www.symplectic.co.uk/publications/atom/entries/" term="relationship" label="Relationship"/>
+    <updated>2019-07-25T09:16:31.4-04:00</updated><link type="application/atom+xml" rel="alternate" href="https://org-url:port/secure-api/v5.5/journals/0000/policies?detail=full"/><link type="application/atom+xml" rel="related" title="Object 1" href="https://org-url:port/secure-api/v5.5/journals/0000"/><link type="application/atom+xml" rel="related" title="Object 2" href="https://org-url:port/secure-api/v5.5/policies/9999"/>
+    <title>Has deposit advice: Big Publisher</title>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <p>Involving
+          <a href="https://org-url:port/secure-api/v5.5/policies/9999">Big Publisher</a>
+        </p>
+      </div>
+    </content>
+    <api:relationship id="145777" type-id="142" type="journal-policy-advice" last-modified-when="2019-07-25T09:16:31.4-04:00" href="https://org-url:port/secure-api/v5.5/relationships/145777?detail=ref">
+      <api:related direction="to" category="policy" id="9999">
+        <api:object
+          category="policy"
+          id="9999"
+          last-affected-when="2020-03-29T10:36:45.567-04:00"
+          last-modified-when="2019-07-25T15:16:02.263-04:00"
+          href="https://org-url:port/secure-api/v5.5/policies/9999"
+          created-when="2016-12-14T07:03:15.067-05:00"
+          type-id="2"
+          type="publisher-deposit-advice">
+          <!--Deposit advice type 2 is "publisher deposit advice"-->
+          <api:ever-approved>true</api:ever-approved>
+          <api:is-public>true</api:is-public>
+          <api:records>
+            <api:record format="native" id="285070" source-id="1" source-name="manual" source-display-name="Manual" id-at-source="6">
+              <api:native>
+                <api:field name="c-method-of-acquisition" type="text" display-name="Method of acquisition">
+                  <api:text>RECRUIT_FROM_AUTHOR_FPV</api:text>
+                </api:field>
+                <api:field name="c-opt-out-required" type="boolean" display-name="Opt-out required">
+                  <api:boolean>false</api:boolean>
+                </api:field>
+                <api:field name="c-publisher-related-email-message" type="text" display-name="Publisher-related email message">
+                  <api:text>Big Publisher allows authors to download and deposit the final published article, but does not allow the Libraries to perform the downloading. If you attach the final published version to an email reply, we can deposit it on your behalf. (See http://big-publisher-info-url.com)</api:text>
+                </api:field>
+                <api:field name="embargo-months" type="integer" display-name="Embargo period (months)">
+                  <api:integer>6</api:integer>
+                </api:field>
+                <api:field name="guidance" type="text" display-name="Guidance">
+                  <api:text>Human-readable deposit guidance</api:text>
+                </api:field>
+                <api:field name="title" type="text" display-name="Title">
+                  <api:text>Big Publisher</api:text>
+                </api:field>
+              </api:native>
+            </api:record>
+          </api:records><api:fields/><api:relationships href="https://org-url:port/secure-api/v5.5/policies/9999/relationships"/></api:object>
+      </api:related>
+    </api:relationship>
+  </entry>
+</feed>

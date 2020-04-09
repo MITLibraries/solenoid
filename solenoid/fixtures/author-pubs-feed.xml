@@ -219,4 +219,39 @@
       </api:object>
     </api:related>
   </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="7">
+      <api:object
+        category="publication"
+        id="7"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/4"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Seven</api:text>
+              </api:field>
+            </api:native>
+          </api:record>
+          <api:record source-name="dspace">
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Seven</api:text>
+              </api:field>
+            </api:native>
+            <api:native>
+              <api:field name="repository-status" type="text" display-name="Availability">
+                <api:text>Public</api:text>
+              </api:field>
+          </api:native>
+          </api:record>
+        </api:records>
+      </api:object>
+    </api:related>
+  </entry>
 </feed>

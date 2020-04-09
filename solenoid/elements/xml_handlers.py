@@ -10,6 +10,16 @@ NS = {'atom': 'http://www.w3.org/2005/Atom',
       'api': 'http://www.symplectic.co.uk/publications/api'}
 
 
+def extract_attribute(root, search_string, attribute):
+    try:
+        value = root.find(search_string, NS).get(attribute)
+        if value is None:
+            value = ''
+    except AttributeError:
+        value = ''
+    return value
+
+
 def extract_field(root, search_string):
     try:
         field = root.find(search_string, NS).text
@@ -75,13 +85,18 @@ def parse_author_pubs_xml(xml_gen, author_data):
             pub_date = get_pub_date(entry)
             if not pub_date:
                 pass
+            # Paper was published after OA policy enacted
             elif pub_date <= dt.date(2009, 3, 18):
                 continue
+            # Paper was published while author was MIT faculty
             elif (pub_date < author_data['Start Date'] or
                   pub_date > author_data['End Date']):
                 continue
+            # Paper does not have a library status
             if entry.find(".//api:library-status", NS):
                 continue
+            # IF paper has a manual entry record in Elements, none of the
+            # following fields are true
             if entry.find(".//api:record[@source-name='manual']", NS):
                 if (entry.find(".//api:field[@name='c-do-not-request']"
                                "/api:boolean",
@@ -93,7 +108,12 @@ def parse_author_pubs_xml(xml_gen, author_data):
                     entry.find(".//api:field[@name='c-requested']/api:boolean",
                                NS).text == 'true'):
                     continue
-
+            # IF paper has a dspace record in Elements, status is not 'Public'
+            if entry.find(".//api:record[@source-name='dspace']", NS):
+                status = extract_field(entry, ".//api:field[@name="
+                                       "'repository-status']/api:text")
+                if status == 'Public':
+                    continue
             # If paper has passed all the checks above, add it to request list
             pub_id = entry.find(".//api:object[@category='publication']",
                                 NS).get('id')
@@ -121,6 +141,21 @@ def parse_author_xml(author_xml):
     return AUTHOR_DATA
 
 
+def parse_journal_policies(journal_policies_xml):
+    root = ET.fromstring(journal_policies_xml)
+    POLICY_DATA = {
+        'C-Method-Of-Acquisition': extract_field(root, ".//api:field[@name="
+                                                 "'c-method-of-acquisition']"
+                                                 "/api:text"),
+        'C-Publisher-Related-Email-Message': extract_field(root, ".//api:field"
+                                                           "[@name='c-"
+                                                           "publisher-related-"
+                                                           "email-message']/"
+                                                           "api:text"),
+    }
+    return POLICY_DATA
+
+
 def parse_paper_xml(paper_xml):
     root = ET.fromstring(paper_xml)
     PAPER_DATA = {
@@ -129,21 +164,16 @@ def parse_paper_xml(paper_xml):
                                   "/api:text"),
         'Publisher-name': extract_field(root, ".//api:field[@name='publisher']"
                                         "/api:text"),
-        'C-Method-Of-Acquisition': extract_field(root, ".//api:field[@name="
-                                                 "'c-method-of-acquisition']"
-                                                 "/api:text"),
+        'C-Method-Of-Acquisition': '',
         'PaperID': root.find(".//api:object", NS).get('id'),
-        'C-Publisher-Related-Email-Message': extract_field(root,
-                                                           ".//api:field["
-                                                           "@name='c-publisher"
-                                                           "-related-email-"
-                                                           "message']/"
-                                                           "api:text"),
+        'C-Publisher-Related-Email-Message': '',
         'Year Published': extract_field(root, ".//api:field[@name='publication"
                                         "-date']/api:date/api:year"),
         'Title1': extract_field(root, 'atom:title'),
         'Journal-name': extract_field(root, ".//api:field[@name='journal']/"
                                       "api:text"),
+        'Journal-elements-url': extract_attribute(root, ".//api:journal",
+                                                  "href"),
         'Volume': extract_field(root, ".//api:field[@name='volume']/api:text"),
         'Issue': extract_field(root, ".//api:field[@name='issue']/api:text")
     }

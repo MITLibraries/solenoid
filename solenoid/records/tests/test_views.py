@@ -236,12 +236,11 @@ def test_records_without_publishers_rejected_if_fpv(self):
     self.assertEqual(orig_count, Record.objects.count())
 
 
-@pytest.mark.skip(reason="needs to be rewritten or deleted")
-def test_acq_method_set_when_present(self):
-    self._post_csv('single_good_record.csv')
-
+@pytest.mark.django_db
+def test_acq_method_set_when_present(client, mock_elements, test_settings):
+    client.post(IMPORT_URL, {'author_id': '98765'})
     record = Record.objects.latest('pk')
-    self.assertEqual(record.acq_method, 'RECRUIT_FROM_AUTHOR_MANUSCRIPT')
+    assert record.acq_method == 'RECRUIT_FROM_AUTHOR_FPV'
 
 
 @pytest.mark.skip(reason="needs to be rewritten or deleted")

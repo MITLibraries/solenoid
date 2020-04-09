@@ -174,7 +174,6 @@
             </api:field>
             <api:field name="issn" type="text" display-name="ISSN">
               <api:text>fake-issn</api:text>
-              <api:links><api:link type="elements/journal" href="https://org-url:port/secure-api/v5.5/journals/0000"/></api:links>
             </api:field>
             <api:field name="journal" type="text" display-name="Journal">
               <api:text>A Very Important Journal</api:text>
@@ -215,6 +214,14 @@
             </api:field>
           </api:native>
         </api:record>
-      </api:records><api:fields/><api:relationships href="https://org-url:port/secure-api/v5.5/publications/12345/relationships"/></api:object>
+      </api:records><api:fields/>
+      <api:journal issn="0000-0000" href="mock://api.com/journals/0000">
+        <api:records>
+          <api:record source-name="sherpa-romeo">
+            <api:title>A Very Important Journal</api:title>
+          </api:record>
+        </api:records>
+      </api:journal>
+      <api:relationships href="https://org-url:port/secure-api/v5.5/publications/12345/relationships"/></api:object>
   </entry>
 </feed>
