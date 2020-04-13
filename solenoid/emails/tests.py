@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.test import TestCase, Client, override_settings, RequestFactory
 
 from solenoid.people.models import Author, Liaison
-from solenoid.records.models import Record, Message
+from solenoid.records.models import Record
 
 from .models import EmailMessage
 from .views import _get_or_create_emails, EmailSend
@@ -368,7 +368,7 @@ class EmailMessageModelTestCase(TestCase):
     def test_publisher_special_message_included(self):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
-        message = Message.objects.create(text='A very special message')
+        message = 'A very special message'
         r3 = Record.objects.get(pk=3)
         r3.message = message
         r3.save()
@@ -533,21 +533,21 @@ class EmailMessageModelTestCase(TestCase):
         # First, ensure that our if conditions in the for loop below will be
         # True at least once each.
         r1 = Record.objects.get(pk=1)
-        r1.message = Message.objects.get(pk=1)
+        r1.message = 'This is a message'
         r1.save()
 
         r2 = Record.objects.get(pk=2)
-        r2.acq_method = Record.ACQ_FPV
+        r2.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
         r2.save()
 
         records = Record.objects.filter(pk__in=[1, 2, 3])
         citations = EmailMessage._create_citations(records)
         for record in records:
             assert record.citation in citations
-            if record.message:
-                assert record.message.text in citations
             if record.fpv_message:
                 assert record.fpv_message in citations
+            elif record.message:
+                assert record.message in citations
 
     def test_filter_records_1(self):
         """Filter removes records with emails already sent."""

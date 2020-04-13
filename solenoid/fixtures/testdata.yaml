@@ -216,8 +216,3 @@
     doi: 10.1412/4216714
     paper_id: 6578523
     email: 6
-
-- model: records.Message
-  pk: 1
-  fields:
-    text: 'This is a message'

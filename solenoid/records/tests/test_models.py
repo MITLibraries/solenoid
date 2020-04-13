@@ -67,7 +67,7 @@ class RecordModelTest(TestCase):
         # Data includes the basics? Good!
         data = {
             Fields.PUBLISHER_NAME: 'foo',
-            Fields.ACQ_METHOD: Record.ACQ_MANUSCRIPT,
+            Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_MANUSCRIPT',
             Fields.CITATION: 'nonempty'
         }
         assert Record.is_record_creatable(data)
@@ -87,17 +87,11 @@ class RecordModelTest(TestCase):
         assert not Record.is_record_creatable(data)
 
         data = {
-            Fields.PUBLISHER_NAME: '',
-            Fields.ACQ_METHOD: 'random',
-            Fields.CITATION: 'nonempty'
-        }
-        assert not Record.is_record_creatable(data)
-
-        data = {
             Fields.PUBLISHER_NAME: 'foo',
             # No acq method column at all
             Fields.CITATION: 'nonempty'
         }
+        assert not Record.is_record_creatable(data)
 
         # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
         data = {
@@ -115,14 +109,6 @@ class RecordModelTest(TestCase):
             Fields.DOI: '4217896'
         }
         assert Record.is_record_creatable(data)
-
-    def test_is_valid_unknown_acq(self):
-        record = Record.objects.get(pk=1)
-        record.acq_method = 'NOT_A_METHOD'
-        record.save()
-
-        # acq_method not in ACQ_METHODS_LIST: invalid
-        assert not record.is_valid
 
     def test_is_valid_fpv_but_no_doi(self):
         record = Record.objects.get(pk=1)
@@ -220,6 +206,7 @@ class RecordModelTest(TestCase):
             Fields.CITATION: 'citation',
             Fields.DOI: 'doi',
             Fields.PAPER_ID: 'paper_id',
+            Fields.MESSAGE: ''
         }
 
         record, created = Record.get_or_create_from_data(author, row)
@@ -229,6 +216,7 @@ class RecordModelTest(TestCase):
         assert record.citation == 'citation'
         assert record.doi == 'doi'
         assert record.paper_id == 'paper_id'
+        assert record.message == ''
 
     def test_get_duplicates_1(self):
         """There are no duplicates: this should return None."""
