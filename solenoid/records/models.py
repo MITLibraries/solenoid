@@ -99,8 +99,8 @@ class Record(models.Model):
         citation += '.'
 
         if paper_data[Fields.DOI]:
-            citation += ' doi:{doi}'.format(doi=paper_data[Fields.DOI])
-
+            citation += (' <a href="https://doi.org/{doi}">doi:{doi}'
+                         '</a>'.format(doi=paper_data[Fields.DOI]))
         return citation
 
     @staticmethod
