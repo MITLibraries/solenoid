@@ -55,20 +55,21 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         if successes:
             if successes == 1:
                 messages.success(self.request, '1 new publication has been '
-                    'successfully imported. You can now email its author '
-                    'about it.')
+                                 'successfully imported. You can now email '
+                                 'its author about it.')
             else:
                 messages.success(self.request, '{x} new publications have '
-                    'been successfully imported. You can now generate '
-                    'emails to authors about them.'.format(x=successes))
+                                 'been successfully imported. You can now '
+                                 'generate emails to authors about '
+                                 'them.'.format(x=successes))
 
         if updates:
             messages.info(self.request, 'Record(s) updated with new data from '
-                'Elements: {ids}'.format(ids=', '.join(updates)))
+                          'Elements: {ids}'.format(ids=', '.join(updates)))
 
         if unchanged:
             messages.info(self.request, 'Duplicate record(s) not changed: '
-                '{ids}'.format(ids=', '.join(unchanged)))
+                          '{ids}'.format(ids=', '.join(unchanged)))
 
         logger.info('messages added')
 
@@ -81,14 +82,15 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                          for id
                          in dupes.values_list('paper_id', flat=True)]
             dupe_list = ', '.join(dupe_list)
-            logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))  # noqa
+            logger.info('dupe_list {dupe_list}'.format(dupe_list=dupe_list))
             messages.warning(self.request, 'Publication #{id} by {author} '
-                'duplicates the following record(s) already in the '
-                'database: {dupes}. Please merge #{id} into an existing '
-                'record in Elements. It will not be imported.'.format(
-                    id=paper_data[Fields.PAPER_ID],
-                    author=paper_data[Fields.LAST_NAME],
-                    dupes=dupe_list))
+                             'duplicates the following record(s) already in '
+                             'the database: {dupes}. Please merge #{id} into '
+                             'an existing record in Elements. It will not be '
+                             'imported.'.format(id=paper_data[Fields.PAPER_ID],
+                                                author=paper_data[
+                                                    Fields.LAST_NAME],
+                                                dupes=dupe_list))
             return False
         return True
 
@@ -96,11 +98,11 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         if not Record.is_data_valid(paper_data):
             logger.warning('Invalid record data')
             messages.warning(self.request, 'Publication #{id} by {author} '
-                'is missing required data (one or more of {info}), so '
-                'this citation will not be imported.'.format(
-                    id=paper_data[Fields.PAPER_ID],
-                    author=paper_data[Fields.LAST_NAME],
-                    info=', '.join(Fields.REQUIRED_DATA)))
+                             'is missing required data (one or more of '
+                             '{info}), so this citation will not be imported.'
+                             .format(id=paper_data[Fields.PAPER_ID],
+                                     author=paper_data[Fields.LAST_NAME],
+                                     info=', '.join(Fields.REQUIRED_DATA)))
             return False
         return True
 
@@ -108,13 +110,13 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         if Record.paper_requested(paper_data):
             logger.info('Paper already requested, record not imported')
             messages.info(self.request, 'Publication #{id} by {author} '
-                'has already been requested (possibly from another '
-                'author), so this record will not be imported. Please add '
-                'this citation manually to an email, and manually mark it '
-                'as requested in Symplectic, if you would like to request '
-                'it from this author also'
-                .format(id=paper_data[Fields.PAPER_ID],
-                        author=paper_data[Fields.LAST_NAME]))
+                          'has already been requested (possibly from another '
+                          'author), so this record will not be imported. '
+                          'Please add this citation manually to an email, '
+                          'and manually mark it as requested in Symplectic, '
+                          'if you would like to request it from this author '
+                          'also'.format(id=paper_data[Fields.PAPER_ID],
+                                        author=paper_data[Fields.LAST_NAME]))
             return False
         return True
 
@@ -139,15 +141,17 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                 author = None
                 logger.warning('No author can be found for record')
                 messages.warning(self.request, 'The author for publication '
-                    '#{id} is missing required information. This record will '
-                    'not be created'.format(id=paper_data[Fields.PAPER_ID]))
+                                 '#{id} is missing required information. '
+                                 'This record will not be created'
+                                 .format(id=paper_data[Fields.PAPER_ID]))
         logger.info('author was %s' % author)
         return author
 
     def _get_record(self, paper_data, author):
         if Record.is_record_creatable(paper_data):
             logger.info('record was creatable')
-            record, created = Record.get_or_create_from_data(author, paper_data)
+            record, created = Record.get_or_create_from_data(author,
+                                                             paper_data)
         else:
             logger.warning(f'Cannot create record for publication '
                            f'{paper_data[Fields.PAPER_ID]} with '

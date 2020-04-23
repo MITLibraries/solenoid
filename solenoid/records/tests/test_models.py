@@ -185,10 +185,13 @@ class RecordModelTest(TestCase):
 
         msg = Template('<b>[Note: $publisher_name allows authors to download '
                        'and deposit the final published article, but does not '
-                       'allow the Libraries to perform the downloading. If you ' # noqa
-                       'follow this link, download the article, and attach it '
-                       'to an email reply, we can deposit it on your behalf: '
-                       '<a href="http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi">http://libproxy.mit.edu/login?url=https://dx.doi.org/$doi</a>]</b>')  # noqa
+                       'allow the Libraries to perform the downloading. If '
+                       'you follow this link, download the article, and '
+                       'attach it to an email reply, we can deposit it on '
+                       'your behalf: <a href="http://libproxy.mit.edu/'
+                       'login?url=https://dx.doi.org/$doi">http://'
+                       'libproxy.mit.edu/login?url=https://dx.doi.org/'
+                       '$doi</a>]</b>')
 
         assert record.fpv_message == msg.substitute(
             publisher_name=publisher_name, doi=fake_doi)
@@ -239,7 +242,8 @@ class RecordModelTest(TestCase):
         metadata = {
             Fields.PUBLISHER_NAME: 'Wiley',
             Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Fields.CITATION: 'Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)',  # noqa
+            Fields.CITATION: ('Fermi, Enrico. Paper name. Some journal or '
+                              'other. 145:5 (2016)'),
             Fields.DOI: '10.1412/4678156',
             Fields.PAPER_ID: 'paper_id',
             Fields.FIRST_NAME: 'Different',
@@ -272,7 +276,8 @@ class RecordModelTest(TestCase):
         metadata = {
             Fields.PUBLISHER_NAME: 'Nature',
             Fields.ACQ_METHOD: 'RECRUIT_FROM_AUTHOR_FPV',
-            Fields.CITATION: 'Tonegawa, Susumu. Paper name. Some journal or other. 31:4 (2012)',  # noqa
+            Fields.CITATION: ('Tonegawa, Susumu. Paper name. Some journal or '
+                              'other. 31:4 (2012)'),
             Fields.DOI: '10.1240.2/4914241',
             Fields.PAPER_ID: '24618',
             Fields.FIRST_NAME: 'Susumu',
@@ -296,9 +301,9 @@ class RecordModelTest(TestCase):
                                    Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
+                         'of non-abelian gauge theories. Physical Review '
+                         'Letters.')
 
     def test_create_citation_case_2(self):
         """Minimal citation plus:
@@ -309,9 +314,9 @@ class RecordModelTest(TestCase):
         data.update(dict.fromkeys([Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26).'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
+                         'of non-abelian gauge theories. Physical Review '
+                         'Letters, 30(26).')
 
     def test_create_citation_case_3(self):
         """Minimal citation plus:
@@ -323,9 +328,9 @@ class RecordModelTest(TestCase):
                                    Fields.ISSUE],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters. doi:10.1103/PhysRevLett.30.1343'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
+                         'of non-abelian gauge theories. Physical Review '
+                         'Letters. doi:10.1103/PhysRevLett.30.1343')
 
     def test_create_citation_case_4(self):
         """Minimal citation plus:
@@ -333,9 +338,9 @@ class RecordModelTest(TestCase):
         volume & issue: YES
         doi: YES """
         citation = Record.create_citation(self.citation_data)
-        self.assertEqual(citation,
-            'Wilczek, F. (1973). Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26). doi:10.1103/PhysRevLett.30.1343'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
+                         'of non-abelian gauge theories. Physical Review '
+                         'Letters, 30(26). doi:10.1103/PhysRevLett.30.1343')
 
     def test_create_citation_case_5(self):
         """Minimal citation plus:
@@ -349,9 +354,9 @@ class RecordModelTest(TestCase):
                                    Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters.')
 
     def test_create_citation_case_6(self):
         """Minimal citation plus:
@@ -363,9 +368,9 @@ class RecordModelTest(TestCase):
                                    Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26).'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters, 30(26).')
 
     def test_create_citation_case_7(self):
         """Minimal citation plus:
@@ -378,9 +383,9 @@ class RecordModelTest(TestCase):
                                    Fields.ISSUE],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters. doi:10.1103/PhysRevLett.30.1343'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters. doi:10.1103/PhysRevLett.30.1343')
 
     def test_create_citation_case_8(self):
         """Minimal citation plus:
@@ -391,9 +396,9 @@ class RecordModelTest(TestCase):
         data.update(dict.fromkeys([Fields.PUBDATE],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters, 30(26). doi:10.1103/PhysRevLett.30.1343'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters, 30(26). doi:10.1103/PhysRevLett.30.1343')
 
     def test_create_citation_error_case_1(self):
         """Minimal citation; has volume, lacks issue."""
@@ -403,9 +408,9 @@ class RecordModelTest(TestCase):
                                    Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters.')
 
     def test_create_citation_error_case_2(self):
         """Minimal citation; has issue, lacks volume."""
@@ -415,9 +420,9 @@ class RecordModelTest(TestCase):
                                    Fields.DOI],
                     None))
         citation = Record.create_citation(data)
-        self.assertEqual(citation,
-            'Wilczek, F. Ultraviolet behavior of non-abelian gauge theories. Physical Review Letters.'  # noqa
-        )
+        self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
+                         'non-abelian gauge theories. Physical Review '
+                         'Letters.')
 
     def test_update_if_needed_case_1(self):
         """update_if_needed alters the record when it sees a new author."""
@@ -532,7 +537,7 @@ class RecordModelTest(TestCase):
         metadata[Fields.CITATION] = ''
         author = r1.author
 
-        assert r1.citation != Record.create_citation(metadata)  # check assumption
+        assert r1.citation != Record.create_citation(metadata)
 
         assert r1.update_if_needed(author, metadata)
         r1.refresh_from_db()

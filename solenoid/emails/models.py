@@ -26,7 +26,8 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return "In re {self.author} (sent {self.date_sent})".format(self=self)  # noqa
+            return ("In re {self.author} (sent "
+                    "{self.date_sent})".format(self=self))
         else:
             return "In re {self.author} (unsent)".format(self=self)
 
@@ -105,7 +106,7 @@ class EmailMessage(models.Model):
         available_records = record_list.filter(email__isnull=True)
         if not available_records:
             logger.warning('Could not create email text - all records already '
-                'have emails')
+                           'have emails')
             raise ValidationError('All records already have emails.')
 
         try:
@@ -114,7 +115,7 @@ class EmailMessage(models.Model):
             assert len(list(set(authors))) == 1
         except AssertionError:
             logger.exception('Could not create email text - multiple authors '
-                'in record set')
+                             'in record set')
             raise ValidationError('All records must have the same author.')
 
         author = record_list.first().author
@@ -122,9 +123,9 @@ class EmailMessage(models.Model):
 
         logger.info('Returning original text of email')
         return render_to_string('emails/author_email_template.html',
-            context={'author': author,
-                     'liaison': author.dlc.liaison,
-                     'citations': citations})
+                                context={'author': author,
+                                         'liaison': author.dlc.liaison,
+                                         'citations': citations})
 
     @staticmethod
     def _filter_records(records):
@@ -161,7 +162,8 @@ class EmailMessage(models.Model):
         # requires Author. Don't call this with an empty record set!
         assert records
         if count > 1:
-            logger.warning('Records have different authors - not creating email')  # noqa
+            logger.warning('Records have different authors - not creating '
+                           'email')
             raise ValidationError('Records do not all have the same author.')
         else:
             return Author.objects.filter(record__in=records)[0]
@@ -216,7 +218,7 @@ class EmailMessage(models.Model):
             assert self.liaison
         except AssertionError:
             logger.exception('Attempt to send email {pk}, which is missing a '
-                'liaison'.format(pk=self.pk))
+                             'liaison'.format(pk=self.pk))
             return False
 
         logger.info('Email {pk} is valid for sending'.format(pk=self.pk))
@@ -255,7 +257,7 @@ class EmailMessage(models.Model):
         except SMTPException:
             logger.exception('Could not send email; SMTP exception')
             return False
-        except:
+        except Exception:
             logger.exception('Could not send email; unanticipated exception')
             return False
 
@@ -332,7 +334,7 @@ class EmailMessage(models.Model):
     def dlc(self):
         try:
             return self.author.dlc
-        except:
+        except Exception:
             return None
 
     @property

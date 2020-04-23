@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='elementsapicall',
             name='request_data',
-            field=models.TextField(help_text='The xml sent (i.e. the "data" kwarg in the requests.patch() call.'),
+            field=models.TextField(help_text='The xml sent (i.e. the "data" '
+                                   'kwarg in the requests.patch() call.'),
         ),
     ]

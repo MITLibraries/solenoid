@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 import hashlib
 
-from django.db import migrations, models
+from django.db import migrations
 
 
 def initialize_hashes(apps, schema_editor):

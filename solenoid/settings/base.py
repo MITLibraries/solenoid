@@ -186,7 +186,8 @@ LOGGING = {
     },
     'formatters': {
         'brief': {
-            'format': '%(asctime)s %(levelname)s %(name)s[%(funcName)s]: %(message)s',  # noqa
+            'format': ('%(asctime)s %(levelname)s %(name)s[%(funcName)s]: '
+                       '%(message)s'),
         },
     },
     'handlers': {
@@ -235,7 +236,8 @@ SCHOLCOMM_MOIRA_LIST = 'sccs-fta@mit.edu'
 
 # If True, will only send email to admins. If False, will send email to
 # liaisons and the moira list.
-EMAIL_TESTING_MODE = boolean(os.environ.get('DJANGO_EMAIL_TESTING_MODE', False))
+EMAIL_TESTING_MODE = boolean(os.environ.get('DJANGO_EMAIL_TESTING_MODE',
+                                            False))
 
 
 # -----------------------------------------------------------------------------
@@ -326,7 +328,8 @@ INSTALLED_APPS += ['ckeditor']
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
 
-CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js'  # noqa
+CKEDITOR_JQUERY_URL = ('https://ajax.googleapis.com/ajax/libs/jquery/'
+                       '1.12.4/jquery.min.js')
 
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
@@ -352,7 +355,8 @@ CKEDITOR_CONFIGS = {
 # Defaults to the dev instance - only use the production Elements app if you
 # are very sure you should!
 ELEMENTS_ENDPOINT = os.environ.get('DJANGO_ELEMENTS_ENDPOINT',
-    'https://pubdata-dev.mit.edu:8091/secure-api/v5.5/')
+                                   'https://pubdata-dev.mit.edu:8091/'
+                                   'secure-api/v5.5/')
 
 # You'll need to have an API user configured in the Elements app that matches
 # these parameters. See docs/README.md.

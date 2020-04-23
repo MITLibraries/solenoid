@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 from django.test import Client, TestCase, override_settings
 from django.urls import resolve, reverse
@@ -140,10 +139,10 @@ class AuthorTests(TestCase):
         dlc = DLC.objects.create(name='Test DLC')
         mit_id = '000000000'
         author = Author.objects.create(dlc=dlc,
-            email='foo@example.com',
-            first_name='Test',
-            last_name='Author',
-            mit_id=mit_id)
+                                       email='foo@example.com',
+                                       first_name='Test',
+                                       last_name='Author',
+                                       mit_id=mit_id)
 
         self.assertEqual(author.mit_id,
                          hashlib.md5(mit_id.encode('utf-8')).hexdigest())
@@ -154,10 +153,10 @@ class AuthorTests(TestCase):
         dlc = DLC.objects.create(name='Test DLC')
         mit_id = '000000000'
         author = Author.objects.create(dlc=dlc,
-            email='foo@example.com',
-            first_name='Test',
-            last_name='Author',
-            mit_id=mit_id)
+                                       email='foo@example.com',
+                                       first_name='Test',
+                                       last_name='Author',
+                                       mit_id=mit_id)
 
         author_fields = Author._meta.get_fields()
 
@@ -168,10 +167,10 @@ class AuthorTests(TestCase):
     def test_author_set_hash(self):
         dlc = DLC.objects.create(name='Test DLC')
         author = Author.objects.create(dlc=dlc,
-            email='foo@example.com',
-            first_name='Test',
-            last_name='Author',
-            mit_id='000000000')
+                                       email='foo@example.com',
+                                       first_name='Test',
+                                       last_name='Author',
+                                       mit_id='000000000')
 
         new_mit_id = '214915295'
 
