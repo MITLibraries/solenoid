@@ -45,7 +45,10 @@ def get_pub_date(root):
                                 "//api:day"))
     except ValueError:
         day = 1
-    pub_date = dt.date(year, month, day)
+    try:
+        pub_date = dt.date(year, month, day)
+    except ValueError:
+        pub_date = dt.date(year, 1, 1)
     return pub_date
 
 
@@ -81,6 +84,9 @@ def parse_author_pubs_xml(xml_gen, author_data):
     for page in xml_gen:
         root = ET.fromstring(page)
         for entry in root.findall("./atom:entry", NS):
+            pub_id = entry.find(".//api:object[@category='publication']",
+                                NS).get('id')
+            title = entry.find(".//api:field[@name='title']/api:text", NS).text
             # Filter for papers to be requested based on various criteria
             pub_date = get_pub_date(entry)
             if not pub_date:
@@ -122,9 +128,6 @@ def parse_author_pubs_xml(xml_gen, author_data):
                 if status == 'Public' or status == 'Private':
                     continue
             # If paper has passed all the checks above, add it to request list
-            pub_id = entry.find(".//api:object[@category='publication']",
-                                NS).get('id')
-            title = entry.find(".//api:field[@name='title']/api:text", NS).text
             RESULTS.append({'id': pub_id, 'title': title})
     return RESULTS
 
