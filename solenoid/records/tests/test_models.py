@@ -330,7 +330,9 @@ class RecordModelTest(TestCase):
         citation = Record.create_citation(data)
         self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
                          'of non-abelian gauge theories. Physical Review '
-                         'Letters. doi:10.1103/PhysRevLett.30.1343')
+                         'Letters. <a href="https://doi.org/10.1103/'
+                         'PhysRevLett.30.1343">doi:10.1103/PhysRevLett.30.1343'
+                         '</a>')
 
     def test_create_citation_case_4(self):
         """Minimal citation plus:
@@ -340,7 +342,9 @@ class RecordModelTest(TestCase):
         citation = Record.create_citation(self.citation_data)
         self.assertEqual(citation, 'Wilczek, F. (1973). Ultraviolet behavior '
                          'of non-abelian gauge theories. Physical Review '
-                         'Letters, 30(26). doi:10.1103/PhysRevLett.30.1343')
+                         'Letters, 30(26). <a href="https://doi.org/10.1103/'
+                         'PhysRevLett.30.1343">doi:10.1103/PhysRevLett.30.1343'
+                         '</a>')
 
     def test_create_citation_case_5(self):
         """Minimal citation plus:
@@ -385,7 +389,9 @@ class RecordModelTest(TestCase):
         citation = Record.create_citation(data)
         self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
                          'non-abelian gauge theories. Physical Review '
-                         'Letters. doi:10.1103/PhysRevLett.30.1343')
+                         'Letters. <a href="https://doi.org/10.1103/'
+                         'PhysRevLett.30.1343">doi:10.1103/PhysRevLett.30.1343'
+                         '</a>')
 
     def test_create_citation_case_8(self):
         """Minimal citation plus:
@@ -398,7 +404,9 @@ class RecordModelTest(TestCase):
         citation = Record.create_citation(data)
         self.assertEqual(citation, 'Wilczek, F. Ultraviolet behavior of '
                          'non-abelian gauge theories. Physical Review '
-                         'Letters, 30(26). doi:10.1103/PhysRevLett.30.1343')
+                         'Letters, 30(26). <a href="https://doi.org/10.1103/'
+                         'PhysRevLett.30.1343">doi:10.1103/PhysRevLett.30.1343'
+                         '</a>')
 
     def test_create_citation_error_case_1(self):
         """Minimal citation; has volume, lacks issue."""
