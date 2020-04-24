@@ -104,7 +104,7 @@ def parse_author_pubs_xml(xml_gen, author_data):
             # Publication type is either a journal article, book chapter, or
             # conference proceeding
             pub_type = extract_attribute(entry, ".//api:object", "type-id")
-            if not (pub_type == '5' or pub_type == '3' or pub_type == '4'):
+            if pub_type not in ('3', '4', '5'):
                 continue
             # IF paper has a manual entry record in Elements, none of the
             # following fields are true
