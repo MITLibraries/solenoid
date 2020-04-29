@@ -254,4 +254,37 @@
       </api:object>
     </api:related>
   </entry>
+  <entry>
+    <api:related direction="from" category="publication" id="8">
+      <api:object
+        category="publication"
+        id="8"
+        last-affected-when="2020-01-06T22:24:50.733-05:00"
+        last-modified-when="2020-01-06T22:24:50.733-05:00"
+        href="https://org-url:port/secure-api/v5.5/publications/8"
+        created-when="2016-11-11T10:32:09.993-05:00"
+        type-id="5"
+        type="journal-article">
+        <api:records>
+          <api:record>
+            <api:native>
+              <api:field name="title" type="text" display-name="Title">
+                <api:text>Publication Eight</api:text>
+              </api:field>
+            </api:native>
+          </api:record>
+        </api:records>
+        <api:oa>
+          <api:oa-policy-exception-policy-id>3</api:oa-policy-exception-policy-id>
+          <api:oa-policy-exception-type>DoNotRequest</api:oa-policy-exception-type>
+          <api:oa-policy-exceptions>
+            <api:oa-policy-exception>
+              <api:policy-id>3</api:policy-id>
+              <api:type>DoNotRequest</api:type>
+            </api:oa-policy-exception>
+          </api:oa-policy-exceptions>
+        </api:oa>
+      </api:object>
+    </api:related>
+  </entry>
 </feed>

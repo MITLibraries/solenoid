@@ -106,7 +106,10 @@ def parse_author_pubs_xml(xml_gen, author_data):
             pub_type = extract_attribute(entry, ".//api:object", "type-id")
             if pub_type not in ('3', '4', '5'):
                 continue
-            # IF paper has a manual entry record in Elements, none of the
+            # Paper does not have an OA policy exception
+            if entry.find(".//api:oa-policy-exception", NS):
+                continue
+            # If paper has a manual entry record in Elements, none of the
             # following fields are true
             if entry.find(".//api:record[@source-name='manual']", NS):
                 if (entry.find(".//api:field[@name='c-do-not-request']"
