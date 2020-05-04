@@ -77,7 +77,8 @@ def test_parse_author_pubs_xml(author_pubs_xml):
     }
     pubs = parse_author_pubs_xml([author_pubs_xml], author_data)
     assert pubs == [{'id': '2', 'title': 'Publication Two'},
-                    {'id': '6', 'title': 'Publication Six'}]
+                    {'id': '6', 'title': 'Publication Six'},
+                    {'id': '9', 'title': 'Publication Nine'}]
 
 
 def test_parse_author_xml(author_xml):
