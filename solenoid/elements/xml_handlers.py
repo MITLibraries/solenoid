@@ -151,11 +151,13 @@ def parse_author_xml(author_xml):
         'DLC': extract_field(root, ".//api:primary-group-descriptor"),
         'Start Date': dt.datetime.strptime(extract_field(root,
                                            ".//api:arrive-date"),
-                                           "%Y-%m-%d").date(),
-        'End Date': dt.datetime.strptime(extract_field(root,
-                                         ".//api:leave-date"),
-                                         "%Y-%m-%d").date()
+                                           "%Y-%m-%d").date()
     }
+    try:
+        AUTHOR_DATA['End Date'] = dt.datetime.strptime(
+            extract_field(root, ".//api:leave-date"), "%Y-%m-%d").date()
+    except ValueError:
+        AUTHOR_DATA['End Date'] = dt.date(3000, 1, 1)
     return AUTHOR_DATA
 
 

@@ -94,6 +94,19 @@ def test_parse_author_xml(author_xml):
     }
 
 
+def test_parse_author_xml_no_end_date(author_new_xml):
+    author_data = parse_author_xml(author_new_xml)
+    assert author_data == {
+        'Email': 'PTWONA@ORG.EDU',
+        'First Name': 'Person Two',
+        'Last Name': 'New Author',
+        'MIT ID': 'MITID02',
+        'DLC': 'Department Faculty',
+        'Start Date': datetime.date(2011, 10, 1),
+        'End Date': datetime.date(3000, 1, 1)
+    }
+
+
 def test_parse_paper_xml(publication_xml):
     pub_data = parse_paper_xml(publication_xml)
     assert pub_data == {
