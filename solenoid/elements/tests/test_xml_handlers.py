@@ -77,7 +77,8 @@ def test_parse_author_pubs_xml(author_pubs_xml):
     }
     pubs = parse_author_pubs_xml([author_pubs_xml], author_data)
     assert pubs == [{'id': '2', 'title': 'Publication Two'},
-                    {'id': '6', 'title': 'Publication Six'}]
+                    {'id': '6', 'title': 'Publication Six'},
+                    {'id': '9', 'title': 'Publication Nine'}]
 
 
 def test_parse_author_xml(author_xml):
@@ -90,6 +91,19 @@ def test_parse_author_xml(author_xml):
         'DLC': 'Department Faculty',
         'Start Date': datetime.date(2011, 10, 1),
         'End Date': datetime.date(2020, 6, 30)
+    }
+
+
+def test_parse_author_xml_no_end_date(author_new_xml):
+    author_data = parse_author_xml(author_new_xml)
+    assert author_data == {
+        'Email': 'PTWONA@ORG.EDU',
+        'First Name': 'Person Two',
+        'Last Name': 'New Author',
+        'MIT ID': 'MITID02',
+        'DLC': 'Department Faculty',
+        'Start Date': datetime.date(2011, 10, 1),
+        'End Date': datetime.date(3000, 1, 1)
     }
 
 

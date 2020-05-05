@@ -127,6 +127,7 @@ def mock_elements(author_xml, author_new_xml, author_pubs_xml,
         m.get(f'mock://api.com/publications/2-updated',
               text=publication_updated_xml)
         m.get(f'mock://api.com/publications/6', text=publication_no_date_xml)
+        m.get(f'mock://api.com/publications/9', text=publication_xml)
 
         m.get(f'mock://api.com/users/fun', text=fun_author_xml)
         m.get(f'mock://api.com/users/fun/'
