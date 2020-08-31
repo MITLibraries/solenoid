@@ -547,10 +547,10 @@ class EmailMessageModelTestCase(TestCase):
         citations = EmailMessage._create_citations(records)
         for record in records:
             assert record.citation in citations
-            if record.fpv_message:
-                assert record.fpv_message in citations
-            elif record.message:
+            if record.message:
                 assert record.message in citations
+            elif record.fpv_message:
+                assert record.fpv_message in citations
 
     def test_filter_records_1(self):
         """Filter removes records with emails already sent."""
