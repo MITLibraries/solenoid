@@ -75,10 +75,10 @@ class EmailMessage(models.Model):
             citations += '<p>'
             citations += record.citation
 
-            if record.fpv_message:
-                citations += f'<br /><b>{record.fpv_message}</b>'
-            elif record.message:
+            if record.message:
                 citations += f'<br /><b>[{record.message}]</b>'
+            elif record.fpv_message:
+                citations += f'<br /><b>{record.fpv_message}</b>'
 
             citations += '</p>'
         logger.info('Citations created')
