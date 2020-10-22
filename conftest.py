@@ -2,6 +2,7 @@ import os
 
 from freezegun import freeze_time
 import pytest
+from requests.exceptions import Timeout
 import requests_mock
 
 from django.conf import settings
@@ -109,6 +110,8 @@ def mock_elements(author_xml, author_new_xml, author_pubs_xml,
         m.get('mock://api.com/409', status_code=409)
         m.get('mock://api.com/500', status_code=500)
         m.get('mock://api.com/504', status_code=504)
+        m.get('mock://api.com/timeout',
+              exc=Timeout)
         m.get('mock://api.com/page1', text=PAGE_ONE)
         m.get('mock://api.com/page2', text=PAGE_TWO)
 
@@ -146,6 +149,7 @@ def mock_elements(author_xml, author_new_xml, author_pubs_xml,
         m.patch('mock://api.com/409', status_code=409)
         m.patch('mock://api.com/500', status_code=500)
         m.patch('mock://api.com/504', status_code=504)
+        m.patch('mock://api.com/timeout', exc=Timeout)
 
         yield m
 

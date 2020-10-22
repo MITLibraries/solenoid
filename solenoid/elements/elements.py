@@ -26,7 +26,10 @@ def get_from_elements(url):
     response text. Retries up to 5 times for known Elements API retry status
     codes.
     """
-    response = requests.get(url, proxies=PROXIES, auth=AUTH)
+    response = requests.get(url,
+                            proxies=PROXIES,
+                            auth=AUTH,
+                            timeout=5)
     if response.status_code in [409, 500, 504]:
         raise RetryError(f'Elements response status {response.status_code} '
                          'requires retry')
@@ -50,7 +53,8 @@ def patch_elements_record(url, xml_data):
                               data=xml_data,
                               headers={'Content-Type': 'text/xml'},
                               proxies=PROXIES,
-                              auth=AUTH)
+                              auth=AUTH,
+                              timeout=5)
     if response.status_code in [409, 500, 504]:
         raise RetryError(f'Elements response status {response.status_code} '
                          'requires retry')
