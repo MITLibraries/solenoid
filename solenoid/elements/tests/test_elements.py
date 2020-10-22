@@ -1,5 +1,5 @@
 import pytest
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, Timeout
 
 from solenoid.elements.elements import (get_from_elements, get_paged,
                                         patch_elements_record)
@@ -22,6 +22,11 @@ def test_get_from_elements_failure_raises_exception(mock_elements):
         get_from_elements('mock://api.com/400')
 
 
+def test_get_from_elements_timeout(mock_elements):
+    with pytest.raises(Timeout):
+        get_from_elements('mock://api.com/timeout')
+
+
 def test_get_paged_success(mock_elements):
     response = get_paged('mock://api.com/page1')
     for item in response:
@@ -38,7 +43,15 @@ def test_patch_elements_record_raises_retry(mock_elements, error, patch_xml):
         patch_elements_record(error, patch_xml)
 
 
-def test_patch_elements_record_failure_raises_exception(mock_elements,
-                                                        patch_xml):
+def test_patch_elements_record_failure_raises_exception(
+    mock_elements, patch_xml
+):
     with pytest.raises(HTTPError):
         patch_elements_record('mock://api.com/400', patch_xml)
+
+
+def test_patch_elements_record_timeout(
+    mock_elements, patch_xml
+):
+    with pytest.raises(Timeout):
+        patch_elements_record('mock://api.com/timeout', patch_xml)

@@ -1,6 +1,6 @@
 import logging
 
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, Timeout
 
 from django.conf import settings
 from django.contrib import messages
@@ -184,6 +184,13 @@ class Import(ConditionalLoginRequiredMixin, FormView):
                        'Please confirm the Elements ID and try again.')
                 messages.warning(self.request, msg)
                 return super(Import, self).form_invalid(form)
+        except Timeout as e:
+            logger.info(e)
+            msg = ('Unable to connect to Symplectic '
+                   'Elements. Please wait a few '
+                   'minutes and try again.')
+            messages.warning(self.request, msg)
+            return super(Import, self).form_invalid(form)
         author_data = parse_author_xml(author_xml)
         pub_ids = parse_author_pubs_xml(
             get_paged(f'{author_url}/publications?&detail=full'), author_data)
