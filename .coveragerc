@@ -1,9 +1,0 @@
-[run]
-branch = True
-omit =
-    */migrations/*
-    */admin.py
-    solenoid/settings/heroku.py
-    solenoid/wsgi.py
-    solenoid/elements
-source = ./solenoid/

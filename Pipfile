@@ -7,8 +7,9 @@ name = "pypi"
 python_version = "3.8"
 
 [dev-packages]
-coverage = "*"
+coveralls = "*"
 freezegun = "*"
+pytest-cov = "*"
 pytest-django = "*"
 requests-mock = "*"
 
