@@ -1,5 +1,6 @@
 {
   "name": "solenoid",
+  "stack": "heroku-20",
   "scripts": {
     "postdeploy": "python manage.py migrate"
   },
