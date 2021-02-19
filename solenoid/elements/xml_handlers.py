@@ -95,8 +95,8 @@ def parse_author_pubs_xml(xml_gen, author_data):
             elif pub_date <= dt.date(2009, 3, 18):
                 continue
             # Paper was published while author was MIT faculty
-            elif (pub_date < author_data['Start Date'] or
-                  pub_date > author_data['End Date']):
+            elif (pub_date < dt.date.fromisoformat(author_data['Start Date']) or
+                  pub_date > dt.date.fromisoformat(author_data['End Date'])):
                 continue
             # Paper does not have a library status
             if entry.find(".//api:library-status", NS):
@@ -149,15 +149,12 @@ def parse_author_xml(author_xml):
         'MIT ID': root.find(".//api:object",
                             NS).get('proprietary-id'),
         'DLC': extract_field(root, ".//api:primary-group-descriptor"),
-        'Start Date': dt.datetime.strptime(extract_field(root,
-                                           ".//api:arrive-date"),
-                                           "%Y-%m-%d").date()
+        'Start Date': extract_field(root, ".//api:arrive-date")
     }
     try:
-        AUTHOR_DATA['End Date'] = dt.datetime.strptime(
-            extract_field(root, ".//api:leave-date"), "%Y-%m-%d").date()
-    except ValueError:
-        AUTHOR_DATA['End Date'] = dt.date(3000, 1, 1)
+        AUTHOR_DATA['End Date'] = root.find(".//api:leave-date", NS).text
+    except AttributeError:
+        AUTHOR_DATA['End Date'] = "3000-01-01"
     return AUTHOR_DATA
 
 

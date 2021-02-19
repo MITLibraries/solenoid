@@ -421,7 +421,11 @@ DSPACE_SALT = os.getenv('DSPACE_AUTHOR_ID_SALT', default='salty')
 # CELERY CONFIGURATION
 # -----------------------------------------------------------------------------
 
+INSTALLED_APPS += ['celery_progress']
+
 CELERY_BROKER_URL = os.getenv('REDIS_URL',
                               default='redis://localhost:6379/0')
 CELERY_BROKER_TRANSPORT_OPTIONS = {"max_retries": 3, "interval_start": 0,
                                    "interval_step": 0.2, "interval_max": 0.5}
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL',
+                                  default='redis://localhost:6379')

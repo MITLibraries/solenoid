@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Import Status{% endblock %}
+
+{% block content %}
+  <div id="progress-bar-message">
+  	Waiting for import task to start...
+  </div>
+  <div id = 'progress-wrapper' class='progress-wrapper waiting'; style='margin:10px 0 10px 0;'>
+
+    <div id='progress-bar' class='progress-bar progress-bar-striped' role='progressbar' style='background-color:#68a9ef; height:30px; width:0%;'>&nbsp;</div>
+
+  </div>
+  <div id="celery-result">
+    <ol id="result"></ol>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  {% if task_id %}
+  <script type="text/javascript">
+  	function processProgress(progressBarElement, progressBarMessageElement, progress) {
+      if (progress.percent > 0) {
+        progressBarElement.style.width = progress.percent + "%";
+        progressBarMessageElement.innerHTML = progress.description
+      } else {
+  			progressBarMessageElement.innerHTML = "Retrieving list of papers to import. This may take several minutes, please do not close or refresh your browser window until import has completed.";
+  		}
+    }
+
+    function processSuccess(progressBarElement, progressBarMessageElement) {
+      progressBarElement.style.backgroundColor = "#76ce60";
+      progressBarMessageElement.textContent = "Import complete!"
+    }
+
+  	function processResult(resultElement, result) {
+      var ol = document.getElementById("result");
+      for (var key of Object.keys(result)) {
+        var li = document.createElement('li');
+        li.appendChild(document.createTextNode("Paper #" + key + ": " + result[key]));
+        ol.appendChild(li);
+      }
+  	}
+
+  	$(function () {
+  		var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+  		CeleryProgressBar.initProgressBar(progressUrl, {
+  			onProgress: processProgress,
+        onSuccess: processSuccess,
+  			onResult: processResult,
+  		})
+  	});
+  </script>
+  {% endif %}
+{% endblock %}
