@@ -8,6 +8,7 @@ app_name = 'records'
 urlpatterns = [
     url(r'^$', views.UnsentList.as_view(), name='unsent_list'),
     url(r'^import/$', views.Import.as_view(), name='import'),
+    url(r'^import/status/(?P<task_id>[^/]+)/$', views.status, name="status"),
     url(r'^instructions/$',
         TemplateView.as_view(template_name="records/instructions.html"),
         name='instructions'),

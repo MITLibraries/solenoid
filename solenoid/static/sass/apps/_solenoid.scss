@@ -199,3 +199,23 @@ select, option {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f23074', endColorstr='#544b8c',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
 /* csslint ignore:end */
+
+
+#progress-wrapper {
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 1rem,
+      #ccc 1rem,
+      #ccc 2rem
+    );
+  background-size: 200% 200%;
+  animation: barberpole 20s linear infinite;
+}
+
+@keyframes barberpole {
+  100% {
+    background-position: 100% 100%;
+  }
+}

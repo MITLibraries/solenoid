@@ -72,8 +72,8 @@ def test_make_xml(patch_xml):
 
 def test_parse_author_pubs_xml(author_pubs_xml):
     author_data = {
-        'Start Date': datetime.date(2011, 10, 1),
-        'End Date': datetime.date(2020, 6, 30)
+        'Start Date': '2011-10-01',
+        'End Date': '2020-06-30'
     }
     pubs = parse_author_pubs_xml([author_pubs_xml], author_data)
     assert pubs == [{'id': '2', 'title': 'Publication Two'},
@@ -89,8 +89,8 @@ def test_parse_author_xml(author_xml):
         'Last Name': 'Author',
         'MIT ID': 'MITID',
         'DLC': 'Department Faculty',
-        'Start Date': datetime.date(2011, 10, 1),
-        'End Date': datetime.date(2020, 6, 30)
+        'Start Date': '2011-10-01',
+        'End Date': '2020-06-30'
     }
 
 
@@ -102,8 +102,8 @@ def test_parse_author_xml_no_end_date(author_new_xml):
         'Last Name': 'New Author',
         'MIT ID': 'MITID02',
         'DLC': 'Department Faculty',
-        'Start Date': datetime.date(2011, 10, 1),
-        'End Date': datetime.date(3000, 1, 1)
+        'Start Date': '2011-10-01',
+        'End Date': '3000-01-01'
     }
 
 

@@ -24,6 +24,8 @@ from .views import HomeView
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', HomeView.as_view(), name='home'),
+    url(r'^celery-progress/', include('celery_progress.urls',
+                                      namespace='celery_progress')),
     url(r'^records/', include('solenoid.records.urls', namespace='records')),
     url(r'^emails/', include('solenoid.emails.urls', namespace='emails')),
     url(r'^people/', include('solenoid.people.urls', namespace='people')),
