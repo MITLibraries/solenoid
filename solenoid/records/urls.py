@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 from django.views.generic import TemplateView
 
 from . import views
@@ -6,10 +6,11 @@ from . import views
 app_name = 'records'
 
 urlpatterns = [
-    url(r'^$', views.UnsentList.as_view(), name='unsent_list'),
-    url(r'^import/$', views.Import.as_view(), name='import'),
-    url(r'^import/status/(?P<task_id>[^/]+)/$', views.status, name="status"),
-    url(r'^instructions/$',
-        TemplateView.as_view(template_name="records/instructions.html"),
-        name='instructions'),
-]
+    re_path(r'^$', views.UnsentList.as_view(), name='unsent_list'),
+    re_path(r'^import/$', views.Import.as_view(), name='import'),
+    re_path(r'^import/status/(?P<task_id>[^/]+)/$', views.status,
+            name="status"),
+    re_path(r'^instructions/$',
+            TemplateView.as_view(template_name="records/instructions.html"),
+            name='instructions'),
+    ]

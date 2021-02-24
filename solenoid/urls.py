@@ -13,8 +13,8 @@ Including another URLconf
     1. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import include, url
 from django.contrib import admin
+from django.urls import include, re_path
 from django.views.defaults import server_error
 
 from solenoid.userauth.views import SolenoidLogoutView
@@ -22,23 +22,24 @@ from solenoid.userauth.views import SolenoidLogoutView
 from .views import HomeView
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', HomeView.as_view(), name='home'),
-    url(r'^celery-progress/', include('celery_progress.urls',
-                                      namespace='celery_progress')),
-    url(r'^records/', include('solenoid.records.urls', namespace='records')),
-    url(r'^emails/', include('solenoid.emails.urls', namespace='emails')),
-    url(r'^people/', include('solenoid.people.urls', namespace='people')),
-    url(r'^oauth2/', include('social_django.urls', namespace='social')),
-    url(r'^logout/$',
-        SolenoidLogoutView.as_view(template_name='userauth/logout.html'),
-        name='logout'),
-    url(r'^500/$', server_error),
-]
+    re_path(r'^admin/', admin.site.urls),
+    re_path(r'^$', HomeView.as_view(), name='home'),
+    re_path(r'^celery-progress/', include('celery_progress.urls',
+                                          namespace='celery_progress')),
+    re_path(r'^records/', include('solenoid.records.urls',
+                                  namespace='records')),
+    re_path(r'^emails/', include('solenoid.emails.urls', namespace='emails')),
+    re_path(r'^people/', include('solenoid.people.urls', namespace='people')),
+    re_path(r'^oauth2/', include('social_django.urls', namespace='social')),
+    re_path(r'^logout/$',
+            SolenoidLogoutView.as_view(template_name='userauth/logout.html'),
+            name='logout'),
+    re_path(r'^500/$', server_error),
+    ]
 
 
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+        re_path(r'^__debug__/', include(debug_toolbar.urls)),
+        ] + urlpatterns
