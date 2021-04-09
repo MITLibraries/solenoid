@@ -34,8 +34,8 @@ def test_get_paged_success(mock_elements):
 
 
 def test_patch_elements_record_success(mock_elements, patch_xml):
-    response = patch_elements_record('mock://api.com', patch_xml)
-    assert 200 == response.status_code
+    response_text = patch_elements_record('mock://api.com', patch_xml)
+    assert 'Success' == response_text
 
 
 def test_patch_elements_record_raises_retry(mock_elements, error, patch_xml):
