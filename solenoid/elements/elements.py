@@ -59,4 +59,4 @@ def patch_elements_record(url, xml_data):
         raise RetryError(f'Elements response status {response.status_code} '
                          'requires retry')
     response.raise_for_status()
-    return response
+    return response.text
