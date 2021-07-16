@@ -33,19 +33,19 @@ class Record(models.Model):
         blank=True,
         null=True,
         on_delete=models.CASCADE)
-    publisher_name = models.CharField(max_length=75)
+    publisher_name = models.CharField(max_length=255)
     acq_method = models.CharField(
-        max_length=32,
+        max_length=255,
         blank=True)
     citation = models.TextField()
-    doi = models.CharField(max_length=45, blank=True)
+    doi = models.CharField(max_length=255, blank=True)
     # This is the unique ID within Elements, which is NOT the same as the
     # proprietary data source ID - those are unique IDs within Scopus, Web of
     # Science, etc. We may have multiple records with the same paper ID
     # because there will be one record per author (hence the unique_together
     # constraint). The unique ID on pubdata-dev does not match that on the
     # production server.
-    paper_id = models.CharField(max_length=10)
+    paper_id = models.CharField(max_length=255)
     message = models.TextField(blank=True)
 
     def __str__(self):
