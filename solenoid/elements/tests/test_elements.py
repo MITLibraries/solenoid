@@ -14,7 +14,7 @@ def test_get_from_elements_success(mock_elements):
 def test_get_from_elements_retries_and_raises_exception(mock_elements, error):
     with pytest.raises(RetryError):
         get_from_elements(error)
-    assert mock_elements.call_count == 3
+    assert mock_elements.call_count == 5
 
 
 def test_get_from_elements_failure_raises_exception(mock_elements):
