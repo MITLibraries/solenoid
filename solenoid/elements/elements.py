@@ -20,16 +20,13 @@ PROXIES = {
 }
 
 
-@backoff.on_exception(backoff.expo, RetryError, max_tries=3)
+@backoff.on_exception(backoff.expo, RetryError, max_tries=5)
 def get_from_elements(url):
     """Issue a get request to the Elements API for a given URL. Return the
     response text. Retries up to 5 times for known Elements API retry status
     codes.
     """
-    response = requests.get(url,
-                            proxies=PROXIES,
-                            auth=AUTH,
-                            timeout=5)
+    response = requests.get(url, proxies=PROXIES, auth=AUTH, timeout=10)
     if response.status_code in [409, 500, 504]:
         raise RetryError(f'Elements response status {response.status_code} '
                          'requires retry')
@@ -46,15 +43,19 @@ def get_paged(url):
         yield from get_paged(url)
 
 
+@backoff.on_exception(backoff.expo, RetryError, max_tries=5)
 def patch_elements_record(url, xml_data):
     """Issue a patch to the Elements API for a given item record URL, with the
-    given update data. Return the response."""
-    response = requests.patch(url,
-                              data=xml_data,
-                              headers={'Content-Type': 'text/xml'},
-                              proxies=PROXIES,
-                              auth=AUTH,
-                              timeout=5)
+    given update data. Return the response. Retries up to 5 times for known Elements
+    API retry status codes."""
+    response = requests.patch(
+        url,
+        data=xml_data,
+        headers={"Content-Type": "text/xml"},
+        proxies=PROXIES,
+        auth=AUTH,
+        timeout=10,
+    )
     if response.status_code in [409, 500, 504]:
         raise RetryError(f'Elements response status {response.status_code} '
                          'requires retry')
