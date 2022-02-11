@@ -136,7 +136,6 @@ USE_TZ = True
 # Turned off to save on overhead, since we won't need this for an MIT internal
 # app.
 USE_I18N = False
-USE_L10N = False
 
 
 # TEMPLATE CONFIGURATION
