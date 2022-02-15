@@ -82,6 +82,7 @@ def parse_author_pubs_xml(xml_gen, author_data):
     '''
     RESULTS = []
     for page in xml_gen:
+        logger.info(page)
         root = ET.fromstring(page)
         for entry in root.findall("./atom:entry", NS):
             pub_id = entry.find(".//api:object[@category='publication']",
