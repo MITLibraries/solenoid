@@ -91,21 +91,26 @@ def parse_author_pubs_xml(xml_gen, author_data):
             # Filter for papers to be requested based on various criteria
             pub_date = get_pub_date(entry)
             if not pub_date:
+                logger.info(f"No pub date for paper {pub_id}")
                 pass
             # Paper was published after OA policy enacted
             elif pub_date <= dt.date(2009, 3, 18):
+                logger.info(f"Pub date before 3/18/09 for paper {pub_id}")
                 continue
             # Paper was published while author was MIT faculty
-            elif (pub_date < dt.date.fromisoformat(author_data['Start Date']) or
-                  pub_date > dt.date.fromisoformat(author_data['End Date'])):
+            elif (pub_date < dt.date.fromisoformat(author_data['Start Date'])
+                  or pub_date > dt.date.fromisoformat(author_data['End Date'])):
+                logger.info(f"Paper {pub_id} published outside faculty tenure")
                 continue
             # Paper does not have a library status
             if entry.find(".//api:library-status", NS):
+                logger.info(f"Paper {pub_id} does not have a library status")
                 continue
             # Publication type is either a journal article, book chapter, or
             # conference proceeding
             pub_type = extract_attribute(entry, ".//api:object", "type-id")
             if pub_type not in ('3', '4', '5'):
+                logger.info(f"Paper {pub_id} is not a journal article, book chapter, or conference proceeding")
                 continue
             # Paper does not have any OA policy exceptions, except for "Waiver"
             # which we do request
@@ -114,19 +119,21 @@ def parse_author_pubs_xml(xml_gen, author_data):
                                                             "exception/"
                                                             "api:type", NS)]
                 if 'Waiver' not in exceptions:
+                    logger.info(f"Paper {pub_id} has OA policy exceptions")
                     continue
             # If paper has a manual entry record in Elements, none of the
             # following fields are true
             if entry.find(".//api:record[@source-name='manual']", NS):
                 if (entry.find(".//api:field[@name='c-do-not-request']"
                                "/api:boolean",
-                               NS).text == 'true' or
-                    entry.find(".//api:field[@name='c-optout']/api:boolean",
-                               NS).text == 'true' or
-                    entry.find(".//api:field[@name='c-received']/api:boolean",
-                               NS).text == 'true' or
-                    entry.find(".//api:field[@name='c-requested']/api:boolean",
-                               NS).text == 'true'):
+                               NS).text == 'true'
+                    or entry.find(".//api:field[@name='c-optout']/api:boolean",
+                                  NS).text == 'true'
+                    or entry.find(".//api:field[@name='c-received']/api:boolean",
+                                  NS).text == 'true'
+                    or entry.find(".//api:field[@name='c-requested']/api:boolean",
+                                  NS).text == 'true'):
+                    logger.info(f"Paper {pub_id} has a non-allowed manual entry field")
                     continue
             # If paper has a dspace record in Elements, status is not 'Public'
             # or 'Private' (in either case it has been deposited and should not
@@ -135,6 +142,7 @@ def parse_author_pubs_xml(xml_gen, author_data):
                 status = extract_field(entry, ".//api:field[@name="
                                        "'repository-status']/api:text")
                 if status == 'Public' or status == 'Private':
+                    logger.info(f"Paper {pub_id} has already been deposited to DSpace")
                     continue
             # If paper has passed all the checks above, add it to request list
             RESULTS.append({'id': pub_id, 'title': title})
