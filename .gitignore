@@ -160,3 +160,6 @@ ENV/
 /site
 
 # End of https://www.gitignore.io/api/osx,linux,django,python
+
+# JetBrains IDE
+.idea
