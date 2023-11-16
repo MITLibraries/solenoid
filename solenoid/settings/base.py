@@ -60,11 +60,19 @@ DJANGO_APPS = [
 ]
 
 SOLENOID_APPS = [
+<<<<<<< HEAD
     'solenoid.elements',
     'solenoid.emails',
     'solenoid.people',
     'solenoid.records',
     'solenoid.userauth',
+=======
+    "solenoid.elements",
+    "solenoid.emails",
+    "solenoid.people",
+    "solenoid.records",
+    "solenoid.accounts",
+>>>>>>> acd3a59 (N-957 Replace OID with Django authentication system)
 ]
 
 INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
@@ -74,6 +82,7 @@ INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 # -----------------------------------------------------------------------------
 
 MIDDLEWARE = [
+<<<<<<< HEAD
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,6 +91,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+=======
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+>>>>>>> acd3a59 (N-957 Replace OID with Django authentication system)
 ]
 
 
@@ -243,6 +262,7 @@ EMAIL_TESTING_MODE = boolean(os.environ.get('DJANGO_EMAIL_TESTING_MODE',
 # -----------------> third-party and solenoid configurations <-----------------
 # -----------------------------------------------------------------------------
 
+<<<<<<< HEAD
 # OAUTH CONFIGURATION
 # -----------------------------------------------------------------------------
 
@@ -285,12 +305,15 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = [
     'social_core.pipeline.disconnect.revoke_tokens',
 ]
 
+=======
+>>>>>>> acd3a59 (N-957 Replace OID with Django authentication system)
 # Default to not requiring login for ease of local development, but allow it
 # to be set with an environment variable to facilitate testing. You will need
 # to fill in key and secret values for your environment as well if you set this
 # to True.
 LOGIN_REQUIRED = boolean(os.environ.get('DJANGO_LOGIN_REQUIRED', False))
 
+<<<<<<< HEAD
 if LOGIN_REQUIRED:
     # args is *case-sensitive*, even though other parts of python-social-auth
     # are casual about casing.
@@ -314,6 +337,10 @@ if LOGIN_REQUIRED:
         ['social_django.context_processors.backends',
          'social_django.context_processors.login_redirect'])
 
+=======
+# Redirect to home URL after login (default redirects to /accounts/profile)
+LOGIN_REDIRECT_URL = "/"
+>>>>>>> acd3a59 (N-957 Replace OID with Django authentication system)
 
 # CKEDITOR CONFIGURATION
 # -----------------------------------------------------------------------------
