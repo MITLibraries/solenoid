@@ -62,15 +62,15 @@
           </div>
           <div class="wrap-local-nav">
             <div class="wrap-bar">
-              <nav class="local-nav">
+              <!--<nav class="local-nav">
                 <a href="{% url 'records:import' %}" class="button-secondary">Import data</a>
                 <a href="{% url 'people:liaison_list' %}" class="button-secondary">Manage liaisons</a>
                 <a href="{% url 'records:unsent_list' %}" class="button-secondary">View citations</a>
                 <a href="{% url 'emails:list_pending' %}" class="button-secondary">View emails</a>
-              </nav>
-              {% if request.path != '/logout/' %}
+              </nav>-->
+              {% if user.is_authenticated %}
                 <nav class="nav-user">
-                  <a class="button-secondary pull-right" href="{% url 'logout' %}">Log out</a>
+                  <a class="button-secondary pull-right" href="{% url 'accounts:logout' %}">Log out</a>
                 </nav>
               {% endif %}
             </div>
