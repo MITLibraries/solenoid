@@ -5,14 +5,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('people', '0005_initialize_hashes'),
+        ("people", "0005_initialize_hashes"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='author',
-            name='mit_id',
+            model_name="author",
+            name="mit_id",
         ),
     ]

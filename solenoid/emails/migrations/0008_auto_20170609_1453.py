@@ -12,10 +12,8 @@ def initialize_authors(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('emails', '0007_emailmessage_author'),
+        ("emails", "0007_emailmessage_author"),
     ]
 
-    operations = [
-    ]
+    operations = []

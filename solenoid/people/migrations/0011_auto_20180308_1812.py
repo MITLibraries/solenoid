@@ -7,16 +7,15 @@ import django.db.models.manager
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('people', '0010_auto_20171218_1819'),
+        ("people", "0010_auto_20171218_1819"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='liaison',
+            name="liaison",
             managers=[
-                ('objects_all', django.db.models.manager.Manager()),
+                ("objects_all", django.db.models.manager.Manager()),
             ],
         ),
     ]

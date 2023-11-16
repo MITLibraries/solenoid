@@ -20,11 +20,11 @@ def update_emails_with_dlcs(dlcs, liaison=None):
     """
     for dlc in dlcs:
         EmailMessage.objects.filter(
-            record__author__dlc=dlc,
-            date_sent__isnull=True).update(_liaison=liaison)
+            record__author__dlc=dlc, date_sent__isnull=True
+        ).update(_liaison=liaison)
 
 
 @receiver(post_save, sender=DLC)
 def update_emails_with_dlcs_on_save(sender, **kwargs):
-    dlc = kwargs['instance']
+    dlc = kwargs["instance"]
     update_emails_with_dlcs([dlc], dlc.liaison)

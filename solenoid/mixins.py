@@ -10,9 +10,10 @@ class ConditionalLoginRequiredMixin(AccessMixin):
     It is written by analogy with django.contrib.auth.mixins.LoginRequiredMixin
     but includes the conditional settings check.
     """
+
     def dispatch(self, request, *args, **kwargs):
-        if (settings.LOGIN_REQUIRED and
-                not getattr(request.user, 'is_authenticated')):
+        if settings.LOGIN_REQUIRED and not getattr(request.user, "is_authenticated"):
             return self.handle_no_permission()
-        return super(ConditionalLoginRequiredMixin, self
-                     ).dispatch(request, *args, **kwargs)
+        return super(ConditionalLoginRequiredMixin, self).dispatch(
+            request, *args, **kwargs
+        )

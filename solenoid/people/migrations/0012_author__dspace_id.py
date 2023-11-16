@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('people', '0011_auto_20180308_1812'),
+        ("people", "0011_auto_20180308_1812"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='author',
-            name='_dspace_id',
-            field=models.CharField(default='', max_length=32),
+            model_name="author",
+            name="_dspace_id",
+            field=models.CharField(default="", max_length=32),
             preserve_default=False,
         ),
     ]

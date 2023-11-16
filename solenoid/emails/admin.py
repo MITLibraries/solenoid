@@ -4,7 +4,7 @@ from .models import EmailMessage
 
 
 class EmailMessageAdmin(admin.ModelAdmin):
-    readonly_fields = ('original_text',)
+    readonly_fields = ("original_text",)
 
 
 admin.site.register(EmailMessage, EmailMessageAdmin)

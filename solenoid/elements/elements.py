@@ -11,12 +11,11 @@ from .xml_handlers import NS
 
 logger = logging.getLogger(__name__)
 
-AUTH = (settings.ELEMENTS_USER,
-        settings.ELEMENTS_PASSWORD)
+AUTH = (settings.ELEMENTS_USER, settings.ELEMENTS_PASSWORD)
 
 PROXIES = {
-    'http': settings.QUOTAGUARD_URL,
-    'https': settings.QUOTAGUARD_URL,
+    "http": settings.QUOTAGUARD_URL,
+    "https": settings.QUOTAGUARD_URL,
 }
 
 
@@ -28,18 +27,19 @@ def get_from_elements(url):
     """
     response = requests.get(url, proxies=PROXIES, auth=AUTH, timeout=10)
     if response.status_code in [409, 500, 504]:
-        raise RetryError(f'Elements response status {response.status_code} '
-                         'requires retry')
+        raise RetryError(
+            f"Elements response status {response.status_code} " "requires retry"
+        )
     response.raise_for_status()
     return response.text
 
 
 def get_paged(url):
     page = get_from_elements(url)
-    yield(page)
+    yield (page)
     next = ET.fromstring(page).find(".//*[@position='next']", NS)
     if next is not None:
-        url = next.get('href')
+        url = next.get("href")
         yield from get_paged(url)
 
 
@@ -57,7 +57,8 @@ def patch_elements_record(url, xml_data):
         timeout=10,
     )
     if response.status_code in [409, 500, 504]:
-        raise RetryError(f'Elements response status {response.status_code} '
-                         'requires retry')
+        raise RetryError(
+            f"Elements response status {response.status_code} " "requires retry"
+        )
     response.raise_for_status()
     return response.text

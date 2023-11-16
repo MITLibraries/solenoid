@@ -61,7 +61,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # DJANGO COMPRESSOR
 COMPRESS_OFFLINE = True
 
-
 # LOGGING
 LOGGING = {
     "version": 1,

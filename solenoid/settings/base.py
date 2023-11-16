@@ -127,7 +127,6 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = "solenoid.wsgi.application"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -236,9 +235,7 @@ INSTALLED_APPS += ["ckeditor"]
 # template.
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
-CKEDITOR_JQUERY_URL = (
-    "https://ajax.googleapis.com/ajax/libs/jquery/" "1.12.4/jquery.min.js"
-)
+CKEDITOR_JQUERY_URL = "https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"
 
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
