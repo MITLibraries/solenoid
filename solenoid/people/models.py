@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 import logging
 
@@ -19,18 +21,18 @@ logger = logging.getLogger(__name__)
 # unending recursion, so we're following the suggestion in the documentation:
 # https://docs.djangoproject.com/en/1.8/topics/db/queries/#deleting-objects
 class ProtectiveQueryset(QuerySet):
-    def delete(self):
+    def delete(self) -> None:  # type: ignore[override]
         for obj in self.all():
             obj.delete()
 
 
 class DefaultManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> ProtectiveQueryset:
         return ProtectiveQueryset(self.model, using=self._db)
 
 
 class ActiveLiaisonManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> ProtectiveQueryset:
         return ProtectiveQueryset(self.model, using=self._db).filter(active=True)
 
 
@@ -40,7 +42,7 @@ class Liaison(models.Model):
         verbose_name_plural = "Liaisons"
         ordering = ["last_name", "first_name"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{self.first_name} {self.last_name}".format(self=self)
 
     first_name = models.CharField(max_length=15)
@@ -58,14 +60,14 @@ class Liaison(models.Model):
     # Liaisons.
     objects = ActiveLiaisonManager()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:  # type: ignore
         if not self.active:
             self.dlc_set.clear()
 
         return super(Liaison, self).save(*args, **kwargs)
 
     # This prevents object.delete() from deleting liaisons with attached email.
-    def delete(self):
+    def delete(self) -> None:  # type: ignore[override]
         if self.emailmessage_set.count():
             self.active = False
             self.save()
@@ -79,7 +81,7 @@ class DLC(models.Model):
         verbose_name_plural = "DLCs"
         ordering = ["name"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     name = models.CharField(max_length=100, unique=True)
@@ -94,7 +96,7 @@ class Author(models.Model):
         verbose_name_plural = "Authors"
         ordering = ["last_name", "first_name"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)
 
     # Authors may have blank DLCs in a given paper's metadata, but if that
@@ -117,13 +119,13 @@ class Author(models.Model):
     _dspace_id = models.CharField(max_length=32)
 
     @classmethod
-    def is_author_creatable(self, paper_data):
+    def is_author_creatable(self, paper_data: dict) -> bool:
         """Expects metadata for a single paper from Elements and determines
         whether an author instance can be created from it."""
         return all([bool(paper_data[x]) for x in Fields.AUTHOR_DATA])
 
     @classmethod
-    def get_hash(cls, mit_id, salt=None):
+    def get_hash(cls, mit_id: str, salt: str | None = None) -> str:
         # This doesn't have to be cryptographically secure - we just need a
         # reasonable non-collision guarantee.
         if salt:
@@ -132,7 +134,7 @@ class Author(models.Model):
             return hashlib.md5(mit_id.encode("utf-8")).hexdigest()
 
     @classmethod
-    def get_by_mit_id(cls, mit_id):
+    def get_by_mit_id(cls, mit_id: str) -> Author:
         # If this get raises an error, get_by_mit_id will raise the same error;
         # handle it in the same way that you would handle get().
         return Author.objects.get(_mit_id_hash=Author.get_hash(mit_id))
@@ -142,17 +144,17 @@ class Author(models.Model):
     # the paper metadata. However, under the hood, we're throwing out the
     # sensitive data and storing hashes. Hooray!
     @property
-    def mit_id(self):
+    def mit_id(self) -> str:
         return self._mit_id_hash
 
     @mit_id.setter
-    def mit_id(self, value):
+    def mit_id(self, value: str) -> None:
         self._mit_id_hash = Author.get_hash(value)
 
     @property
-    def dspace_id(self):
+    def dspace_id(self) -> str:
         return self._dspace_id
 
     @dspace_id.setter
-    def dspace_id(self, value):
+    def dspace_id(self, value: str) -> None:
         self._dspace_id = Author.get_hash(value, settings.DSPACE_SALT)

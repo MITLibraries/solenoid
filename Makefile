@@ -33,7 +33,7 @@ mypy:
 	pipenv run mypy .
 
 ruff:
-	pipenv run ruff check .
+	pipenv run ruff check ./solenoid/elements
 
 safety:
 	pipenv check

@@ -1,5 +1,7 @@
-from bs4 import BeautifulSoup
-from ckeditor.fields import RichTextField
+from __future__ import annotations
+
+from bs4 import BeautifulSoup, Tag
+from ckeditor.fields import RichTextField  # type: ignore[import-untyped]
 from datetime import date
 import logging
 import re
@@ -9,9 +11,10 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
+from django.db.models import QuerySet
 from django.template.loader import render_to_string
 
-from solenoid.people.models import Liaison, Author
+from solenoid.people.models import Liaison, Author, DLC
 
 from .signals import email_sent
 
@@ -23,7 +26,7 @@ class EmailMessage(models.Model):
         verbose_name = "Email"
         verbose_name_plural = "Emails"
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.date_sent:
             return "In re {self.author} (sent " "{self.date_sent})".format(self=self)
         else:
@@ -46,7 +49,7 @@ class EmailMessage(models.Model):
     # be set to False after people edit the email (save or send).
     new_citations = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # type: ignore
         # One might have a display_text property that showed latest_text if
         # non-null and original_text otherwise...but there's no way to set
         # initial values for modelformset fields (as needed on the email
@@ -57,7 +60,7 @@ class EmailMessage(models.Model):
         super(EmailMessage, self).save(*args, **kwargs)
 
     @classmethod
-    def _create_citations(cls, record_list):
+    def _create_citations(cls, record_list: QuerySet) -> str:
         """Creates a text block of citations for this record list. Does NOT
         validate the citations - make sure you have done any needed sanitizing
         first."""
@@ -81,7 +84,7 @@ class EmailMessage(models.Model):
         return citations
 
     @classmethod
-    def create_original_text(cls, record_list):
+    def create_original_text(cls, record_list: QuerySet) -> str:
         """Given a queryset of records, creates the default text of an email
         about them.
 
@@ -97,21 +100,21 @@ class EmailMessage(models.Model):
         available_records = record_list.filter(email__isnull=True)
         if not available_records:
             logger.warning(
-                "Could not create email text - all records already " "have emails"
+                "Could not create email text - all records already have emails"
             )
             raise ValidationError("All records already have emails.")
 
         try:
-            authors = record_list.values_list("author")
+            authors = record_list.values_list("author", flat=True)
             # list(set()) removes duplicates.
             assert len(list(set(authors))) == 1
         except AssertionError:
             logger.exception(
-                "Could not create email text - multiple authors " "in record set"
+                "Could not create email text - multiple authors in record set"
             )
             raise ValidationError("All records must have the same author.")
 
-        author = record_list.first().author
+        author = Author.objects.get(pk=authors[0])
         citations = cls._create_citations(available_records)
 
         logger.info("Returning original text of email")
@@ -125,7 +128,7 @@ class EmailMessage(models.Model):
         )
 
     @staticmethod
-    def _filter_records(records):
+    def _filter_records(records: QuerySet) -> QuerySet | None:
         # First, throw out all emails that have already been sent.
         records = records.filter(email__date_sent__isnull=True)
 
@@ -136,13 +139,15 @@ class EmailMessage(models.Model):
         return records
 
     @classmethod
-    def _finalize_email(cls, email, records, author):
-        if email:
-            email = email[0]
+    def _finalize_email(
+        cls, emails: QuerySet | None, records: QuerySet, author: Author
+    ) -> EmailMessage:
+        if emails:
+            email: EmailMessage = emails[0]
             email.rebuild_citations()
         else:
             email = cls(original_text=cls.create_original_text(records), author=author)
-            email.save()
+            email.save()  # type: ignore
 
         # Make sure to create the ForeignKey relation from those records to
         # the email! Otherwise this method will only ever create new emails
@@ -152,7 +157,7 @@ class EmailMessage(models.Model):
         return email
 
     @staticmethod
-    def _get_author_from_records(records):
+    def _get_author_from_records(records: QuerySet) -> Author:
         count = Author.objects.filter(record__in=records).distinct().count()
         # We don't have to worry about the count being zero because Record
         # requires Author. Don't call this with an empty record set!
@@ -164,7 +169,7 @@ class EmailMessage(models.Model):
             return Author.objects.filter(record__in=records)[0]
 
     @classmethod
-    def _get_email_for_author(cls, author):
+    def _get_email_for_author(cls, author: Author) -> QuerySet | None:
         emails = cls.objects.filter(author=author, date_sent__isnull=True).distinct()
 
         try:
@@ -176,28 +181,28 @@ class EmailMessage(models.Model):
         return emails if emails else None
 
     @classmethod
-    def get_or_create_for_records(cls, records):
+    def get_or_create_for_records(cls, records: QuerySet) -> EmailMessage | None:
         """Given a queryset of records, finds or creates an *unsent* email to
         their author (there should not be more than one of these at a time).
         Records must all be by the same author."""
 
         logger.info("Creating unsent email for {records}".format(records=records))
 
-        records = cls._filter_records(records)
-        if not records:
+        unsent_records = cls._filter_records(records)
+        if not unsent_records:
             return None
 
-        author = cls._get_author_from_records(records)
+        author = cls._get_author_from_records(unsent_records)
         if not author:
             return None
 
-        email = cls._get_email_for_author(author)
-        email = cls._finalize_email(email, records, author)
+        emails = cls._get_email_for_author(author)
+        email = cls._finalize_email(emails, unsent_records, author)
 
-        logger.info("Retuning email")
+        logger.info("Returning email")
         return email
 
-    def _is_valid_for_sending(self):
+    def _is_valid_for_sending(self) -> bool:
         logger.info("Checking if email {pk} is valid for sending".format(pk=self.pk))
         try:
             assert not self.date_sent
@@ -218,24 +223,25 @@ class EmailMessage(models.Model):
         logger.info("Email {pk} is valid for sending".format(pk=self.pk))
         return True
 
-    def _update_after_sending(self):
+    def _update_after_sending(self) -> None:
         """Set the metadata that should be set after sending an email."""
         logger.info("Updating date_sent for email {pk}".format(pk=self.pk))
         self.date_sent = date.today()
         self._liaison = self.liaison
-        self.save()
+        self.save()  # type: ignore
 
-    def _inner_send(self):
+    def _inner_send(self) -> bool:
         """Actually perform the sending of an EmailMessage. Return True on
         success, False otherwise."""
 
         logger.info("Sending email {pk}".format(pk=self.pk))
-
+        recipients = []
         try:
             if settings.EMAIL_TESTING_MODE:
-                recipients = [admin[1] for admin in settings.ADMINS]
+                recipients.extend([admin[1] for admin in settings.ADMINS])
             else:
-                recipients = [self.liaison.email_address]
+                if self.liaison:
+                    recipients.append(self.liaison.email_address)
                 if settings.SCHOLCOMM_MOIRA_LIST:
                     recipients.append(settings.SCHOLCOMM_MOIRA_LIST)
 
@@ -243,11 +249,10 @@ class EmailMessage(models.Model):
                 self.subject,
                 self.plaintext,
                 settings.DEFAULT_FROM_EMAIL,
-                recipients,
+                recipients,  # type: ignore
                 html_message=self.latest_text,
                 fail_silently=False,
             )
-
         except SMTPException:
             logger.exception("Could not send email; SMTP exception")
             return False
@@ -258,7 +263,7 @@ class EmailMessage(models.Model):
         logger.info("Done sending email")
         return True
 
-    def send(self, username):
+    def send(self, username: str) -> bool:
         """
         Validates and sends an EmailMessage with the given pk. Upon send,
         updates sending-related metadata. Returns True if successful; False
@@ -282,7 +287,7 @@ class EmailMessage(models.Model):
         logger.info("Email {pk} sent".format(pk=self.pk))
         return True
 
-    def rebuild_citations(self):
+    def rebuild_citations(self) -> bool:
         """Find all unsent citations by this email's author. If it's the same
         as the current set of citations in this email, return False. If
         different, update the email to reflect all current unsent citations and
@@ -303,15 +308,16 @@ class EmailMessage(models.Model):
         new_soup = BeautifulSoup(citations, "html.parser")
 
         cite_block = soup.find("div", class_="control-citations")
-        cite_block.clear()
-        cite_block.insert(1, new_soup)
+        if isinstance(cite_block, Tag):
+            cite_block.clear()
+            cite_block.insert(1, new_soup)
         self.latest_text = soup.prettify()
         self.new_citations = True
-        self.save()
+        self.save()  # type: ignore
 
         return True
 
-    def revert(self):
+    def revert(self) -> None:
         """Ensure that the display text of the email is the original text.
 
         Right now we implement this by setting the latest text to the original,
@@ -319,17 +325,17 @@ class EmailMessage(models.Model):
 
         logger.info("Reverting changes for {pk}".format(pk=self.pk))
         self.latest_text = self.original_text
-        self.save()
+        self.save()  # type: ignore
 
     @property
-    def dlc(self):
+    def dlc(self) -> DLC | None:
         try:
             return self.author.dlc
         except Exception:
             return None
 
     @property
-    def liaison(self):
+    def liaison(self) -> Liaison | None:
         """For *sent* emails, returns the liaison to whom we actually sent the
         email (regardless of whether that is the current one).
         For *unsent* emails, returns the liaison to whom we expect to send the
@@ -340,14 +346,13 @@ class EmailMessage(models.Model):
             # that before sending the email.
             return self._liaison
         else:
-            try:
+            if self.dlc:
                 return self.dlc.liaison
-            except AttributeError:
-                # This happens when there is no DLC.
+            else:
                 return None
 
     @property
-    def plaintext(self):
+    def plaintext(self) -> str:
         """Returns the latest_text in plaintext format, suitable for
         constructing a multipart alternative email (as the html stored in
         latest_text is properly the second part, not the main text)."""
@@ -355,7 +360,7 @@ class EmailMessage(models.Model):
         return soup.get_text()
 
     @property
-    def subject(self):
+    def subject(self) -> str:
         # This will throw an exception if there is no author for the email.
         # That's fine - we *shouldn't* be able to send emails with no author,
         # and we *should* notice if this problem happens - but we should log

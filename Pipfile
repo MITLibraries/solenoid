@@ -10,6 +10,7 @@ python_version = "3.11"
 black = "*"
 celery-types = "*"
 coveralls = "*"
+django-stubs = "*"
 freezegun = "*"
 mypy = "*"
 pre-commit = "*"
@@ -18,6 +19,7 @@ pytest-django = "*"
 ruff = "*"
 #pytest-cov = "*"
 requests-mock = "*"
+types-beautifulsoup4 = "*"
 
 [packages]
 # Only needed for Heroku

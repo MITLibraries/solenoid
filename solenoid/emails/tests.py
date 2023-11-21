@@ -788,6 +788,7 @@ class EmailSendTestCase(TestCase):
     def test_email_is_sent_to_liaison(self):
         email = EmailMessage.objects.get(pk=1)
         email.send("username")
+        print(mail.outbox)
         self.assertEqual(len(mail.outbox), 1)  # check assumption
         self.assertIn(
             EmailMessage.objects.get(pk=1).liaison.email_address, mail.outbox[0].to
