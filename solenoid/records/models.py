@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from string import Template
 
@@ -42,13 +44,13 @@ class Record(models.Model):
     paper_id = models.CharField(max_length=255)
     message = models.TextField(blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "{self.author.last_name}, {self.author.first_name} "
             "({self.paper_id})".format(self=self)
         )
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:  # type: ignore
         # blank=False by default in TextFields, but this applies only to *form*
         # validation, not to *instance* validation - django will happily save
         # blank strings to the database, and we don't want it to.
@@ -59,7 +61,7 @@ class Record(models.Model):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ STATIC METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @staticmethod
-    def create_citation(paper_data):
+    def create_citation(paper_data: dict) -> str:
         """Create text suitable for the citation field.
 
         Some Elements papers include the citation field in their metadata,
@@ -101,7 +103,7 @@ class Record(models.Model):
         return citation
 
     @staticmethod
-    def _get_citation(paper_data):
+    def _get_citation(paper_data: dict) -> str:
         if paper_data[Fields.CITATION]:
             citation = paper_data[Fields.CITATION]
         else:
@@ -110,7 +112,7 @@ class Record(models.Model):
         return citation
 
     @staticmethod
-    def get_or_create_from_data(author, paper_data):
+    def get_or_create_from_data(author: Author, paper_data: dict) -> tuple[Record, bool]:
         """This expects an author instance and metadata about a single paper
         (retrieved via the Elements API), and returns (record, created),
         in the manner of objects.get_or_create. It does not validate data;
@@ -141,7 +143,7 @@ class Record(models.Model):
             return record, True
 
     @staticmethod
-    def get_duplicates(author, paper_data):
+    def get_duplicates(author: Author, paper_data: dict) -> models.QuerySet | None:
         """See if this paper's metadata would duplicate a record already in the
         database.
 
@@ -160,7 +162,7 @@ class Record(models.Model):
             return None
 
     @staticmethod
-    def is_record_creatable(paper_data):
+    def is_record_creatable(paper_data: dict) -> bool:
         """Determines whether a valid Record can be created from supplied data.
 
         Args:
@@ -181,7 +183,7 @@ class Record(models.Model):
             return False
 
     @staticmethod
-    def paper_requested(paper_data):
+    def paper_requested(paper_data: dict) -> bool:
         """Checks whether we have already sent an email request for this paper.
 
         Args:
@@ -201,7 +203,7 @@ class Record(models.Model):
         return any([record.email.date_sent for record in records if record.email])
 
     @staticmethod
-    def is_data_valid(paper_data):
+    def is_data_valid(paper_data: dict) -> bool:
         """Returns True if this metadata has the required data fields for
         making a Record; False otherwise.
 
@@ -214,7 +216,7 @@ class Record(models.Model):
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def update_if_needed(self, author, paper_data):
+    def update_if_needed(self, author: Author, paper_data: dict) -> bool:
         """Checks a paper's supplied metadata to see if there are any
         discrepancies with the existing record. If so, updates it and returns
         True. If not, returns False."""
@@ -255,7 +257,7 @@ class Record(models.Model):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @property
-    def fpv_message(self):
+    def fpv_message(self) -> str | None:
         msg = Template(
             "<b>[Note: $publisher_name allows authors to download "
             "and deposit the final published article, but does not "
@@ -273,13 +275,13 @@ class Record(models.Model):
             return None
 
     @property
-    def is_sent(self):
+    def is_sent(self) -> bool:
         if self.email:
             return bool(self.email.date_sent)
         else:
             return False
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         # If acq_method is FPV, we must have the DOI.
         return self.acq_method != "RECRUIT_FROM_AUTHOR_FPV" or bool(self.doi)

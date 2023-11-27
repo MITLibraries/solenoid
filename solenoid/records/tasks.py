@@ -21,7 +21,9 @@ logger = get_task_logger(__name__)
 
 
 @shared_task(bind=True, autoretry_for=(RetryError,), retry_backoff=True)
-def task_import_papers_for_author(self, author_url, author_data, author):
+def task_import_papers_for_author(  # type: ignore
+    self, author_url: str, author_data: dict, author: int
+) -> dict:
     RESULTS = {}
     logger.info("Import task started")
     if not self.request.called_directly:
@@ -60,7 +62,7 @@ def task_import_papers_for_author(self, author_url, author_data, author):
     return RESULTS
 
 
-def _create_or_update_record_from_paper_data(paper_data, author):
+def _create_or_update_record_from_paper_data(paper_data: dict, author: Author) -> str:
     paper_id = paper_data[Fields.PAPER_ID]
     author_name = paper_data[Fields.LAST_NAME]
 
@@ -85,7 +87,7 @@ def _create_or_update_record_from_paper_data(paper_data, author):
     )
 
 
-def _get_paper_data_from_elements(paper_id, author_data):
+def _get_paper_data_from_elements(paper_id: int, author_data: dict) -> dict:
     logger.info(f"Importing data for paper {paper_id}")
 
     paper_url = f"{settings.ELEMENTS_ENDPOINT}publications/{paper_id}"
@@ -102,7 +104,7 @@ def _get_paper_data_from_elements(paper_id, author_data):
     return paper_data
 
 
-def _run_checks_on_paper(paper_data, author):
+def _run_checks_on_paper(paper_data: dict, author: Author) -> str:
     paper_id = paper_data[Fields.PAPER_ID]
     author_name = paper_data[Fields.LAST_NAME]
 
@@ -139,3 +141,5 @@ def _run_checks_on_paper(paper_data, author):
             f'{", ".join(dupe_list)}. Please merge #{paper_id} into an '
             f"existing record in Elements. It will not be imported."
         )
+
+    return ""

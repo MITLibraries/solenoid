@@ -20,6 +20,7 @@ ruff = "*"
 #pytest-cov = "*"
 requests-mock = "*"
 types-beautifulsoup4 = "*"
+types-requests = "*"
 
 [packages]
 # Only needed for Heroku

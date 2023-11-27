@@ -4,6 +4,13 @@ from requests.exceptions import HTTPError, Timeout
 
 from django.conf import settings
 from django.contrib import messages
+from django.db import models
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponsePermanentRedirect,
+)
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.html import format_html
@@ -25,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class UnsentList(ConditionalLoginRequiredMixin, ListView):
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # type: ignore
         context = super(UnsentList, self).get_context_data(**kwargs)
         context["title"] = "Unsent citations"
         context["extension_template"] = "records/_unsent_list.html"
@@ -38,7 +45,7 @@ class UnsentList(ConditionalLoginRequiredMixin, ListView):
         context["dlcs"] = DLC.objects.filter(author__in=authors).distinct()
         return context
 
-    def get_queryset(self):
+    def get_queryset(self) -> models.QuerySet:
         return Record.objects.exclude(email__date_sent__isnull=False).prefetch_related(
             "author", "author__dlc"
         )
@@ -49,7 +56,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
     form_class = ImportForm
     success_url = reverse_lazy("records:status")
 
-    def _get_author_data(self, form, author_id):
+    def _get_author_data(self, form: ImportForm, author_id: int) -> dict | HttpResponse:
         author_url = f"{settings.ELEMENTS_ENDPOINT}users/{author_id}"
         try:
             author_xml = get_from_elements(author_url)
@@ -75,7 +82,9 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         author_data["ELEMENTS ID"] = author_id
         return author_data
 
-    def _get_author_record_id(self, form, author_data):
+    def _get_author_record_id(
+        self, form: ImportForm, author_data: dict | HttpResponse
+    ) -> int | HttpResponse:
         try:
             author = Author.get_by_mit_id(author_data[Fields.MIT_ID])
             if not author.dspace_id:
@@ -84,7 +93,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         except Author.DoesNotExist:
             if Author.is_author_creatable(author_data):
                 dlc, _ = DLC.objects.get_or_create(name=author_data[Fields.DLC])
-                author = Author.objects.create(
+                author = Author.objects.create(  # type: ignore
                     first_name=author_data[Fields.FIRST_NAME],
                     last_name=author_data[Fields.LAST_NAME],
                     dlc=dlc,
@@ -109,7 +118,9 @@ class Import(ConditionalLoginRequiredMixin, FormView):
 
         return author.id
 
-    def form_valid(self, form, **kwargs):
+    def form_valid(  # type: ignore
+        self, form: ImportForm, **kwargs
+    ) -> HttpResponseRedirect | HttpResponsePermanentRedirect:
         author_id = form.cleaned_data["author_id"]
         author_url = f"{settings.ELEMENTS_ENDPOINT}users/{author_id}"
         author_data = self._get_author_data(form, author_id)
@@ -118,7 +129,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         task_id = result.task_id
         return redirect("records:status", task_id=task_id)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form: ImportForm) -> HttpResponse:
         msg = (
             format_html(
                 "Something went wrong. Please try again, and if it "
@@ -131,7 +142,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         messages.warning(self.request, msg)
         return super(Import, self).form_invalid(form)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         context = super(Import, self).get_context_data(**kwargs)
         context["breadcrumbs"] = [
             {"url": reverse_lazy("home"), "text": "dashboard"},
@@ -140,5 +151,5 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         return context
 
 
-def status(request, task_id):
+def status(request: HttpRequest, task_id: str) -> HttpResponse:
     return render(request, "records/status.html", context={"task_id": task_id})
