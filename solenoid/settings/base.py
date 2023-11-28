@@ -1,54 +1,84 @@
 """
-Django settings for solenoid project. This is a base settings file; it is
-intended to be imported by environment-specific settings files such as a
-production settings file. However, it is suitable for local development as-is.
+Django settings for the 'solenoid' project.
+
+This is the 'base' settings file, and the configurations included here
+are to be imported into other files containing environment-specific configs
+(e.g. the settings file used in production). 
+
+The settings configured in this file are suitable for local development
+and testing.
 
 For more information on this file, see
-https://docs.djangoproject.com/en/1.8/topics/settings/
+https://docs.djangoproject.com/en/4.2/topics/settings/
 
 For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.8/ref/settings/
+https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+
 import os
 
 import dj_database_url
-from django.urls import reverse_lazy
+import environ
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = environ.Path(__file__) - 3  # get root of the project
+env = environ.Env()
+env.read_env(
+    env_file=os.path.join(BASE_DIR, ".env")
+)  # read .env file located at project root
 
+# ================================ #
+# ==== ENVIRONMENT VARIABLES  ==== #
+# ================================ #
 
-def boolean(value):
-    """Turn the given string value into a boolean.
-
-    Any truthy value will be interpreted as True and anything else will
-    be False. For convenience, this function will also accept a boolean
-    value (and simply return it) and the value None, which will be
-    interpreted as False.
-    """
-    if isinstance(value, bool) or value is None:
-        return bool(value)
-    return value.lower() in ("true", "t", "yes", "y", "1")
-
-
-def make_list(value):
-    """Return a list of items from a comma-separated string.
-
-    Surrounding whitespace will be stripped from the list items. If the
-    provided string is empty, an empty list will be returned. This function
-    will also accept the value None and return an empty list.
-    """
-    if value is None:
-        return []
-    return list(filter(None, [s.strip() for s in value.split(",")]))
+# CORE SETTINGS
+DEBUG = env.bool("DJANGO_DEBUG", False)
+SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+LOGIN_REQUIRED = env.bool("DJANGO_LOGIN_REQUIRED", False)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+ADMINS = [("Solenoid Admin", env.str("SOLENOID_ADMIN", None))]
+EMAIL_HOST_PASSWORD = env.str(
+    "DJANGO_SMTP_PASSWORD", None
+)  # if set, the system will send emails
 
 
-# -----------------------------------------------------------------------------
-# ------------------------> core django configurations <-----------------------
-# -----------------------------------------------------------------------------
+# SOLENOID SETTINGS
+DATABASE_URL = env.str("DATABASE_URL", "sqlite:///db.sqlite3")
+HEROKU_APP_NAME = env.str("HEROKU_APP_NAME", "")
+if HEROKU_APP_NAME:
+    ALLOWED_HOSTS.append("{}.herokuapp.com".format(HEROKU_APP_NAME))
 
-# APP CONFIGURATION
-# -----------------------------------------------------------------------------
+# If True, will only send email to admins. If False, will send email to
+# liaisons and the moira list.
+EMAIL_TESTING_MODE = env.bool("DJANGO_EMAIL_TESTING_MODE", False)
 
+# SYMPLECTIC ELEMENTS SETTINGS
+# Set this to False if you don't want to issue API calls (e.g. during testing,
+# on localhost, on environments that don't know the password or don't have IPs
+# known to the Elements firewall).
+USE_ELEMENTS = env.bool("DJANGO_USE_ELEMENTS", False)
+# You'll need to have an API user configured in the Elements app that matches
+# these parameters. See docs/README.md.
+ELEMENTS_USER = env.str("DJANGO_ELEMENTS_USER", "solenoid")
+ELEMENTS_PASSWORD = env.str("DJANGO_ELEMENTS_PASSWORD", None)
+
+# Defaults to the dev instance - only use the production Elements app if you
+# are very sure you should!
+ELEMENTS_ENDPOINT = env.str(
+    "DJANGO_ELEMENTS_ENDPOINT", "https://pubdata-dev.mit.edu:8091/secure-api/v5.5/"
+)
+
+# DSPACE SETTINGS
+DSPACE_SALT = env.str("DSPACE_AUTHOR_ID_SALT", "salty")
+
+# CELERY SETTINGS
+CELERY_BROKER_URL = env.str("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env.str("REDIS_URL", "redis://localhost:6379")
+
+# ============================== #
+# ==== DJANGO CORE SETTINGS ==== #
+# ============================== #
+
+# APPLICATION DEFINITION
 DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -68,10 +98,6 @@ SOLENOID_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + SOLENOID_APPS
 
-
-# MIDDLEWARE CONFIGURATION
-# -----------------------------------------------------------------------------
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -83,61 +109,7 @@ MIDDLEWARE = [
     # 'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-
-# DEBUG
-# -----------------------------------------------------------------------------
-
-DEBUG = boolean(os.getenv("DJANGO_DEBUG", False))
-
-# DATABASE CONFIGURATION
-# -----------------------------------------------------------------------------
-
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "sqlite:///db.sqlite3"), conn_max_age=600
-    )
-}
-
-
-# GENERAL CONFIGURATION
-# -----------------------------------------------------------------------------
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
-
-# This will accept a comma-separated list of allowed hosts
-ALLOWED_HOSTS = make_list(os.getenv("ALLOWED_HOSTS"))
-
-if "HEROKU_APP_NAME" in os.environ:
-    ALLOWED_HOSTS.append("{}.herokuapp.com".format(os.environ["HEROKU_APP_NAME"]))
-
 ROOT_URLCONF = "solenoid.urls"
-
-WSGI_APPLICATION = "solenoid.wsgi.application"
-
-SITE_ID = 1
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# INTERNATIONALIZATION CONFIGURATION
-# -----------------------------------------------------------------------------
-
-# https://docs.djangoproject.com/en/1.8/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-USE_TZ = True
-
-# Turned off to save on overhead, since we won't need this for an MIT internal
-# app.
-USE_I18N = False
-
-
-# TEMPLATE CONFIGURATION
-# -----------------------------------------------------------------------------
 
 TEMPLATES = [
     {
@@ -156,23 +128,34 @@ TEMPLATES = [
 ]
 
 
-# STATIC FILE CONFIGURATION
-# -----------------------------------------------------------------------------
+WSGI_APPLICATION = "solenoid.wsgi.application"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
+# SITES
+SITE_ID = 1
 
+# DATABASE
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL", "sqlite:///db.sqlite3"), conn_max_age=600
+    )
+}
+
+# INTERNALIZATION
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_TZ = True
+USE_I18N = False
+
+# STATIC FILES
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = "/static/"
 
-# Extra places for collectstatic to find static files.
+# extra places for collectstatic to find static files.
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "solenoid", "static")]
-
 FIXTURE_DIRS = [os.path.join(BASE_DIR, "solenoid", "fixtures")]
 
-
-# LOGGING CONFIGURATION
-# -----------------------------------------------------------------------------
-
+# LOGGING
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -202,21 +185,13 @@ LOGGING = {
     },
 }
 
-
-# EMAIL CONFIGURATION
-# -----------------------------------------------------------------------------
-
-ADMINS = [("Solenoid Admin", os.getenv("SOLENOID_ADMIN", None))]
-
+# EMAIL
 EMAIL_USE_TLS = True
 EMAIL_HOST = "outgoing.mit.edu"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "libsys"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + "@mit.edu"
 
-# THIS CONTROLS WHETHER THE SYSTEM WILL SEND EMAIL. If you don't want to send
-# real actual email, don't set this environment variable.
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_SMTP_PASSWORD", None)
 
 # The default backend is SMTP, but if we haven't configured the environment
 # with the password, we can't use SMTP, so use the console backend instead.
@@ -228,35 +203,20 @@ if not EMAIL_HOST_PASSWORD:
 # system will be cc:ed to this email address.
 SCHOLCOMM_MOIRA_LIST = "sccs-fta@mit.edu"
 
-# If True, will only send email to admins. If False, will send email to
-# liaisons and the moira list.
-EMAIL_TESTING_MODE = boolean(os.environ.get("DJANGO_EMAIL_TESTING_MODE", False))
 
+# ======================================== #
+# ==== SOLENOID AND EXTERNAL SETTINGS ==== #
+# ======================================== #
 
-# -----------------------------------------------------------------------------
-# -----------------> third-party and solenoid configurations <-----------------
-# -----------------------------------------------------------------------------
+LOGIN_REDIRECT_URL = "/"  # redirect to home URL after successful login
 
-# Default to not requiring login for ease of local development, but allow it
-# to be set with an environment variable to facilitate testing. You will need
-# to fill in key and secret values for your environment as well if you set this
-# to True.
-LOGIN_REQUIRED = boolean(os.environ.get("DJANGO_LOGIN_REQUIRED", False))
-
-# Redirect to home URL after login (default redirects to /accounts/profile)
-LOGIN_REDIRECT_URL = "/"
-
-# CKEDITOR CONFIGURATION
-# -----------------------------------------------------------------------------
-
+# CKEDITOR
 INSTALLED_APPS += ["ckeditor"]
-
 
 # This is the same version of jquery that is commented out in the base
 # template.
 # -If you uncomment that line and load jquery in base.html, delete this
 # setting.- Loading jquery multiple times will lead to sorrow.
-
 CKEDITOR_JQUERY_URL = (
     "https://ajax.googleapis.com/ajax/libs/jquery/" "1.12.4/jquery.min.js"
 )
@@ -264,7 +224,6 @@ CKEDITOR_JQUERY_URL = (
 # We're intentionally not configuring CKeditor file uploads, because file
 # uploads are not part of the use case documentation, and they add security
 # headaches.
-
 CKEDITOR_CONFIGS = {
     "default": {
         "removePlugins": "stylesheetparser",
@@ -278,42 +237,18 @@ CKEDITOR_CONFIGS = {
     }
 }
 
-
-# SYMPLECTIC ELEMENTS CONFIGURATION
-# -----------------------------------------------------------------------------
-
-# Defaults to the dev instance - only use the production Elements app if you
-# are very sure you should!
-ELEMENTS_ENDPOINT = os.environ.get(
-    "DJANGO_ELEMENTS_ENDPOINT", "https://pubdata-dev.mit.edu:8091/" "secure-api/v5.5/"
-)
-
-# You'll need to have an API user configured in the Elements app that matches
-# these parameters. See docs/README.md.
-ELEMENTS_USER = os.environ.get("DJANGO_ELEMENTS_USER", "solenoid")
-ELEMENTS_PASSWORD = os.environ.get("DJANGO_ELEMENTS_PASSWORD")
-
-# Set this to False if you don't want to issue API calls (e.g. during testing,
-# on localhost, on environments that don't know the password or don't have IPs
-# known to the Elements firewall).
-USE_ELEMENTS = boolean(os.environ.get("DJANGO_USE_ELEMENTS", False))
-
+# SYMPLECTIC ELEMENTS
 QUOTAGUARD_URL = None
 
-# DJANGO-COMPRESSOR CONFIGURATION
-# -----------------------------------------------------------------------------
-
+# DJANGO COMPRESSOR
 INSTALLED_APPS += ["compressor"]
-
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     "compressor.finders.CompressorFinder",
 ]
-
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = False  # The default, but we're being explicit.
-
 COMPRESS_PRECOMPILERS = [
     ("text/x-sass", "django_libsass.SassCompiler"),
     ("text/x-scss", "django_libsass.SassCompiler"),
@@ -321,40 +256,19 @@ COMPRESS_PRECOMPILERS = [
 
 COMPRESS_ROOT = STATIC_ROOT
 
-# CRISPY-FORMS CONFIGURATION
-# -----------------------------------------------------------------------------
-
+# CRISPY FORMS
 INSTALLED_APPS += ["crispy_forms"]
-
-# See http://django-crispy-forms.readthedocs.io/en/latest/template_packs.html .
 CRISPY_TEMPLATE_PACK = "mitlib_crispy"
-
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["mitlib_crispy"]
 
-
-# DJANGO-DEBUG-TOOLBAR CONFIGURATION
-# -----------------------------------------------------------------------------
+# DJANGO DEBUG TOOLBAR
 
 INSTALLED_APPS += ["debug_toolbar"]
-
 MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-
 INTERNAL_IPS = ["127.0.0.1"]
 
-
-# DSPACE CUSTOMIZATION CONFIGURATION
-# -----------------------------------------------------------------------------
-
-DSPACE_SALT = os.getenv("DSPACE_AUTHOR_ID_SALT", default="salty")
-
-
-# CELERY CONFIGURATION
-# -----------------------------------------------------------------------------
-
+# CELERY
 INSTALLED_APPS += ["celery_progress"]
-
-CELERY_BROKER_URL = os.getenv("REDIS_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", default="redis://localhost:6379")
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     "max_retries": 5,
     "interval_start": 0,

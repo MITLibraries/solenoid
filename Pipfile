@@ -4,12 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"
 
 [dev-packages]
+black = "*"
+celery-types = "*"
 coveralls = "*"
-freezegun = "*"
-pytest-cov = "*"
+django-stubs = "*"
+mypy = "*"
+pre-commit = "*"
+pytest = "*"
 pytest-django = "*"
 requests-mock = "*"
 
@@ -27,11 +31,12 @@ django-ckeditor = "*"
 django-compressor = "*"
 django-crispy-forms = "*"
 django-debug-toolbar = "*"
+django-environ = "*"
 django-libsass = "*"
 gunicorn = "*"
 newrelic = "*"
 Pillow = "*"
-psycopg2 = "*"
+psycopg2-binary = "*"
 python-dotenv = "*"
 pyyaml = "*"
 redis = "*"
