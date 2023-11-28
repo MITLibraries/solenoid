@@ -1,13 +1,14 @@
 import logging
 
 from django.contrib import messages
-from django.urls import reverse
 from django.db import close_old_connections, connection
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.views.generic import View, DetailView
+from django.urls import reverse
+from django.views.generic import DetailView, View
 from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
+from requests.models import Request
 
 from solenoid.people.models import Author
 from solenoid.records.models import Record
@@ -16,11 +17,10 @@ from solenoid.mixins import ConditionalLoginRequiredMixin
 from .forms import EmailMessageForm
 from .models import EmailMessage
 
-
 logger = logging.getLogger(__name__)
 
 
-def _get_or_create_emails(pk_list):
+def _get_or_create_emails(pk_list: list) -> list:
     """Takes a list of pks of Records and gets or creates associated
     EmailMessages."""
     close_old_connections()
@@ -28,7 +28,9 @@ def _get_or_create_emails(pk_list):
 
     for author in Author.objects.filter(record__pk__in=pk_list).distinct():
         records = Record.objects.filter(pk__in=pk_list, author=author)
-        email_pks.append(EmailMessage.get_or_create_for_records(records).pk)
+
+        if email := EmailMessage.get_or_create_for_records(records):
+            email_pks.append(email.pk)
 
     # Because this is outside the request/response cycle, the connections
     # opened here don't close at the end of the function. They may be cleaned
@@ -42,7 +44,7 @@ def _get_or_create_emails(pk_list):
 class EmailCreate(ConditionalLoginRequiredMixin, View):
     http_method_names = ["post"]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs) -> HttpResponseRedirect:
         pk_list = request.POST.getlist("records")
         email_pks = _get_or_create_emails(pk_list)
         try:

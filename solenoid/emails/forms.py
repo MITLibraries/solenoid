@@ -1,5 +1,4 @@
 from ckeditor.widgets import CKEditorWidget
-
 from django import forms
 
 from .models import EmailMessage
@@ -11,10 +10,10 @@ class EmailMessageForm(forms.ModelForm):
         fields = ["latest_text"]
         widgets = {"latest_text": CKEditorWidget()}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         super(EmailMessageForm, self).__init__(*args, **kwargs)
         self.fields["latest_text"].label = ""
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         self.instance.new_citations = False
         super(EmailMessageForm, self).save()

@@ -1,15 +1,13 @@
 import logging
 
-from requests.exceptions import HTTPError, Timeout
-
 from django.conf import settings
 from django.contrib import messages
 from django.db import models
 from django.http import (
     HttpRequest,
     HttpResponse,
-    HttpResponseRedirect,
     HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
 )
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -62,7 +60,7 @@ class Import(ConditionalLoginRequiredMixin, FormView):
         author_data["ELEMENTS ID"] = author_id
         return author_data
 
-    def _get_author_record_id(self, author_data: dict) -> int | HttpResponse:
+    def _get_author_record_id(self, author_data: dict) -> int:
         try:
             author = Author.get_by_mit_id(author_data[Fields.MIT_ID])
             if not author.dspace_id:
@@ -85,26 +83,24 @@ class Import(ConditionalLoginRequiredMixin, FormView):
     ) -> HttpResponseRedirect | HttpResponsePermanentRedirect:
         author_id = form.cleaned_data["author_id"]
         author_url = f"{settings.ELEMENTS_ENDPOINT}users/{author_id}"
-        author_data = self._get_author_data(form, author_id)
+        author_data = self._get_author_data(author_id, author_url)
         author = self._get_author_record_id(author_data)
         result = task_import_papers_for_author.delay(author_url, author_data, author)
         task_id = result.task_id
         return redirect("records:status", task_id=task_id)
 
     def form_invalid(self, form: ImportForm) -> HttpResponse:
-        msg = (
-            format_html(
-                "Something went wrong. Please try again, and if it "
-                'still doesn\'t work, contact <a mailto="{}">'
-                "a Solenoid admin</a>.",
-                mark_safe(settings.ADMINS[0][1]),
-            ),
+        msg = format_html(
+            "Something went wrong. Please try again, and if it "
+            'still doesn\'t work, contact <a mailto="{}">'
+            "a Solenoid admin</a>.",
+            mark_safe(settings.ADMINS[0][1]),
         )
 
         messages.warning(self.request, msg)
         return super(Import, self).form_invalid(form)
 
-    def get_context_data(self, **kwargs) -> dict:
+    def get_context_data(self, **kwargs) -> dict:  # type: ignore[no-untyped-def]
         context = super(Import, self).get_context_data(**kwargs)
         context["breadcrumbs"] = [
             {"url": reverse_lazy("home"), "text": "dashboard"},
