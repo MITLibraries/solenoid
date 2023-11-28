@@ -1,12 +1,15 @@
 from django.db.models.signals import post_save
+from django.db import models
 from django.dispatch import receiver
 
 from solenoid.emails.models import EmailMessage
 
-from .models import DLC
+from .models import DLC, Liaison
 
 
-def update_emails_with_dlcs(dlcs, liaison=None):
+def update_emails_with_dlcs(
+    dlcs: models.QuerySet | list, liaison: Liaison | None = None
+) -> None:
     """
     For a given liaison and set of DLCs, update all unsent EmailMessages
     associated with those DLCs to have that Liaison.
@@ -25,6 +28,6 @@ def update_emails_with_dlcs(dlcs, liaison=None):
 
 
 @receiver(post_save, sender=DLC)
-def update_emails_with_dlcs_on_save(sender, **kwargs):
+def update_emails_with_dlcs_on_save(sender: models.Model, **kwargs) -> None:  # type: ignore[no-untyped-def]
     dlc = kwargs["instance"]
     update_emails_with_dlcs([dlc], dlc.liaison)

@@ -8,7 +8,7 @@ class LiaisonCreateForm(forms.ModelForm):
         model = Liaison
         fields = ("first_name", "last_name", "email_address")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         super(LiaisonCreateForm, self).__init__(*args, **kwargs)
         self.fields["dlc"] = forms.ModelMultipleChoiceField(
             queryset=DLC.objects.all(), required=False

@@ -1,8 +1,10 @@
 import logging
 
+from typing import Any
+
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
@@ -21,7 +23,7 @@ class LiaisonCreate(ConditionalLoginRequiredMixin, CreateView):
     form_class = LiaisonCreateForm
     success_url = reverse_lazy("people:liaison_list")
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
         context = super(LiaisonCreate, self).get_context_data(**kwargs)
         context["title"] = "Add liaison"
         context["breadcrumbs"] = [
@@ -32,7 +34,7 @@ class LiaisonCreate(ConditionalLoginRequiredMixin, CreateView):
         context["form_id"] = "liaison-create"
         return context
 
-    def form_valid(self, form):
+    def form_valid(self, form: LiaisonCreateForm) -> HttpResponseRedirect:
         liaison = form.save()
         dlcs = form.cleaned_data["dlc"]
         liaison.dlc_set.add(*dlcs)
@@ -44,7 +46,7 @@ class LiaisonList(ConditionalLoginRequiredMixin, ListView):
     model = Liaison
     queryset = Liaison.objects.all()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
         context = super(LiaisonList, self).get_context_data(**kwargs)
         context["dlc_set"] = DLC.objects.all()
         context["title"] = "Manage liaisons"
@@ -62,7 +64,7 @@ class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
     form_class = LiaisonCreateForm
     success_url = reverse_lazy("people:liaison_list")
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
         context = super(LiaisonUpdate, self).get_context_data(**kwargs)
         context["title"] = "Edit liaison"
         context["breadcrumbs"] = [
@@ -73,12 +75,12 @@ class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
         context["form_id"] = "liaison-update"
         return context
 
-    def get_initial(self):
+    def get_initial(self) -> dict[str, Any]:
         initial = super(LiaisonUpdate, self).get_initial()
         initial["dlc"] = DLC.objects.filter(liaison=self.get_object())
         return initial
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> HttpResponse:  # type: ignore[no-untyped-def]
         # This would normally be set in post(), but we're not calling super, so
         # we need to do it ourselves.
         self.object = self.get_object()
@@ -88,8 +90,8 @@ class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
         if form.is_valid():
             try:
                 dlcs = DLC.objects.filter(pk__in=request.POST.getlist("dlc"))
-            except KeyError:
-                logger.exception()
+            except KeyError as e:
+                logger.exception(e)
                 raise
 
             liaison = self.get_object()
@@ -112,11 +114,11 @@ class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
 
-class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):
+class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):  # type: ignore
     model = Liaison
     queryset = Liaison.objects.all()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:  # type: ignore[no-untyped-def]
         context = super(LiaisonDelete, self).get_context_data(**kwargs)
         context["title"] = "Delete liaison ({name})".format(name=self.get_object())
         context["breadcrumbs"] = [
@@ -126,6 +128,6 @@ class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):
         ]
         return context
 
-    def get_success_url(self):
+    def get_success_url(self) -> Any:
         messages.success(self.request, "Liaison deleted.")
         return reverse_lazy("people:liaison_list")

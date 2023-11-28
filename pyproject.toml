@@ -12,7 +12,7 @@ django_settings_module = "solenoid.settings.base"
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 plugins = ["mypy_django_plugin.main"]
-exclude = ["tests"]
+exclude = ["tests", "migrations"]
 
 [[tool.mypy.overrides]]
 module = ["solenoid.userauth.*", "solenoid.settings.*", "celery_progress.backend"]
