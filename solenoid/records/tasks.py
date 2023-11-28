@@ -36,7 +36,6 @@ def task_import_papers_for_author(  # type: ignore
     )
     total = len(pub_ids)
     logger.info(f"Finished retrieving publication IDs to import for author.")
-
     for i, paper in enumerate(pub_ids):
         paper_id = paper["id"]
         if not self.request.called_directly:
@@ -104,7 +103,7 @@ def _get_paper_data_from_elements(paper_id: int, author_data: dict) -> dict:
     return paper_data
 
 
-def _run_checks_on_paper(paper_data: dict, author: Author) -> str:
+def _run_checks_on_paper(paper_data: dict, author: Author) -> str:  # type: ignore[return]
     paper_id = paper_data[Fields.PAPER_ID]
     author_name = paper_data[Fields.LAST_NAME]
 
@@ -141,5 +140,3 @@ def _run_checks_on_paper(paper_data: dict, author: Author) -> str:
             f'{", ".join(dupe_list)}. Please merge #{paper_id} into an '
             f"existing record in Elements. It will not be imported."
         )
-
-    return ""
