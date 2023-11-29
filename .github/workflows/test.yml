@@ -19,6 +19,8 @@ jobs:
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
       - name: Test
-        run: pipenv run pytest --cov=solenoid
+        run: |
+          pipenv run coverage run --source=solenoid -m pytest -vv
+          pipenv run coverage report -m
       - name: Coveralls
-        run: pipenv run coveralls
+        run: pipenv run coverage lcov -o ./coverage/lcov.info
