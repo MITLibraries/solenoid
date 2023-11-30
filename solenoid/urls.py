@@ -16,8 +16,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, re_path
 from django.views.defaults import server_error
-
-from solenoid.userauth.views import SolenoidLogoutView
+from django.views.generic.base import RedirectView
 
 from .views import HomeView
 
@@ -34,10 +33,11 @@ urlpatterns = [
     re_path(r"^records/", include("solenoid.records.urls", namespace="records")),
     re_path(r"^emails/", include("solenoid.emails.urls", namespace="emails")),
     re_path(r"^people/", include("solenoid.people.urls", namespace="people")),
-    # re_path(r'^oauth2/', include('social_django.urls', namespace='social')),
-    # re_path(r'^logout/$',
-    #         SolenoidLogoutView.as_view(template_name='userauth/logout.html'),
-    #         name='logout'),
+    re_path(
+        r"^logout/$",
+        RedirectView.as_view(url="/accounts/logout"),
+        name="logout",
+    ),
     re_path(r"^500/$", server_error),
 ]
 
