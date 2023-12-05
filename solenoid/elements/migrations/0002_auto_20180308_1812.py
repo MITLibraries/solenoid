@@ -8,14 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('elements', '0001_initial'),
+        ("elements", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='elementsapicall',
-            name='request_data',
-            field=models.TextField(help_text='The xml sent (i.e. the "data" '
-                                   'kwarg in the requests.patch() call.'),
+            model_name="elementsapicall",
+            name="request_data",
+            field=models.TextField(
+                help_text='The xml sent (i.e. the "data" '
+                "kwarg in the requests.patch() call."
+            ),
         ),
     ]

@@ -13,30 +13,24 @@ logger = logging.getLogger(__name__)
 
 class Record(models.Model):
     """The Record contains:
-        * citation information for an MIT author publication
-        * plus all of the other data from Elements we will need to construct an
-          email
+    * citation information for an MIT author publication
+    * plus all of the other data from Elements we will need to construct an
+      email
     """
 
     class Meta:
-        ordering = ['author__dlc', 'author__last_name']
+        ordering = ["author__dlc", "author__last_name"]
         # PaperID is not unique, because papers with multiple MIT authors may
         # show up in data imports multiple times. However, we should only see
         # them once per author.
-        unique_together = (('author', 'paper_id'))
+        unique_together = ("author", "paper_id")
 
-    author = models.ForeignKey(
-        Author,
-        on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     email = models.ForeignKey(
-        EmailMessage,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE)
+        EmailMessage, blank=True, null=True, on_delete=models.CASCADE
+    )
     publisher_name = models.CharField(max_length=255)
-    acq_method = models.CharField(
-        max_length=255,
-        blank=True)
+    acq_method = models.CharField(max_length=255, blank=True)
     citation = models.TextField()
     doi = models.CharField(max_length=255, blank=True)
     # This is the unique ID within Elements, which is NOT the same as the
@@ -49,15 +43,17 @@ class Record(models.Model):
     message = models.TextField(blank=True)
 
     def __str__(self):
-        return ("{self.author.last_name}, {self.author.first_name} "
-                "({self.paper_id})".format(self=self))
+        return (
+            "{self.author.last_name}, {self.author.first_name} "
+            "({self.paper_id})".format(self=self)
+        )
 
     def save(self, *args, **kwargs):
         # blank=False by default in TextFields, but this applies only to *form*
         # validation, not to *instance* validation - django will happily save
         # blank strings to the database, and we don't want it to.
         if not self.citation:
-            raise ValidationError('Citation cannot be blank')
+            raise ValidationError("Citation cannot be blank")
         return super(Record, self).save(*args, **kwargs)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ STATIC METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,27 +76,28 @@ class Record(models.Model):
             Volume(Issue), pp.-pp. doi:XX.XXXXX.
         We don't appear to get page number information, so we'll skip that.
         """
-        citation = '{last}, {first_init}. '.format(
-            last=paper_data[Fields.LAST_NAME],
-            first_init=paper_data[Fields.FIRST_NAME][0])
+        citation = "{last}, {first_init}. ".format(
+            last=paper_data[Fields.LAST_NAME], first_init=paper_data[Fields.FIRST_NAME][0]
+        )
 
         if paper_data[Fields.PUBDATE]:
-            citation += f'({paper_data[Fields.PUBDATE][0:4]}). '
+            citation += f"({paper_data[Fields.PUBDATE][0:4]}). "
 
-        citation += '{title}. {journal}'.format(
-            title=paper_data[Fields.TITLE],
-            journal=paper_data[Fields.JOURNAL])
+        citation += "{title}. {journal}".format(
+            title=paper_data[Fields.TITLE], journal=paper_data[Fields.JOURNAL]
+        )
 
         if paper_data[Fields.VOLUME] and paper_data[Fields.ISSUE]:
-            citation += ', {volume}({issue})'.format(
-                volume=paper_data[Fields.VOLUME],
-                issue=paper_data[Fields.ISSUE])
+            citation += ", {volume}({issue})".format(
+                volume=paper_data[Fields.VOLUME], issue=paper_data[Fields.ISSUE]
+            )
 
-        citation += '.'
+        citation += "."
 
         if paper_data[Fields.DOI]:
-            citation += (' <a href="https://doi.org/{doi}">doi:{doi}'
-                         '</a>'.format(doi=paper_data[Fields.DOI]))
+            citation += ' <a href="https://doi.org/{doi}">doi:{doi}' "</a>".format(
+                doi=paper_data[Fields.DOI]
+            )
         return citation
 
     @staticmethod
@@ -122,9 +119,10 @@ class Record(models.Model):
         the record.
         """
         try:
-            record = Record.objects.get(paper_id=paper_data[Fields.PAPER_ID],
-                                        author=author)
-            logger.info('Got an existing record')
+            record = Record.objects.get(
+                paper_id=paper_data[Fields.PAPER_ID], author=author
+            )
+            logger.info("Got an existing record")
             return record, False
         except Record.DoesNotExist:
             citation = Record._get_citation(paper_data)
@@ -136,8 +134,9 @@ class Record(models.Model):
                 citation=citation,
                 doi=paper_data[Fields.DOI],
                 paper_id=paper_data[Fields.PAPER_ID],
-                message=paper_data[Fields.MESSAGE])
-            logger.info('record created')
+                message=paper_data[Fields.MESSAGE],
+            )
+            logger.info("record created")
 
             return record, True
 
@@ -152,10 +151,9 @@ class Record(models.Model):
         (Same citation doesn't suffice, as we may legitimately receive a paper
         with the same citation multiple times, once per author.)"""
 
-        dupes = Record.objects.filter(author=author,
-                                      citation=paper_data[Fields.CITATION]
-                                      ).exclude(
-                                          paper_id=paper_data[Fields.PAPER_ID])
+        dupes = Record.objects.filter(
+            author=author, citation=paper_data[Fields.CITATION]
+        ).exclude(paper_id=paper_data[Fields.PAPER_ID])
         if dupes:
             return dupes
         else:
@@ -171,7 +169,7 @@ class Record(models.Model):
             bool: True if record can be created, False otherwise.
         """
         try:
-            if paper_data[Fields.ACQ_METHOD] == 'RECRUIT_FROM_AUTHOR_FPV':
+            if paper_data[Fields.ACQ_METHOD] == "RECRUIT_FROM_AUTHOR_FPV":
                 assert bool(paper_data[Fields.DOI])
                 assert bool(paper_data[Fields.PUBLISHER_NAME])
 
@@ -196,15 +194,11 @@ class Record(models.Model):
         """
 
         # Find all records of the same paper, if any.
-        records = Record.objects.filter(
-            paper_id=paper_data[Fields.PAPER_ID]
-        )
+        records = Record.objects.filter(paper_id=paper_data[Fields.PAPER_ID])
 
         # Return True if we've already sent an email for any of those records;
         # False otherwise.
-        return any([record.email.date_sent
-                    for record in records
-                    if record.email])
+        return any([record.email.date_sent for record in records if record.email])
 
     @staticmethod
     def is_data_valid(paper_data):
@@ -213,10 +207,10 @@ class Record(models.Model):
 
         For citation data, we'll accept *either* a preconstructed citation,
         *or* enough data to construct a minimal citation ourselves."""
-        citable = bool(paper_data[Fields.CITATION]) or \
-            all([bool(paper_data[x]) for x in Fields.CITATION_DATA])
-        return (all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and
-                citable)
+        citable = bool(paper_data[Fields.CITATION]) or all(
+            [bool(paper_data[x]) for x in Fields.CITATION_DATA]
+        )
+        return all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and citable
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -225,10 +219,14 @@ class Record(models.Model):
         discrepancies with the existing record. If so, updates it and returns
         True. If not, returns False."""
         changed = False
-        if not all([self.author == author,
-                    self.publisher_name == paper_data[Fields.PUBLISHER_NAME],
-                    self.acq_method == paper_data[Fields.ACQ_METHOD],
-                    self.doi == paper_data[Fields.DOI]]):
+        if not all(
+            [
+                self.author == author,
+                self.publisher_name == paper_data[Fields.PUBLISHER_NAME],
+                self.acq_method == paper_data[Fields.ACQ_METHOD],
+                self.doi == paper_data[Fields.DOI],
+            ]
+        ):
             self.author = author
             self.publisher_name = paper_data[Fields.PUBLISHER_NAME]
             self.acq_method = paper_data[Fields.ACQ_METHOD]
@@ -258,18 +256,19 @@ class Record(models.Model):
 
     @property
     def fpv_message(self):
-        msg = Template('<b>[Note: $publisher_name allows authors to download '
-                       'and deposit the final published article, but does not '
-                       'allow the Libraries to perform the downloading. If '
-                       'you follow this link, download the article, and '
-                       'attach it to an email reply, we can deposit it on '
-                       'your behalf: <a href="http://libproxy.mit.edu/'
-                       'login?url=https://dx.doi.org/$doi">http://'
-                       'libproxy.mit.edu/login?url=https://dx.doi.org/'
-                       '$doi</a>]</b>')
-        if self.acq_method == 'RECRUIT_FROM_AUTHOR_FPV':
-            return msg.substitute(publisher_name=self.publisher_name,
-                                  doi=self.doi)
+        msg = Template(
+            "<b>[Note: $publisher_name allows authors to download "
+            "and deposit the final published article, but does not "
+            "allow the Libraries to perform the downloading. If "
+            "you follow this link, download the article, and "
+            "attach it to an email reply, we can deposit it on "
+            'your behalf: <a href="http://libproxy.mit.edu/'
+            'login?url=https://dx.doi.org/$doi">http://'
+            "libproxy.mit.edu/login?url=https://dx.doi.org/"
+            "$doi</a>]</b>"
+        )
+        if self.acq_method == "RECRUIT_FROM_AUTHOR_FPV":
+            return msg.substitute(publisher_name=self.publisher_name, doi=self.doi)
         else:
             return None
 
@@ -283,4 +282,4 @@ class Record(models.Model):
     @property
     def is_valid(self):
         # If acq_method is FPV, we must have the DOI.
-        return (self.acq_method != 'RECRUIT_FROM_AUTHOR_FPV' or bool(self.doi))
+        return self.acq_method != "RECRUIT_FROM_AUTHOR_FPV" or bool(self.doi)

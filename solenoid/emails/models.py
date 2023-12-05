@@ -26,8 +26,7 @@ class EmailMessage(models.Model):
 
     def __str__(self):
         if self.date_sent:
-            return ("In re {self.author} (sent "
-                    "{self.date_sent})".format(self=self))
+            return "In re {self.author} (sent {self.date_sent})".format(self=self)
         else:
             return "In re {self.author} (unsent)".format(self=self)
 
@@ -41,14 +40,8 @@ class EmailMessage(models.Model):
     # require knowledge of the liaison (e.g. editing email text). This means
     # downstream functions that depend on the liaison's existence are
     # responsible for handling exceptions. DO NOT SET until email send.
-    _liaison = models.ForeignKey(
-        Liaison,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE)
-    author = models.ForeignKey(
-        Author,
-        on_delete=models.CASCADE)
+    _liaison = models.ForeignKey(Liaison, blank=True, null=True, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     # This should be set to True when people import new citations for this
     # email's author after starting the email, but before sending it. It should
     # be set to False after people edit the email (save or send).
@@ -69,23 +62,23 @@ class EmailMessage(models.Model):
         """Creates a text block of citations for this record list. Does NOT
         validate the citations - make sure you have done any needed sanitizing
         first."""
-        logger.info('Creating citations for {list}'.format(list=record_list))
-        citations = ''
+        logger.info("Creating citations for {list}".format(list=record_list))
+        citations = ""
         for record in record_list:
-            citations += '<p>'
+            citations += "<p>"
             citations += record.citation
 
             if record.message:
-                citations += f'<br /><b>[{record.message}]</b>'
+                citations += f"<br /><b>[{record.message}]</b>"
             elif record.fpv_message:
-                citations += f'<br /><b>{record.fpv_message}</b>'
+                citations += f"<br /><b>{record.fpv_message}</b>"
 
-            citations += '</p>'
-        logger.info('Citations created')
+            citations += "</p>"
+        logger.info("Citations created")
 
         # This is the unicode replacement character. It shows up sometimes in
         # our imports; we should just remove it.
-        citations = re.sub(u'\ufffd', ' ', citations)
+        citations = re.sub("\ufffd", " ", citations)
         return citations
 
     @classmethod
@@ -97,35 +90,40 @@ class EmailMessage(models.Model):
         that leaves zero records. Will also verify that all records have the
         same author and raise a ValidationError if not."""
 
-        logger.info('Creating original text of email for {list}'.format(
-            list=record_list))
+        logger.info("Creating original text of email for {list}".format(list=record_list))
         if not record_list:
-            logger.warning('Could not create email text - no record_list')
-            raise ValidationError('No records provided.')
+            logger.warning("Could not create email text - no record_list")
+            raise ValidationError("No records provided.")
 
         available_records = record_list.filter(email__isnull=True)
         if not available_records:
-            logger.warning('Could not create email text - all records already '
-                           'have emails')
-            raise ValidationError('All records already have emails.')
+            logger.warning(
+                "Could not create email text - all records already have emails"
+            )
+            raise ValidationError("All records already have emails.")
 
         try:
-            authors = record_list.values_list('author')
+            authors = record_list.values_list("author")
             # list(set()) removes duplicates.
             assert len(list(set(authors))) == 1
         except AssertionError:
-            logger.exception('Could not create email text - multiple authors '
-                             'in record set')
-            raise ValidationError('All records must have the same author.')
+            logger.exception(
+                "Could not create email text - multiple authors in record set"
+            )
+            raise ValidationError("All records must have the same author.")
 
         author = record_list.first().author
         citations = cls._create_citations(available_records)
 
-        logger.info('Returning original text of email')
-        return render_to_string('emails/author_email_template.html',
-                                context={'author': author,
-                                         'liaison': author.dlc.liaison,
-                                         'citations': citations})
+        logger.info("Returning original text of email")
+        return render_to_string(
+            "emails/author_email_template.html",
+            context={
+                "author": author,
+                "liaison": author.dlc.liaison,
+                "citations": citations,
+            },
+        )
 
     @staticmethod
     def _filter_records(records):
@@ -133,7 +131,7 @@ class EmailMessage(models.Model):
         records = records.filter(email__date_sent__isnull=True)
 
         if records.count() == 0:
-            logger.info('No records - not creating email')
+            logger.info("No records - not creating email")
             return None
 
         return records
@@ -144,14 +142,13 @@ class EmailMessage(models.Model):
             email = email[0]
             email.rebuild_citations()
         else:
-            email = cls(original_text=cls.create_original_text(records),
-                        author=author)
+            email = cls(original_text=cls.create_original_text(records), author=author)
             email.save()
 
         # Make sure to create the ForeignKey relation from those records to
         # the email! Otherwise this method will only ever create new emails
         # rather than finding existing ones.
-        logger.info('Creating foreign key relationship to email for records')
+        logger.info("Creating foreign key relationship to email for records")
         records.update(email=email)
         return email
 
@@ -162,22 +159,20 @@ class EmailMessage(models.Model):
         # requires Author. Don't call this with an empty record set!
         assert records
         if count > 1:
-            logger.warning('Records have different authors - not creating '
-                           'email')
-            raise ValidationError('Records do not all have the same author.')
+            logger.warning("Records have different authors - not creating email")
+            raise ValidationError("Records do not all have the same author.")
         else:
             return Author.objects.filter(record__in=records)[0]
 
     @classmethod
     def _get_email_for_author(cls, author):
-        emails = cls.objects.filter(
-            author=author, date_sent__isnull=True).distinct()
+        emails = cls.objects.filter(author=author, date_sent__isnull=True).distinct()
 
         try:
             assert len(emails) in [0, 1]
         except AssertionError:
-            logger.exception('Multiple unsent emails found for %s' % author)
-            raise ValidationError('Multiple unsent emails found.')
+            logger.exception("Multiple unsent emails found for %s" % author)
+            raise ValidationError("Multiple unsent emails found.")
 
         return emails if emails else None
 
@@ -187,8 +182,7 @@ class EmailMessage(models.Model):
         their author (there should not be more than one of these at a time).
         Records must all be by the same author."""
 
-        logger.info('Creating unsent email for {records}'.format(
-            records=records))
+        logger.info("Creating unsent email for {records}".format(records=records))
 
         records = cls._filter_records(records)
         if not records:
@@ -201,32 +195,33 @@ class EmailMessage(models.Model):
         email = cls._get_email_for_author(author)
         email = cls._finalize_email(email, records, author)
 
-        logger.info('Retuning email')
+        logger.info("Retuning email")
         return email
 
     def _is_valid_for_sending(self):
-        logger.info('Checking if email {pk} is valid for sending'.format(
-            pk=self.pk))
+        logger.info("Checking if email {pk} is valid for sending".format(pk=self.pk))
         try:
             assert not self.date_sent
         except AssertionError:
-            logger.exception('Attempt to send invalid email')
+            logger.exception("Attempt to send invalid email")
             return False
 
         try:
             # Can't send the email if there isn't a liaison.
             assert self.liaison
         except AssertionError:
-            logger.exception('Attempt to send email {pk}, which is missing a '
-                             'liaison'.format(pk=self.pk))
+            logger.exception(
+                "Attempt to send email {pk}, which is missing a "
+                "liaison".format(pk=self.pk)
+            )
             return False
 
-        logger.info('Email {pk} is valid for sending'.format(pk=self.pk))
+        logger.info("Email {pk} is valid for sending".format(pk=self.pk))
         return True
 
     def _update_after_sending(self):
         """Set the metadata that should be set after sending an email."""
-        logger.info('Updating date_sent for email {pk}'.format(pk=self.pk))
+        logger.info("Updating date_sent for email {pk}".format(pk=self.pk))
         self.date_sent = date.today()
         self._liaison = self.liaison
         self.save()
@@ -235,7 +230,7 @@ class EmailMessage(models.Model):
         """Actually perform the sending of an EmailMessage. Return True on
         success, False otherwise."""
 
-        logger.info('Sending email {pk}'.format(pk=self.pk))
+        logger.info("Sending email {pk}".format(pk=self.pk))
 
         try:
             if settings.EMAIL_TESTING_MODE:
@@ -255,13 +250,13 @@ class EmailMessage(models.Model):
             )
 
         except SMTPException:
-            logger.exception('Could not send email; SMTP exception')
+            logger.exception("Could not send email; SMTP exception")
             return False
         except Exception:
-            logger.exception('Could not send email; unanticipated exception')
+            logger.exception("Could not send email; unanticipated exception")
             return False
 
-        logger.info('Done sending email')
+        logger.info("Done sending email")
         return True
 
     def send(self, username):
@@ -271,7 +266,7 @@ class EmailMessage(models.Model):
         otherwise.
         """
 
-        logger.info('Entering email.send() for {pk}'.format(pk=self.pk))
+        logger.info("Entering email.send() for {pk}".format(pk=self.pk))
         # First, validate.
         if not self._is_valid_for_sending():
             return False
@@ -281,13 +276,11 @@ class EmailMessage(models.Model):
             return False
 
         self._update_after_sending()
-        logger.info('Sending email_sent signal')
+        logger.info("Sending email_sent signal")
 
-        email_sent.send(sender=self.__class__,
-                        instance=self,
-                        username=username)
+        email_sent.send(sender=self.__class__, instance=self, username=username)
 
-        logger.info('Email {pk} sent'.format(pk=self.pk))
+        logger.info("Email {pk} sent".format(pk=self.pk))
         return True
 
     def rebuild_citations(self):
@@ -299,19 +292,18 @@ class EmailMessage(models.Model):
         # will include the current email record_set and also unsent emails.
         # Use this rather than filtering Record directly to avoid circular
         # imports.
-        records = self.author.record_set.exclude(
-            email__date_sent__isnull=False)
+        records = self.author.record_set.exclude(email__date_sent__isnull=False)
 
         if records.count() == self.record_set.count():
             # Nothing to change here.
             return False
 
-        soup = BeautifulSoup(self.latest_text, 'html.parser')
+        soup = BeautifulSoup(self.latest_text, "html.parser")
 
         citations = EmailMessage._create_citations(records)
-        new_soup = BeautifulSoup(citations, 'html.parser')
+        new_soup = BeautifulSoup(citations, "html.parser")
 
-        cite_block = soup.find('div', class_='control-citations')
+        cite_block = soup.find("div", class_="control-citations")
         cite_block.clear()
         cite_block.insert(1, new_soup)
         self.latest_text = soup.prettify()
@@ -326,7 +318,7 @@ class EmailMessage(models.Model):
         Right now we implement this by setting the latest text to the original,
         but we explicitly don't guarantee any particular implementation."""
 
-        logger.info('Reverting changes for {pk}'.format(pk=self.pk))
+        logger.info("Reverting changes for {pk}".format(pk=self.pk))
         self.latest_text = self.original_text
         self.save()
 
@@ -370,9 +362,9 @@ class EmailMessage(models.Model):
         # and we *should* notice if this problem happens - but we should log
         # it.
         try:
-            return 'OA outreach message to forward: {author}'.format(
-                author=self.author.last_name)
+            return "OA outreach message to forward: {author}".format(
+                author=self.author.last_name
+            )
         except AttributeError:
-            logger.exception('Could not find author for email #{pk}'.format(
-                pk=self.pk))
+            logger.exception("Could not find author for email #{pk}".format(pk=self.pk))
             raise

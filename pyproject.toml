@@ -1,0 +1,30 @@
+[tool.black]
+line-length = 90
+
+[tool.django-stubs]
+django_settings_module = "solenoid.settings.base"
+
+[tool.mypy]
+disallow_untyped_calls=true
+disallow_untyped_defs=false
+exclude=[
+    "^solenoid/.*/tests/.*",
+    "^solenoid/.*/migrations/.*",
+    "solenoid/wsgi.py"
+]
+plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = ["solenoid.elements.xml_handlers"]
+disable_error_code = ["union-attr"]
+
+[[tool.mypy.overrides]]
+module = [
+    "celery_progress.backend",
+    "ckeditor.fields",
+    "ckeditor.widgets",
+    "debug_toolbar",
+    "environ"
+]
+ignore_missing_imports = true
+

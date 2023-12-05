@@ -6,20 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('records', '0014_auto_20200403_1820'),
+        ("records", "0014_auto_20200403_1820"),
     ]
 
     operations = [
-        migrations.RenameField(model_name='record',
-                               old_name='message',
-                               new_name='message_old'),
-        migrations.AddField(model_name='record',
-                            name='message',
-                            field=models.TextField(blank=True, default=''),
-                            preserve_default=False),
-        migrations.RemoveField(model_name='record',
-                               name='message_old'),
+        migrations.RenameField(
+            model_name="record", old_name="message", new_name="message_old"
+        ),
+        migrations.AddField(
+            model_name="record",
+            name="message",
+            field=models.TextField(blank=True, default=""),
+            preserve_default=False,
+        ),
+        migrations.RemoveField(model_name="record", name="message_old"),
         migrations.DeleteModel(
-            name='Message',
+            name="Message",
         ),
     ]

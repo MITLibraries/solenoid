@@ -70,8 +70,11 @@
               </nav>-->
               {% if user.is_authenticated and request.get_full_path != "/accounts/password_change/" and request.get_full_path != "/accounts/login/" and request.get_full_path != "/accounts/password_change/done/"%}
                 <nav class="nav-user">
-                  <a class="button-secondary pull-right" href="{% url 'accounts:logout' %}">Log out</a>
-                  <a class="button-secondary pull-right" href="{% url 'accounts:password_change' %}">Change my password</a>
+                  <form action="{% url 'accounts:logout' %}" method="post" style="display: contents; font-size: 1.4rem;">
+                    {% csrf_token %}
+                    <button type="submit" class="button-secondary" style="color: #333";>Log out</button>
+                  </form>
+                  <a href="{% url 'accounts:password_change' %}" class="button-secondary">Change my password</a>
                 </nav>
               {% endif %}
             </div>

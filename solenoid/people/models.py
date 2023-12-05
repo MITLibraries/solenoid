@@ -19,20 +19,19 @@ logger = logging.getLogger(__name__)
 # unending recursion, so we're following the suggestion in the documentation:
 # https://docs.djangoproject.com/en/1.8/topics/db/queries/#deleting-objects
 class ProtectiveQueryset(QuerySet):
-    def delete(self):
+    def delete(self):  # type: ignore[no-untyped-def]
         for obj in self.all():
             obj.delete()
 
 
 class DefaultManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> ProtectiveQueryset:
         return ProtectiveQueryset(self.model, using=self._db)
 
 
 class ActiveLiaisonManager(models.Manager):
-    def get_queryset(self):
-        return ProtectiveQueryset(self.model, using=self._db).filter(
-            active=True)
+    def get_queryset(self) -> ProtectiveQueryset:
+        return ProtectiveQueryset(self.model, using=self._db).filter(active=True)
 
 
 class Liaison(models.Model):
@@ -40,9 +39,9 @@ class Liaison(models.Model):
     class Meta:
         verbose_name = "Liaison"
         verbose_name_plural = "Liaisons"
-        ordering = ['last_name', 'first_name']
+        ordering = ["last_name", "first_name"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{self.first_name} {self.last_name}".format(self=self)
 
     first_name = models.CharField(max_length=15)
@@ -60,9 +59,9 @@ class Liaison(models.Model):
     # Liaisons.
     objects = ActiveLiaisonManager()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         if not self.active:
-            self.dlc_set.clear()
+            self.dlc_set.clear()  # type: ignore[attr-defined]
 
         return super(Liaison, self).save(*args, **kwargs)
 
@@ -80,7 +79,7 @@ class DLC(models.Model):
     class Meta:
         verbose_name = "DLC"
         verbose_name_plural = "DLCs"
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -88,11 +87,7 @@ class DLC(models.Model):
     name = models.CharField(max_length=100, unique=True)
     # DLCs are created as needed during the metadata import process, and we
     # don't have liaison information available at that time.
-    liaison = models.ForeignKey(
-        Liaison,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE)
+    liaison = models.ForeignKey(Liaison, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Author(models.Model):
@@ -100,11 +95,10 @@ class Author(models.Model):
     class Meta:
         verbose_name = "Author"
         verbose_name_plural = "Authors"
-        ordering = ['last_name', 'first_name']
+        ordering = ["last_name", "first_name"]
 
     def __str__(self):
-        return ("{self.first_name} {self.last_name}/{self.dlc}"
-                .format(self=self))
+        return "{self.first_name} {self.last_name}/{self.dlc}".format(self=self)
 
     # Authors may have blank DLCs in a given paper's metadata, but if that
     # happens we're going to push it back to the Sympletic layer and request
@@ -113,13 +107,16 @@ class Author(models.Model):
     email = models.EmailField(help_text="Author email address")
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=40)
-    _mit_id_hash = models.CharField(max_length=32, help_text="This stores the "
-                                    "*hash* of the MIT ID, not the MIT ID "
-                                    "itself. We want to have a unique "
-                                    "identifier for the author but we don't "
-                                    "want to be storing sensitive data "
-                                    "offsite. Hashing the ID achieves "
-                                    "our goals.")
+    _mit_id_hash = models.CharField(
+        max_length=32,
+        help_text="This stores the "
+        "*hash* of the MIT ID, not the MIT ID "
+        "itself. We want to have a unique "
+        "identifier for the author but we don't "
+        "want to be storing sensitive data "
+        "offsite. Hashing the ID achieves "
+        "our goals.",
+    )
     _dspace_id = models.CharField(max_length=32)
 
     @classmethod
@@ -133,9 +130,9 @@ class Author(models.Model):
         # This doesn't have to be cryptographically secure - we just need a
         # reasonable non-collision guarantee.
         if salt:
-            return hashlib.md5((salt + mit_id).encode('utf-8')).hexdigest()
+            return hashlib.md5((salt + mit_id).encode("utf-8")).hexdigest()
         else:
-            return hashlib.md5(mit_id.encode('utf-8')).hexdigest()
+            return hashlib.md5(mit_id.encode("utf-8")).hexdigest()
 
     @classmethod
     def get_by_mit_id(cls, mit_id):
