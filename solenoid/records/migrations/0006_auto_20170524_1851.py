@@ -7,16 +7,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('records', '0005_record_email'),
+        ("records", "0005_record_email"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='record',
-            name='status',
+            model_name="record",
+            name="status",
         ),
         migrations.RemoveField(
-            model_name='record',
-            name='status_timestamp',
+            model_name="record",
+            name="status_timestamp",
         ),
     ]

@@ -10,12 +10,16 @@ python_version = "3.11"
 black = "*"
 celery-types = "*"
 coveralls = "*"
+django-stubs = "*"
 freezegun = "*"
 mypy = "*"
 pre-commit = "*"
 pytest = "*"
 pytest-django = "*"
 requests-mock = "*"
+ruff = "*"
+types-beautifulsoup4 = "*"
+types-requests = "*"
 
 [packages]
 # Only needed for Heroku
@@ -45,3 +49,6 @@ requests-oauthlib = "*"
 sentry-sdk = "*"
 social-auth-app-django = "*"
 whitenoise = "*"
+
+[scripts]
+solenoid = "python manage.py runserver"

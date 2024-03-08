@@ -12,17 +12,14 @@ def initialize_hashes(apps, schema_editor):
     for author in Author.objects.all():
         # We can't use Author.get_hash because it doesn't deconstruct properly
         # to be available for migrations.
-        author._mit_id_hash = hashlib.md5(
-            author.mit_id.encode('utf-8')).hexdigest()
+        author._mit_id_hash = hashlib.md5(author.mit_id.encode("utf-8")).hexdigest()
         author.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('people', '0004_auto_20170501_1559'),
+        ("people", "0004_auto_20170501_1559"),
     ]
 
-    operations = [
-        migrations.RunPython(initialize_hashes)
-    ]
+    operations = [migrations.RunPython(initialize_hashes)]

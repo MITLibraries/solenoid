@@ -69,9 +69,7 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {
         "brief": {
-            "format": (
-                "%(asctime)s %(levelname)s %(name)s[%(funcName)s]: " "%(message)s"
-            ),
+            "format": ("%(asctime)s %(levelname)s %(name)s[%(funcName)s]: %(message)s"),
         },
     },
     "handlers": {

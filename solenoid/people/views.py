@@ -112,7 +112,7 @@ class LiaisonUpdate(ConditionalLoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
 
-class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):
+class LiaisonDelete(ConditionalLoginRequiredMixin, DeleteView):  # type: ignore[misc]
     model = Liaison
     queryset = Liaison.objects.all()
 

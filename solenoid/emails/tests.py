@@ -14,31 +14,33 @@ from .models import EmailMessage
 from .views import _get_or_create_emails, EmailSend
 
 
-@override_settings(LOGIN_REQUIRED=False,
-                   USE_ELEMENTS=False,
-                   # We need to set this or there won't be email recipients in
-                   # EMAIL_TESTING_MODE, so emails won't send.
-                   ADMINS=[('Admin', 'admin@fake.com')])
+@override_settings(
+    LOGIN_REQUIRED=False,
+    USE_ELEMENTS=False,
+    # We need to set this or there won't be email recipients in
+    # EMAIL_TESTING_MODE, so emails won't send.
+    ADMINS=[("Admin", "admin@fake.com")],
+)
 class EmailCreatorTestCase(TestCase):
-    fixtures = ['testdata.yaml']
+    fixtures = ["testdata.yaml"]
 
-    @patch('solenoid.emails.views._get_or_create_emails')
+    @patch("solenoid.emails.views._get_or_create_emails")
     def test_posting_to_create_view_calls_creator(self, mock_create):
         EmailMessage.objects.get(pk=2).delete()
         mock_create.return_value = [1]
         c = Client()
-        c.post(reverse('emails:create'), {'records': ['1']})
-        mock_create.assert_called_once_with(['1'])
+        c.post(reverse("emails:create"), {"records": ["1"]})
+        mock_create.assert_called_once_with(["1"])
 
         mock_create.reset_mock()
-        c.post(reverse('emails:create'), {'records': ['1', '2']})
-        mock_create.assert_called_once_with(['1', '2'])
+        c.post(reverse("emails:create"), {"records": ["1", "2"]})
+        mock_create.assert_called_once_with(["1", "2"])
 
     def test_posting_to_create_view_returns_email_eval(self):
         EmailMessage.objects.get(pk=2).delete()
         c = Client()
-        response = c.post(reverse('emails:create'), {'records': ['1']})
-        self.assertRedirects(response, reverse('emails:evaluate', args=(1,)))
+        response = c.post(reverse("emails:create"), {"records": ["1"]})
+        self.assertRedirects(response, reverse("emails:evaluate", args=(1,)))
 
     def test_email_recipient(self):
         """The email created by _get_or_create_emails must be to: the relevant
@@ -69,16 +71,18 @@ class EmailCreatorTestCase(TestCase):
         self.assertEqual(len(email_pks), 3)
 
 
-@override_settings(LOGIN_REQUIRED=False,
-                   USE_ELEMENTS=False,
-                   # We need to set this or there won't be email recipients in
-                   # EMAIL_TESTING_MODE, so emails won't send.
-                   ADMINS=[('Admin', 'admin@fake.com')])
+@override_settings(
+    LOGIN_REQUIRED=False,
+    USE_ELEMENTS=False,
+    # We need to set this or there won't be email recipients in
+    # EMAIL_TESTING_MODE, so emails won't send.
+    ADMINS=[("Admin", "admin@fake.com")],
+)
 class EmailEvaluateTestCase(TestCase):
-    fixtures = ['testdata.yaml']
+    fixtures = ["testdata.yaml"]
 
     def setUp(self):
-        self.url = reverse('emails:evaluate', args=(1,))
+        self.url = reverse("emails:evaluate", args=(1,))
         self.client = Client()
 
     def tearDown(self):
@@ -90,21 +94,20 @@ class EmailEvaluateTestCase(TestCase):
 
     def test_liaison_email_address_displays(self):
         response = self.client.get(self.url)
-        self.assertContains(response, 'krug@example.com')
+        self.assertContains(response, "krug@example.com")
 
     def test_users_can_save_changes_to_emails(self):
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
-        new_text = 'This is what we change the email to'
+        new_text = "This is what we change the email to"
 
-        self.client.post(self.url, {
-            'submit_save': 'save & next',
-            'latest_text': new_text
-        })
+        self.client.post(
+            self.url, {"submit_save": "save & next", "latest_text": new_text}
+        )
 
         self.assertEqual(new_text, EmailMessage.objects.get(pk=1).latest_text)
 
@@ -119,7 +122,7 @@ class EmailEvaluateTestCase(TestCase):
         self.assertContains(response, "Most recent text of email 1")
         self.assertNotContains(response, "</form>")
 
-    @patch('solenoid.emails.models.EmailMessage.send')
+    @patch("solenoid.emails.models.EmailMessage.send")
     def test_only_unsent_emails_are_editable_2(self, mock_send):
         """On post, the email evaluate page does not re-send emails that have
         already been sent."""
@@ -127,7 +130,7 @@ class EmailEvaluateTestCase(TestCase):
         sent_email.date_sent = date.today()
         sent_email.save()
 
-        self.client.post(self.url, {'submit_send': 'send & next'})
+        self.client.post(self.url, {"submit_send": "send & next"})
         assert not mock_send.called
 
     def test_template_renders_form_media(self):
@@ -138,7 +141,7 @@ class EmailEvaluateTestCase(TestCase):
         the expected output of form.media, which would be unlikely to get there
         any other way."""
         response = self.client.get(self.url)
-        self.assertContains(response, 'ckeditor/ckeditor.js')
+        self.assertContains(response, "ckeditor/ckeditor.js")
 
     def test_email_evaluate_workflow_1(self):
         """
@@ -155,27 +158,24 @@ class EmailEvaluateTestCase(TestCase):
         # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
-        current_url = reverse('emails:evaluate', args=(1,))
+        current_url = reverse("emails:evaluate", args=(1,))
         self.client.get(current_url)
 
-        response = self.client.post(current_url,
-                                    data={'submit_cancel': 'submit_cancel'})
-        expected_url = reverse('emails:evaluate', args=(2,))
+        response = self.client.post(current_url, data={"submit_cancel": "submit_cancel"})
+        expected_url = reverse("emails:evaluate", args=(2,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_cancel': 'submit_cancel'})
-        expected_url = reverse('emails:evaluate', args=(3,))
+        response = self.client.post(expected_url, data={"submit_cancel": "submit_cancel"})
+        expected_url = reverse("emails:evaluate", args=(3,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_cancel': 'submit_cancel'})
-        expected_url = reverse('home')
+        response = self.client.post(expected_url, data={"submit_cancel": "submit_cancel"})
+        expected_url = reverse("home")
         self.assertRedirects(response, expected_url)
 
     def test_email_evaluate_workflow_2(self):
@@ -190,37 +190,34 @@ class EmailEvaluateTestCase(TestCase):
         # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
-        current_url = reverse('emails:evaluate', args=(1,))
+        current_url = reverse("emails:evaluate", args=(1,))
         self.client.get(current_url)
 
-        response = self.client.post(current_url,
-                                    data={'submit_save': 'submit_save'})
-        expected_url = reverse('emails:evaluate', args=(2,))
+        response = self.client.post(current_url, data={"submit_save": "submit_save"})
+        expected_url = reverse("emails:evaluate", args=(2,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_save': 'submit_save'})
-        expected_url = reverse('emails:evaluate', args=(3,))
+        response = self.client.post(expected_url, data={"submit_save": "submit_save"})
+        expected_url = reverse("emails:evaluate", args=(3,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_save': 'submit_save'})
-        expected_url = reverse('home')
+        response = self.client.post(expected_url, data={"submit_save": "submit_save"})
+        expected_url = reverse("home")
         self.assertRedirects(response, expected_url)
 
-    @patch('django.contrib.auth.models.AnonymousUser')
+    @patch("django.contrib.auth.models.AnonymousUser")
     def test_email_evaluate_workflow_3(self, mock_user):
         """
         Make sure that EmailEvaluate walks through the expected set of emails
         when users are hitting 'send & next'.
         """
         # request.user.email needs to exist or this test will fail.
-        mock_user.email = 'fake@example.com'
+        mock_user.email = "fake@example.com"
 
         # Set up a path that should take us through the evaluate view 3 times.
         # Implicitly, we entered the email evaluation workflow with the pks =
@@ -229,9 +226,9 @@ class EmailEvaluateTestCase(TestCase):
         # persistent-state
         # for info on how to use sessions in testing.
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
         # Make sure email 2 is sendable - in the test data it's missing a
@@ -241,22 +238,19 @@ class EmailEvaluateTestCase(TestCase):
         record.email = email
         record.save()
 
-        current_url = reverse('emails:evaluate', args=(1,))
+        current_url = reverse("emails:evaluate", args=(1,))
         self.client.get(current_url)
 
-        response = self.client.post(current_url,
-                                    data={'submit_send': 'submit_send'})
-        expected_url = reverse('emails:evaluate', args=(2,))
+        response = self.client.post(current_url, data={"submit_send": "submit_send"})
+        expected_url = reverse("emails:evaluate", args=(2,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_send': 'submit_send'})
-        expected_url = reverse('emails:evaluate', args=(3,))
+        response = self.client.post(expected_url, data={"submit_send": "submit_send"})
+        expected_url = reverse("emails:evaluate", args=(3,))
         self.assertRedirects(response, expected_url)
 
-        response = self.client.post(expected_url,
-                                    data={'submit_send': 'submit_send'})
-        expected_url = reverse('home')
+        response = self.client.post(expected_url, data={"submit_send": "submit_send"})
+        expected_url = reverse("home")
         self.assertRedirects(response, expected_url)
 
     def test_saving_unsets_new_citations_flag(self):
@@ -265,39 +259,37 @@ class EmailEvaluateTestCase(TestCase):
         email.save()
 
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
-        self.client.post(self.url, {
-            'submit_save': 'save & next',
-            'latest_text': email.latest_text
-        })
+        self.client.post(
+            self.url, {"submit_save": "save & next", "latest_text": email.latest_text}
+        )
 
         email.refresh_from_db()
 
         self.assertEqual(email.new_citations, False)
 
-    @patch('django.contrib.auth.models.AnonymousUser')
+    @patch("django.contrib.auth.models.AnonymousUser")
     def test_sending_unsets_new_citations_flag(self, mock_user):
         # request.user.email needs to exist or this test will fail.
-        mock_user.email = 'fake@example.com'
+        mock_user.email = "fake@example.com"
 
         email = EmailMessage.objects.get(pk=1)
         email.new_citations = True
         email.save()
 
         session = self.client.session
-        session['email_pks'] = [2, 3]
-        session['total_email'] = 3
-        session['current_email'] = 1
+        session["email_pks"] = [2, 3]
+        session["total_email"] = 3
+        session["current_email"] = 1
         session.save()
 
-        self.client.post(self.url, {
-            'submit_send': 'send & next',
-            'latest_text': email.latest_text
-        })
+        self.client.post(
+            self.url, {"submit_send": "send & next", "latest_text": email.latest_text}
+        )
 
         email.refresh_from_db()
 
@@ -309,46 +301,54 @@ class EmailEvaluateTestCase(TestCase):
         email.save()
 
         response = self.client.get(self.url)
-        expected = "New citations for this author have been imported since " \
-            "last time the email was edited. They've been added to this " \
+        expected = (
+            "New citations for this author have been imported since "
+            "last time the email was edited. They've been added to this "
             "email automatically, but please proofread."
-        assert any([msg.message == expected and msg.level_tag == 'error'
-                    for msg in response.context['messages']])
+        )
+        assert any(
+            [
+                msg.message == expected and msg.level_tag == "error"
+                for msg in response.context["messages"]
+            ]
+        )
 
 
-@override_settings(LOGIN_REQUIRED=False,
-                   USE_ELEMENTS=False,
-                   # We need to set this or there won't be email recipients in
-                   # EMAIL_TESTING_MODE, so emails won't send.
-                   ADMINS=[('Admin', 'admin@fake.com')])
+@override_settings(
+    LOGIN_REQUIRED=False,
+    USE_ELEMENTS=False,
+    # We need to set this or there won't be email recipients in
+    # EMAIL_TESTING_MODE, so emails won't send.
+    ADMINS=[("Admin", "admin@fake.com")],
+)
 class EmailMessageModelTestCase(TestCase):
-    fixtures = ['testdata.yaml']
+    fixtures = ["testdata.yaml"]
 
     def tearDown(self):
         EmailMessage.objects.all().delete()
 
     def test_revert(self):
-        original_text = 'This is the original text'
-        latest_text = 'This is the subsequent text'
+        original_text = "This is the original text"
+        latest_text = "This is the subsequent text"
 
         email = EmailMessage.objects.create(
             original_text=original_text,
             latest_text=latest_text,
-            author=Author.objects.latest('pk'),
-            _liaison=Liaison.objects.latest('pk'),
+            author=Author.objects.latest("pk"),
+            _liaison=Liaison.objects.latest("pk"),
         )
 
         email.revert()
         self.assertEqual(email.latest_text, original_text)
 
     def test_latest_text_is_set_on_creation(self):
-        original_text = 'This is the original text'
+        original_text = "This is the original text"
 
         email = EmailMessage.objects.create(
             original_text=original_text,
             # Note that latest_text is not set here, hence defaults blank.
-            author=Author.objects.latest('pk'),
-            _liaison=Liaison.objects.latest('pk'),
+            author=Author.objects.latest("pk"),
+            _liaison=Liaison.objects.latest("pk"),
         )
 
         self.assertEqual(email.latest_text, original_text)
@@ -370,14 +370,14 @@ class EmailMessageModelTestCase(TestCase):
     def test_publisher_special_message_included(self):
         """The email text includes special messages for each publisher in its
         record set with a special message."""
-        message = 'A very special message'
+        message = "A very special message"
         r3 = Record.objects.get(pk=3)
         r3.message = message
         r3.save()
 
         records = Record.objects.filter(pk__in=[3, 4, 5])
         text = EmailMessage.create_original_text(records)
-        self.assertEqual(text.count('A very special message'), 1)
+        self.assertEqual(text.count("A very special message"), 1)
 
     def test_html_rendered_as_html(self):
         """Make sure that we see <p>, not &lt;p&gt;, and so forth, in our
@@ -386,7 +386,7 @@ class EmailMessageModelTestCase(TestCase):
         which is no good for our purposes.)"""
         records = Record.objects.filter(pk__in=[3, 4, 5])
         email = EmailMessage.create_original_text(records)
-        self.assertNotIn('&lt;p&gt;', email)
+        self.assertNotIn("&lt;p&gt;", email)
 
     def test_fpv_accepted_message_included(self):
         """The Recruit from Author - FPV Accepted message is included if that is
@@ -394,17 +394,18 @@ class EmailMessageModelTestCase(TestCase):
         # Record 4 should have an fpv message; 3 does not
         records = Record.objects.filter(pk__in=[3, 4])
         email = EmailMessage.create_original_text(records)
-        self.assertIn(Record.objects.get(pk=4).fpv_message,
-                      email)
+        self.assertIn(Record.objects.get(pk=4).fpv_message, email)
 
     def test_fpv_accepted_message_excluded(self):
         """The Recruit from Author - FPV Accepted message is NOT included if
         that ISN'T the recruitment strategy."""
         record = Record.objects.filter(pk=3)
         email = EmailMessage.create_original_text(record)
-        msg = 'allows authors to download and deposit the final published ' \
-              'article, but does not allow the Libraries to perform the ' \
-              'downloading'
+        msg = (
+            "allows authors to download and deposit the final published "
+            "article, but does not allow the Libraries to perform the "
+            "downloading"
+        )
         self.assertNotIn(msg, email)
 
     def test_liaison_property_1(self):
@@ -452,11 +453,12 @@ class EmailMessageModelTestCase(TestCase):
         """We have only the html message but we need to generate a text
         format and update the email sending function."""
         email = EmailMessage.objects.get(pk=3)
-        self.assertEqual(email.latest_text,
-                         "<b>Most recent text<b> of email 3 <div class="
-                         "'control-citations'>citations</div>")
-        self.assertEqual(email.plaintext,
-                         "Most recent text of email 3 citations")
+        self.assertEqual(
+            email.latest_text,
+            "<b>Most recent text<b> of email 3 <div class="
+            "'control-citations'>citations</div>",
+        )
+        self.assertEqual(email.plaintext, "Most recent text of email 3 citations")
 
     def test_get_or_create_for_records_1(self):
         """EmailMessage.get_or_create_for_records raises an error if the given
@@ -536,11 +538,11 @@ class EmailMessageModelTestCase(TestCase):
         # First, ensure that our if conditions in the for loop below will be
         # True at least once each.
         r1 = Record.objects.get(pk=1)
-        r1.message = 'This is a message'
+        r1.message = "This is a message"
         r1.save()
 
         r2 = Record.objects.get(pk=2)
-        r2.acq_method = 'RECRUIT_FROM_AUTHOR_FPV'
+        r2.acq_method = "RECRUIT_FROM_AUTHOR_FPV"
         r2.save()
 
         records = Record.objects.filter(pk__in=[1, 2, 3])
@@ -611,18 +613,23 @@ class EmailMessageModelTestCase(TestCase):
 
         # Add new record so that update is meaningful. Note that we haven't set
         # its email yet.
-        r = Record(author=author, publisher_name='yo',
-                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation='boo', paper_id='3567')
+        r = Record(
+            author=author,
+            publisher_name="yo",
+            acq_method="RECRUIT_FROM_AUTHOR_MANUSCRIPT",
+            citation="boo",
+            paper_id="3567",
+        )
         r.save()
 
-        records = Record.objects.filter(
-            author=author).exclude(email__date_sent__isnull=False)
+        records = Record.objects.filter(author=author).exclude(
+            email__date_sent__isnull=False
+        )
 
         assert records.count() > orig_records.count()
 
         email = EmailMessage._finalize_email(emails, records, author)
-        assert 'boo' in email.latest_text
+        assert "boo" in email.latest_text
 
     def test_finalize_email_3(self):
         """Finalizing email updates associated records with the email."""
@@ -632,13 +639,18 @@ class EmailMessageModelTestCase(TestCase):
 
         # Add new record so that update is meaningful. Note that we haven't set
         # its email yet.
-        r = Record(author=author, publisher_name='yo',
-                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation='boo', paper_id='3567')
+        r = Record(
+            author=author,
+            publisher_name="yo",
+            acq_method="RECRUIT_FROM_AUTHOR_MANUSCRIPT",
+            citation="boo",
+            paper_id="3567",
+        )
         r.save()
 
-        records = Record.objects.filter(
-            author=author).exclude(email__date_sent__isnull=False)
+        records = Record.objects.filter(author=author).exclude(
+            email__date_sent__isnull=False
+        )
 
         assert records.count() > orig_records.count()
 
@@ -655,13 +667,17 @@ class EmailMessageModelTestCase(TestCase):
 
     def test_rebuild_citations_sets_text(self):
         email = EmailMessage.objects.get(pk=1)
-        orig_citation = ('Fermi, Enrico. Paper name. Some journal or other. '
-                         '145:5 (2016)')
-        new_citation = 'yo I am for sure a citation'
+        orig_citation = "Fermi, Enrico. Paper name. Some journal or other. 145:5 (2016)"
+        new_citation = "yo I am for sure a citation"
 
-        r = Record(email=email, author=email.author, publisher_name='yo',
-                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT',
-                   citation=new_citation, paper_id='3567')
+        r = Record(
+            email=email,
+            author=email.author,
+            publisher_name="yo",
+            acq_method="RECRUIT_FROM_AUTHOR_MANUSCRIPT",
+            citation=new_citation,
+            paper_id="3567",
+        )
         r.save()
         email.rebuild_citations()
         email.refresh_from_db()
@@ -671,30 +687,40 @@ class EmailMessageModelTestCase(TestCase):
     def test_rebuild_citations_sets_flag(self):
         email = EmailMessage.objects.get(pk=1)
 
-        r = Record(email=email, author=email.author, publisher_name='yo',
-                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
-                   paper_id='3567')
+        r = Record(
+            email=email,
+            author=email.author,
+            publisher_name="yo",
+            acq_method="RECRUIT_FROM_AUTHOR_MANUSCRIPT",
+            citation="yo",
+            paper_id="3567",
+        )
         r.save()
         email.rebuild_citations()
         email.refresh_from_db()
         assert email.new_citations is True
 
-    @patch('solenoid.emails.models.EmailMessage.rebuild_citations')
+    @patch("solenoid.emails.models.EmailMessage.rebuild_citations")
     def test_rebuild_citations_fired_when_needed_1(self, mock_rebuild):
         """get_or_create_for_records fires rebuild_citations when there are
         new citations."""
         email = EmailMessage.objects.get(pk=5)
 
-        r = Record(email=email, author=email.author, publisher_name='yo',
-                   acq_method='RECRUIT_FROM_AUTHOR_MANUSCRIPT', citation='yo',
-                   paper_id='3567')
+        r = Record(
+            email=email,
+            author=email.author,
+            publisher_name="yo",
+            acq_method="RECRUIT_FROM_AUTHOR_MANUSCRIPT",
+            citation="yo",
+            paper_id="3567",
+        )
         r.save()
 
         records = Record.objects.filter(email=email)
         EmailMessage.get_or_create_for_records(records)
         mock_rebuild.assert_called_once()
 
-    @patch('solenoid.emails.models.EmailMessage.rebuild_citations')
+    @patch("solenoid.emails.models.EmailMessage.rebuild_citations")
     def test_rebuild_citations_fired_when_needed_2(self, mock_rebuild):
         """get_or_create_for_records does not fire rebuild_citations when there
         are no new citations."""
@@ -705,37 +731,39 @@ class EmailMessageModelTestCase(TestCase):
         mock_rebuild.assert_not_called()
 
 
-@override_settings(LOGIN_REQUIRED=False,
-                   USE_ELEMENTS=False,
-                   # We need to set this or there won't be email recipients in
-                   # EMAIL_TESTING_MODE, so emails won't send.
-                   ADMINS=[('Admin', 'admin@fake.com')])
+@override_settings(
+    LOGIN_REQUIRED=False,
+    USE_ELEMENTS=False,
+    # We need to set this or there won't be email recipients in
+    # EMAIL_TESTING_MODE, so emails won't send.
+    ADMINS=[("Admin", "admin@fake.com")],
+)
 class EmailSendTestCase(TestCase):
-    fixtures = ['testdata.yaml']
+    fixtures = ["testdata.yaml"]
 
     def setUp(self):
-        self.url = reverse('emails:send')
+        self.url = reverse("emails:send")
         self.client = Client()
 
     @override_settings()
     def test_email_send_function_sends(self):
         email = EmailMessage.objects.get(pk=1)
         self.assertFalse(email.date_sent)
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 1)
 
-    @override_settings(ADMINS=(('fake admin', 'fake@example.com'),))
+    @override_settings(ADMINS=(("fake admin", "fake@example.com"),))
     def test_email_send_function_does_not_resend(self):
         email = EmailMessage.objects.get(pk=1)
         email.date_sent = date.today()
         email.save()
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_email_send_function_sets_datestamp(self):
         email = EmailMessage.objects.get(pk=1)
         self.assertFalse(email.date_sent)
-        email.send('username')
+        email.send("username")
         email.refresh_from_db()
         self.assertTrue(email.date_sent)
         # Conceivably this test will fail if run near midnight UTC.
@@ -746,72 +774,75 @@ class EmailSendTestCase(TestCase):
         liaison = email.liaison
         assert not email.date_sent
 
-        email.send('username')
+        email.send("username")
         email.refresh_from_db()
         assert email.date_sent
 
         self.assertEqual(email._liaison, liaison)
 
-    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com',
-                       EMAIL_TESTING_MODE=False)
+    @override_settings(
+        SCHOLCOMM_MOIRA_LIST="scholcomm@example.com", EMAIL_TESTING_MODE=False
+    )
     def test_email_is_sent_to_liaison(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 1)  # check assumption
-        self.assertIn(EmailMessage.objects.get(pk=1).liaison.email_address,
-                      mail.outbox[0].to)
+        self.assertIn(
+            EmailMessage.objects.get(pk=1).liaison.email_address, mail.outbox[0].to
+        )
 
-    @override_settings(SCHOLCOMM_MOIRA_LIST='scholcomm@example.com',
-                       EMAIL_TESTING_MODE=False)
+    @override_settings(
+        SCHOLCOMM_MOIRA_LIST="scholcomm@example.com", EMAIL_TESTING_MODE=False
+    )
     def test_email_is_sent_to_scholcomm_moira_list(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 1)  # check assumption
-        self.assertIn('scholcomm@example.com', mail.outbox[0].to)
+        self.assertIn("scholcomm@example.com", mail.outbox[0].to)
 
     @override_settings(SCHOLCOMM_MOIRA_LIST=None)
     def test_email_handles_empty_moira_list(self):
         """If no scholcomm list has been set, the email function should not
         break."""
         email = EmailMessage.objects.get(pk=1)
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 1)
 
     # autospec=True ensures that 'self' is passed into the mock, allowing us to
     # examine the call args as desired:
     # https://docs.python.org/3.3/library/unittest.mock-examples.html#mocking-unbound-methods
-    @patch('solenoid.emails.models.EmailMessage.send', autospec=True)
+    @patch("solenoid.emails.models.EmailMessage.send", autospec=True)
     # Middleware isn't available for RequestFactory, so we need to mock out the
     # messages call so it doesn't trigger an error.
-    @patch('solenoid.emails.views.messages')
+    @patch("solenoid.emails.views.messages")
     def test_email_send_view_calls_function(self, mock_messages, mock_send):
         # We need to use the RequestFactory and not Client because request.user
         # needs to exist, so that the username is available for calling
         # EmailMessage.send().
         factory = RequestFactory()
-        request = factory.post(self.url, data={'emails': [1, 2]})
+        request = factory.post(self.url, data={"emails": [1, 2]})
         request.user = User.objects.create_user(
-            username='wbrogers',
-            email='wbrogers@mit.edu',
-            password='top_secret')
+            username="wbrogers", email="wbrogers@mit.edu", password="top_secret"
+        )
         EmailSend.as_view()(request)
 
         email1 = EmailMessage.objects.get(pk=1)
         email2 = EmailMessage.objects.get(pk=2)
-        expected = [call(email1, 'wbrogers'), call(email2, 'wbrogers')]
+        expected = [call(email1, "wbrogers"), call(email2, "wbrogers")]
         mock_send.assert_has_calls(expected, any_order=True)
 
     def test_subject_is_something_logical(self):
         email = EmailMessage.objects.get(pk=1)
-        email.send('username')
+        email.send("username")
         self.assertEqual(len(mail.outbox), 1)
-        expected = 'OA outreach message to forward: {author}'.format(
-            author=email.author.last_name)
+        expected = "OA outreach message to forward: {author}".format(
+            author=email.author.last_name
+        )
         self.assertEqual(mail.outbox[0].subject, expected)
 
     def test_email_not_sent_when_missing_liaison(self):
         email = EmailMessage.objects.get(pk=5)
         assert not email.liaison  # check assumption: no liaison
         assert not email.date_sent  # check assumption: unsent
-        self.assertFalse(email.send('username'))
+        self.assertFalse(email.send("username"))
         self.assertEqual(len(mail.outbox), 0)

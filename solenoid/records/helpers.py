@@ -1,24 +1,38 @@
 class Fields(object):
-    EMAIL = 'Email'
-    DOI = 'Doi'
-    FIRST_NAME = 'First Name'
-    LAST_NAME = 'Last Name'
-    MIT_ID = 'MIT ID'
-    CITATION = 'Citation'
-    PUBLISHER_NAME = 'Publisher-name'
-    ACQ_METHOD = 'C-Method-Of-Acquisition'
-    DLC = 'DLC'
-    PAPER_ID = 'PaperID'
-    MESSAGE = 'C-Publisher-Related-Email-Message'
-    PUBDATE = 'Year Published'
-    TITLE = 'Title1'
-    JOURNAL = 'Journal-name'
-    VOLUME = 'Volume'
-    ISSUE = 'Issue'
+    EMAIL = "Email"
+    DOI = "Doi"
+    FIRST_NAME = "First Name"
+    LAST_NAME = "Last Name"
+    MIT_ID = "MIT ID"
+    CITATION = "Citation"
+    PUBLISHER_NAME = "Publisher-name"
+    ACQ_METHOD = "C-Method-Of-Acquisition"
+    DLC = "DLC"
+    PAPER_ID = "PaperID"
+    MESSAGE = "C-Publisher-Related-Email-Message"
+    PUBDATE = "Year Published"
+    TITLE = "Title1"
+    JOURNAL = "Journal-name"
+    VOLUME = "Volume"
+    ISSUE = "Issue"
 
-    EXPECTED_FIELDS = [EMAIL, DOI, FIRST_NAME, LAST_NAME, MIT_ID, CITATION,
-                       PUBLISHER_NAME, ACQ_METHOD, DLC, PAPER_ID, MESSAGE,
-                       TITLE, JOURNAL, VOLUME, ISSUE]
+    EXPECTED_FIELDS = [
+        EMAIL,
+        DOI,
+        FIRST_NAME,
+        LAST_NAME,
+        MIT_ID,
+        CITATION,
+        PUBLISHER_NAME,
+        ACQ_METHOD,
+        DLC,
+        PAPER_ID,
+        MESSAGE,
+        TITLE,
+        JOURNAL,
+        VOLUME,
+        ISSUE,
+    ]
 
     # This is information we can get from the database if it happens to be
     # missing from the Elements metadata, if we already know about
@@ -39,12 +53,22 @@ class Fields(object):
     # * CITATION and citation-related data: We can construct a minimal citation
     #   from other data; alternately, we don't need the other data if we have a
     #   citation. The Record model will check for this.
-    REQUIRED_DATA = list(set(EXPECTED_FIELDS) -
-                         set(AUTHOR_DATA) - {DOI} - {MESSAGE} - {CITATION} -
-                         {TITLE} - {JOURNAL} - {VOLUME} - {ISSUE} -
-                         # Acq method is allowed to be blank.
-                         {ACQ_METHOD} -
-                         # We don't need publisher name unless the method of
-                         # acquisition is FPV (in which case the publisher name
-                         # is interpolated into the email text).
-                         {PUBLISHER_NAME})
+    REQUIRED_DATA = list(
+        set(EXPECTED_FIELDS)
+        - set(AUTHOR_DATA)
+        - {DOI}
+        - {MESSAGE}
+        - {CITATION}
+        - {TITLE}
+        - {JOURNAL}
+        - {VOLUME}
+        - {ISSUE}
+        -
+        # Acq method is allowed to be blank.
+        {ACQ_METHOD}
+        -
+        # We don't need publisher name unless the method of
+        # acquisition is FPV (in which case the publisher name
+        # is interpolated into the email text).
+        {PUBLISHER_NAME}
+    )

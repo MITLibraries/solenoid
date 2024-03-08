@@ -220,7 +220,7 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
 
         if self.object.date_sent:
             messages.warning(
-                request, "This email has been sent; no " "further changes can be made."
+                request, "This email has been sent; no further changes can be made."
             )
             return HttpResponseRedirect(
                 reverse("emails:evaluate", args=(self.kwargs["pk"]))
@@ -233,7 +233,7 @@ class EmailEvaluate(ConditionalLoginRequiredMixin, UpdateView):
         elif "submit_send" in request.POST:
             return self._handle_send()
         else:
-            messages.warning(request, "I'm sorry; I can't tell what you meant " "to do.")
+            messages.warning(request, "I'm sorry; I can't tell what you meant to do.")
             return self.form_invalid(self.get_form())
 
 
