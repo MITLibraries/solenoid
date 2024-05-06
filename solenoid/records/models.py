@@ -210,6 +210,8 @@ class Record(models.Model):
         citable = bool(paper_data[Fields.CITATION]) or all(
             [bool(paper_data[x]) for x in Fields.CITATION_DATA]
         )
+        logger.info(f"Paper data: {paper_data}")
+        logger.info(f"Citable: {citable}")
         return all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and citable
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
