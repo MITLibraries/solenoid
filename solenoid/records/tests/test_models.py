@@ -41,29 +41,41 @@ class RecordModelTest(TestCase):
             Fields.TITLE: "Ultraviolet behavior of non-abelian gauge theories",
         }
 
+    def test_get_missing_citation_fields_returns_none(self):
+        metadata = copy.copy(self.paper_data)
+        metadata[Fields.CITATION] = "This is a citation"
+        metadata[Fields.TITLE] = "This is a paper title"
+        metadata[Fields.JOURNAL] = "Journal of Awesomeness"
+        assert not Record.get_missing_citation_fields(metadata)
+
     # need to actually test create_citation
-    def test_is_metadata_valid_yes_citation_no_citation_data(self):
+    def test_get_missing_citation_fields_returns_none_if_citation_present(self):
         metadata = copy.copy(self.paper_data)
         metadata[Fields.CITATION] = "This is a citation"
         metadata[Fields.TITLE] = None
         metadata[Fields.JOURNAL] = None
-        assert Record.is_data_valid(metadata)
+        assert not Record.get_missing_citation_fields(metadata)
 
-    def test_is_metadata_valid_no_citation_yes_citation_data(self):
+    def test_get_missing_citation_fields_returns_none_if_minimal_citation_fields_present(
+        self,
+    ):
         metadata = copy.copy(self.paper_data)
         metadata[Fields.CITATION] = None
         metadata[Fields.TITLE] = "This is a paper title"
         metadata[Fields.JOURNAL] = "Journal of Awesomeness"
-        assert Record.is_data_valid(metadata)
+        assert not Record.get_missing_citation_fields(metadata)
 
-    def test_is_metadata_valid_no_citation_no_citation_data(self):
+    def test_get_missing_citation_fields_returns_missing_minimal_citation_fields(self):
         metadata = copy.copy(self.paper_data)
         metadata[Fields.CITATION] = None
         metadata[Fields.TITLE] = None
         metadata[Fields.JOURNAL] = None
-        assert not Record.is_data_valid(metadata)
+        assert Record.get_missing_citation_fields(metadata) == (
+            f"Missing data for '{Fields.CITATION}' and "
+            f"missing required fields to generate minimal citation: ['{Fields.TITLE}', '{Fields.JOURNAL}']."
+        )
 
-    def test_is_record_creatable(self):
+    def test_is_record_creatable_acq_method_not_fpv_returns_true(self):
         # Data includes the basics? Good!
         data = {
             Fields.PUBLISHER_NAME: "foo",
@@ -72,6 +84,7 @@ class RecordModelTest(TestCase):
         }
         assert Record.is_record_creatable(data)
 
+    def test_is_record_creatable_acq_method_unknown_returns_true(self):
         data = {
             Fields.PUBLISHER_NAME: "foo",
             Fields.ACQ_METHOD: "",
@@ -79,21 +92,17 @@ class RecordModelTest(TestCase):
         }
         assert Record.is_record_creatable(data)
 
-        # Missing data for required basics? Bad!
-        data = copy.copy(self.paper_data)
-        data.update(self.citation_data)
-        data[Fields.CITATION] = ""
-        data[Fields.FIRST_NAME] = ""
-        assert not Record.is_record_creatable(data)
-
+    def test_is_record_creatable_acq_method_fpv_returns_true(self):
         data = {
             Fields.PUBLISHER_NAME: "foo",
-            # No acq method column at all
+            Fields.ACQ_METHOD: "RECRUIT_FROM_AUTHOR_FPV",
             Fields.CITATION: "nonempty",
+            Fields.DOI: "4217896",
+            Fields.PUBLISHER_NAME: "nonempty",
         }
-        assert not Record.is_record_creatable(data)
+        assert Record.is_record_creatable(data)
 
-        # RECRUIT_FROM_AUTHOR_FPV requires a DOI.
+    def test_is_record_creatable_acq_method_fpv_returns_false(self):
         data = {
             Fields.PUBLISHER_NAME: "foo",
             Fields.ACQ_METHOD: "RECRUIT_FROM_AUTHOR_FPV",
@@ -101,14 +110,6 @@ class RecordModelTest(TestCase):
             Fields.DOI: "",
         }
         assert not Record.is_record_creatable(data)
-
-        data = {
-            Fields.PUBLISHER_NAME: "foo",
-            Fields.ACQ_METHOD: "RECRUIT_FROM_AUTHOR_FPV",
-            Fields.CITATION: "nonempty",
-            Fields.DOI: "4217896",
-        }
-        assert Record.is_record_creatable(data)
 
     def test_is_valid_fpv_but_no_doi(self):
         record = Record.objects.get(pk=1)
@@ -420,6 +421,24 @@ class RecordModelTest(TestCase):
             'Letters, 30(26). <a href="https://doi.org/10.1103/'
             'PhysRevLett.30.1343">doi:10.1103/PhysRevLett.30.1343'
             "</a>",
+        )
+
+    def test_create_citation_case_9(self):
+        """Minimal citation:
+        journal: NO
+        publication date: YES
+        volume & issue: YES
+        doi: YES
+        """
+        data = copy.copy(self.citation_data)
+        data.update(dict.fromkeys([Fields.JOURNAL], None))
+        citation = Record.create_citation(data)
+        self.assertEqual(
+            citation,
+            "Wilczek, F. (1973). Ultraviolet behavior of "
+            "non-abelian gauge theories. JOURNAL-NAME UNIDENTIFIED, "
+            '30(26). <a href="https://doi.org/10.1103/PhysRevLett.30.1343">'
+            "doi:10.1103/PhysRevLett.30.1343</a>",
         )
 
     def test_create_citation_error_case_1(self):

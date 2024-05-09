@@ -65,26 +65,45 @@ class Record(models.Model):
         Some Elements papers include the citation field in their metadata,
         but some leave it blank; in those cases we need to build our own
         citation text. Stakeholders have indicated that it doesn't matter what
-        citation format we use or whether the citation is complete (as long as
-        it includes author, title, and journal title).
-
+        citation format we use or whether the citation is complete.
         This method assumes that the supplied paper metadata has already been
         validated; it does not perform any validation.
+
+        The minimal citation is generated using the author's first name and last name
+        and the publication's title and journal (to which it was published).
+        If any of the citation fields are missing, the following placeholder text
+        will be used in the citation: "<CITATION FIELD NAME> UNIDENTIFIED".
+
+        Note: The citation field name will be formatted such that hyphens are removed
+              and all characters are uppercase.
+
 
         APA format is:
             Author, F.M. (Publication year). Article Title. Journal Title,
             Volume(Issue), pp.-pp. doi:XX.XXXXX.
         We don't appear to get page number information, so we'll skip that.
         """
+        citation_field_placeholder = "{field} UNIDENTIFIED"
+
+        first_init = None
+        if first_name := paper_data[Fields.FIRST_NAME]:
+            first_init = first_name[0]
+
         citation = "{last}, {first_init}. ".format(
-            last=paper_data[Fields.LAST_NAME], first_init=paper_data[Fields.FIRST_NAME][0]
+            last=paper_data.get(Fields.LAST_NAME)
+            or citation_field_placeholder.format(field=Fields.LAST_NAME.upper()),
+            first_init=first_init
+            or citation_field_placeholder.format(field=Fields.FIRST_NAME.upper()),
         )
 
         if paper_data[Fields.PUBDATE]:
             citation += f"({paper_data[Fields.PUBDATE][0:4]}). "
 
         citation += "{title}. {journal}".format(
-            title=paper_data[Fields.TITLE], journal=paper_data[Fields.JOURNAL]
+            title=paper_data.get(Fields.TITLE)
+            or citation_field_placeholder.format(field=Fields.TITLE.upper()),
+            journal=paper_data.get(Fields.JOURNAL)
+            or citation_field_placeholder.format(field=Fields.JOURNAL.upper()),
         )
 
         if paper_data[Fields.VOLUME] and paper_data[Fields.ISSUE]:
@@ -168,17 +187,13 @@ class Record(models.Model):
         Returns:
             bool: True if record can be created, False otherwise.
         """
-        try:
-            if paper_data[Fields.ACQ_METHOD] == "RECRUIT_FROM_AUTHOR_FPV":
-                assert bool(paper_data[Fields.DOI])
-                assert bool(paper_data[Fields.PUBLISHER_NAME])
-
-            if not paper_data[Fields.CITATION]:
-                assert all([bool(paper_data[x]) for x in Fields.CITATION_DATA])
-
+        if not paper_data[Fields.ACQ_METHOD] == "RECRUIT_FROM_AUTHOR_FPV":
             return True
-        except (AssertionError, KeyError):
+        if not all(
+            [bool(paper_data[Fields.DOI]), bool(paper_data[Fields.PUBLISHER_NAME])]
+        ):
             return False
+        return True
 
     @staticmethod
     def paper_requested(paper_data):
@@ -201,16 +216,28 @@ class Record(models.Model):
         return any([record.email.date_sent for record in records if record.email])
 
     @staticmethod
-    def is_data_valid(paper_data):
-        """Returns True if this metadata has the required data fields for
-        making a Record; False otherwise.
+    def get_missing_id_fields(paper_data):
+        """Get missing required ID fields ('MIT ID', 'PaperID')."""
+        missing_id_fields = [
+            field for field in Fields.REQUIRED_DATA if not paper_data[field]
+        ]
+        if missing_id_fields:
+            return f"Missing required ID fields: {missing_id_fields}."
 
-        For citation data, we'll accept *either* a preconstructed citation,
-        *or* enough data to construct a minimal citation ourselves."""
-        citable = bool(paper_data[Fields.CITATION]) or all(
-            [bool(paper_data[x]) for x in Fields.CITATION_DATA]
-        )
-        return all([bool(paper_data[x]) for x in Fields.REQUIRED_DATA]) and citable
+    @staticmethod
+    def get_missing_citation_fields(paper_data):
+        """Get missing fields needed to create a minimal citation"""
+        if paper_data[Fields.CITATION]:
+            return
+
+        missing_citation_fields = [
+            field for field in Fields.CITATION_DATA if not paper_data[field]
+        ]
+        if missing_citation_fields:
+            return (
+                f"Missing data for '{Fields.CITATION}' and "
+                f"missing required fields to generate minimal citation: {missing_citation_fields}."
+            )
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTANCE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
