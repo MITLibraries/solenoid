@@ -106,19 +106,24 @@ def _run_checks_on_paper(paper_data, author):
     paper_id = paper_data[Fields.PAPER_ID]
     author_name = paper_data[Fields.LAST_NAME]
 
+    # Check that data provided from Elements is citable
+    if _missing_citation_fields := Record.get_missing_citation_fields(paper_data):
+        logger.info(
+            f"Publication #{paper_id} by {author_name} is missing citation fields. "
+            f"{_missing_citation_fields}"
+        )
+
     # Check that data provided from Elements is complete
-    if not Record.is_data_valid(paper_data):
-        logger.info(f"Invalid data for paper {paper_id}")
+    if _missing_id_fields := Record.get_missing_id_fields(paper_data):
+        logger.info(f"Paper #{paper_id} missing required data, record not imported")
         return (
-            f"Publication #{paper_id} by "
-            f"{author_name} is missing required data "
-            f'(one or more of {", ".join(Fields.REQUIRED_DATA)}), so '
-            f"this citation will not be imported."
+            f"Publication #{paper_id} by {author_name} is missing required ID fields. "
+            f"{_missing_id_fields}"
         )
 
     # Check that paper hasn't already been requested
     if Record.paper_requested(paper_data):
-        logger.info(f"Paper {paper_id} already requested, " f"record not imported")
+        logger.info(f"Paper {paper_id} already requested, record not imported")
         return (
             f"Publication #{paper_id} by "
             f"{author_name} has already been requested "
