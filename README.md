@@ -66,50 +66,24 @@ The Django settings files are modeled from the [sample `settings.py` file from H
 
 ### Required
 
-```
-# Django refuses to start without a SECRET_KEY, derived from this env var. Set to any string value in 'dev'. In 'production', a 50-character random string is sufficient.
-DJANGO_SECRET_KEY=
+```shell
+DJANGO_SECRET_KEY=### Django refuses to start without a SECRET_KEY, derived from this env var. Set to any string value in 'dev'. In 'production', a 50-character random string is sufficient.
 ```
 
 ### Optional
 
-```
-# Runs the application in debug mode. It is recommended to set value to True for 'dev' and testing. In 'production', this value should be set to False. Default is False.
-DJANGO_DEBUG=
-
-# Requires users to log in to access the application. All requests by non-authenticated users will be redirected to the login page. For Heroku deployments, this value should be set to True. Default is False.
-DJANGO_LOGIN_REQUIRED=
-
-# The email address for the app's admins, used for the ADMINS Django setting. It is only used in 'dev', where the default is None. For Heroku deployments, the ADMINS Django setting is directly set to the 'solenoid-admins' Moira list.
-SOLENOID_ADMIN=
-
-# Password associated with the SMTP host and port specified in the EMAIL_HOST and EMAIL_PORT Django settings (i.e., for 'libsys@outgoing.mit.edu'). Default is None, which will write the emails that would be sent to standard output. For 'dev' and testing, only set the password if DJANGO_EMAIL_TESTING_MODE is True, which will send emails to the address indicated in the SOLENOID_ADMIN env var. For 'production', the password must be set.
-DJANGO_SMTP_PASSWORD=
-
-# Database connection string. In 'dev', the default is "sqlite:///db.sqlite3"; for Heroku deployments, this variable is set to a PostgreSQL connection string (configured by Heroku when the app is created).
-DATABASE_URL=
-
-# Heroku application name and indicates the host/domain name that the Django site can serve (i.e., used in the ALLOWED_HOSTS Django setting). In 'dev', this variable does not need to be set and defaults to an empty string; for Heroku deployments, this variable does not need to be explicitly set and defaults to 'mitlibraries-solenoid'. 
-HEROKU_APP_NAME=
-
-# Runs the application in test mode. Default is False, which will send emails to actual liasons and MIT's SCCS Full Text Acquisition (FTA) Moira list. For 'dev' and testing, set to True, which will send emails to the address indicated in the SOLENOID_ADMIN env var. For 'production', set to False.
-DJANGO_EMAIL_TESTING_MODE=
-
-# Send API requests to Symplectic Elements for citation imports. Default is False.
-DJANGO_USE_ELEMENTS=
-
-# Username associated with an API account for Symplectic Elements. Default is 'solenoid'. A value is required if DJANGO_USE_ELEMENTS is set to True.
-DJANGO_ELEMENTS_USER=
-
-# Password associated with an API account for Symplectic Elements. Default is None. A value is required if DJANGO_USE_ELEMENTS is set to True.
-DJANGO_ELEMENTS_PASSWORD=
-
-# API endpoint for Symplectic Elements. Defaults to the 'dev' instance of Elements. The 'prod' instance should never be used for testing unless it is absolutely necessary.
-DJANGO_ELEMENTS_ENDPOINT=
-
-# A salt (random data used as an additional input for a hash function) used to create a hash for the 'dspace_id' attribute of an 'Author' object. In 'dev', this can be set to any string value and the default is 'salty'; for Heroku deployments, defaults to the DJANGO_SECRET_KEY env var.
-DSPACE_AUTHOR_ID_SALT=
-
-# URL for Redis data store. In 'dev', the default is 'redis://localhost:6379/0'; for Heroku deployments, the corresponding config var (named similarly) is set to the URL for the newly provisioned Heroku Data for Redis instance upon creation.
-REDIS_URL=
+```shell
+DJANGO_DEBUG=### Runs the application in debug mode. It is recommended to set value to True for 'dev' and testing. In 'production', this value should be set to False. Default is False.
+DJANGO_LOGIN_REQUIRED=### Requires users to log in to access the application. All requests by non-authenticated users will be redirected to the login page. For Heroku deployments, this value should be set to True. Default is False.
+SOLENOID_ADMIN=### The email address for the app's admins, used for the ADMINS Django setting. It is only used in 'dev', where the default is None. For Heroku deployments, the ADMINS Django setting is directly set to the 'solenoid-admins' Moira list.
+DJANGO_SMTP_PASSWORD=### Password associated with the SMTP host and port specified in the EMAIL_HOST and EMAIL_PORT Django settings (i.e., for 'libsys@outgoing.mit.edu'). Default is None, which will write the emails that would be sent to standard output. For 'dev' and testing, only set the password if DJANGO_EMAIL_TESTING_MODE is True, which will send emails only to the address indicated in the SOLENOID_ADMIN env var. For 'production', the password must be set.
+DATABASE_URL=### Database connection string. In 'dev', the default is "sqlite:///db.sqlite3"; for Heroku deployments, this variable is set to a PostgreSQL connection string (configured by Heroku when the app is created).
+HEROKU_APP_NAME=### Heroku application name and indicates the host/domain name that the Django site can serve (i.e., used in the ALLOWED_HOSTS Django setting). In 'dev', this variable does not need to be set and defaults to an empty string; for Heroku deployments, this variable does not need to be explicitly set and defaults to 'mitlibraries-solenoid'. 
+DJANGO_EMAIL_TESTING_MODE=### Runs the application in test mode. Default is False, which will send emails to actual liasons and MIT's SCCS Full Text Acquisition (FTA) Moira list. For 'dev' and testing, set to True, which will send emails to the address indicated in the SOLENOID_ADMIN env var. For 'production', set to False.
+DJANGO_USE_ELEMENTS=### Send API requests to Symplectic Elements for citation imports. Default is False.
+DJANGO_ELEMENTS_USER=### Username associated with an API account for Symplectic Elements. Default is 'solenoid'. A value is required if DJANGO_USE_ELEMENTS is set to True.
+DJANGO_ELEMENTS_PASSWORD=### Password associated with an API account for Symplectic Elements. Default is None. A value is required if DJANGO_USE_ELEMENTS is set to True.
+DJANGO_ELEMENTS_ENDPOINT=### API endpoint for Symplectic Elements. Defaults to the 'dev' instance of Elements. The 'prod' instance should never be used for testing unless it is absolutely necessary.
+DSPACE_AUTHOR_ID_SALT=### A salt (random data used as an additional input for a hash function) used to create a hash for the 'dspace_id' attribute of an 'Author' object. In 'dev', this can be set to any string value and the default is 'salty'; for Heroku deployments, defaults to the DJANGO_SECRET_KEY env var.
+REDIS_URL=### URL for Redis data store. In 'dev', the default is 'redis://localhost:6379/0'; for Heroku deployments, the corresponding config var (named similarly) is set to the URL for the newly provisioned Heroku Data for Redis instance upon creation.
 ```
