@@ -71,8 +71,12 @@ ELEMENTS_ENDPOINT = env.str(
 DSPACE_SALT = env.str("DSPACE_AUTHOR_ID_SALT", "salty")
 
 # CELERY SETTINGS
-CELERY_BROKER_URL = env.str("REDIS_URL", "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = env.str("REDIS_URL", "redis://localhost:6379")
+CELERY_BROKER_URL = (
+    env.str("REDIS_URL", "rediss://localhost:6379/0") + "?ssl_cert_reqs=none"
+)
+CELERY_RESULT_BACKEND = (
+    env.str("REDIS_URL", "rediss://localhost:6379") + "?ssl_cert_reqs=none"
+)
 
 # ============================== #
 # ==== DJANGO CORE SETTINGS ==== #
