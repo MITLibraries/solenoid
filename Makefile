@@ -1,40 +1,51 @@
 SHELL=/bin/bash
 DATETIME:=$(shell date -u +%Y%m%dT%H%M%SZ)
 
-help: # preview Makefile commands
+help: # Preview Makefile commands
 	@awk 'BEGIN { FS = ":.*#"; print "Usage:  make <target>\n\nTargets:" } \
-	/^[-_[:alpha:]]+:.?*#/ { printf "  %-15s%s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+/^[-_[:alpha:]]+:.?*#/ { printf "  %-15s%s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-install: # install Python dependencies
+#######################
+# Dependency commands
+#######################
+
+install: # Install Python dependencies
 	pipenv install --dev
+	pipenv run pre-commit install
 
-update: install # update Python dependencies
+update: install # Update Python dependencies
 	pipenv clean
 	pipenv update --dev
 
 ######################
 # Unit test commands
 ######################
-test: # run tests and print a coverage report
+
+test: # Run tests and print a coverage report
 	pipenv run coverage run --source=solenoid -m pytest -vv
 	pipenv run coverage report -m
 
-coveralls: test # write coverage data to an LCOV report
+coveralls: test # Write coverage data to an LCOV report
 	pipenv run coverage lcov -o ./coverage/lcov.info
 
 ####################################
 # Code quality and safety commands
 ####################################
 
-lint: black mypy # run linters
+lint: black mypy safety # Run linters
 
-black: # run 'black' linter and print a review of suggested changes
+black: # Run 'black' linter and print a preview of suggested changes
 	pipenv run black --check --diff .
 
-mypy: # run 'mypy' linter
-	pipenv run mypy . 
+mypy: # Run 'mypy' linter
+	pipenv run mypy .
 
-lint-apply: black-apply # apply changes with 'black'
+safety: # Check for security vulnerabilities and verify Pipfile.lock is up-to-date
+	pipenv check
+	pipenv verify
 
-black-apply: # apply changes with 'black'
+lint-apply: # Apply changes with 'black' and resolve 'fixable errors' with 'ruff'
+	black-apply ruff-apply 
+
+black-apply: # Apply changes with 'black'
 	pipenv run black .
