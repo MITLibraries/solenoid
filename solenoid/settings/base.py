@@ -3,7 +3,7 @@ Django settings for the 'solenoid' project.
 
 This is the 'base' settings file, and the configurations included here
 are to be imported into other files containing environment-specific configs
-(e.g. the settings file used in production). 
+(e.g. the settings file used in production).
 
 The settings configured in this file are suitable for local development
 and testing.

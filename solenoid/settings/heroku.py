@@ -3,7 +3,7 @@ Django settings for the 'solenoid' project.
 
 This is the 'heroku' settings file, which imports required configs from
 the 'base' settings file and contains the required configurations
-for the Solenoid app deployed to Heroku (for staging and production). 
+for the Solenoid app deployed to Heroku (for staging and production).
 
 For more information on this file, see
 https://docs.djangoproject.com/en/4.2/topics/settings/
