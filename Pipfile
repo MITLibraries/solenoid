@@ -20,9 +20,9 @@ requests-mock = "*"
 ruff = "*"
 types-beautifulsoup4 = "*"
 types-requests = "*"
+pip-audit = "*"
 
 [packages]
-# Only needed for Heroku
 backoff = "*"
 beautifulsoup4 = "*"
 celery = "*"

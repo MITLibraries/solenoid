@@ -41,7 +41,7 @@ mypy: # Run 'mypy' linter
 	pipenv run mypy .
 
 safety: # Check for security vulnerabilities and verify Pipfile.lock is up-to-date
-	pipenv check
+	pipenv run pip-audit
 	pipenv verify
 
 lint-apply: # Apply changes with 'black' and resolve 'fixable errors' with 'ruff'
